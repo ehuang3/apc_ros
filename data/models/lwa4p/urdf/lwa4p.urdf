@@ -1,0 +1,246 @@
+<?xml version="1.0"?>
+<robot  name="lwa4p">
+
+  <link name="world" />
+
+		<!-- L0 -->
+		<joint name="L0_joint" type="fixed" >
+			<origin  rpy="0 0 0" xyz="0 0 0" />
+			<parent link="world" />
+			<child link="L0_link" />
+		</joint>
+
+		<link name="L0_link">
+			<inertial>
+				<origin xyz="0 0 0" rpy="0 0 0" />
+				<mass value="0.29364"/>
+				<inertia ixx="0.01" ixy="0" ixz="0" iyy="0.01" iyz="0" izz="0.01" />
+			</inertial>
+			
+			<visual>
+				<origin xyz="0 0 0" rpy="0 0 0" />
+				<geometry>
+					<mesh filename="../meshes/arm_0_link.stl" />
+				</geometry>
+				<material name="Schunk_LightGrey"> 
+					<color rgba="0.7 0.7 0.7 1.0"/>  
+				</material>
+			</visual>
+			
+			<collision>
+				<origin xyz="0 0 0" rpy="0 0 0" />
+				<geometry>
+					<mesh filename="../meshes/arm_0_link.stl" />
+				</geometry>
+			</collision>
+		</link>
+
+		<!-- joint between arm_0_link and arm_1_link -->
+		<joint name="L1_joint" type="revolute">
+			<origin xyz="0 0 0.11" rpy="0 0 0"/>
+			<parent link="L0_link"/>
+			<child link="L1_link"/>
+			<axis xyz="0 0 1"/>
+			<dynamics damping="10" />
+			<limit effort="370" velocity="2.0" lower="-6.2831853" upper="6.2831853"/>
+		</joint>
+
+		<!--  Link 1-->
+		<link name="L1_link">
+			<inertial>
+				<origin xyz="0 0 0" rpy="0 0 0" />
+				<mass value="0.29364"/>
+				<inertia ixx="0.01" ixy="0" ixz="0" iyy="0.01" iyz="0" izz="0.01" />
+			</inertial>
+			
+			<visual>
+				<origin xyz="0 0 0" rpy="0 0 0" />
+				<geometry>
+					<mesh filename="../meshes/arm_1_link.stl" />
+				</geometry>
+				<material name="Schunk_Blue">
+					<color rgba="0.0 0.0 0.8 1.0"/>
+				</material>
+			</visual>
+			
+			<collision>
+				<origin xyz="0 0 0" rpy="0 0 0" />
+				<geometry>
+					<mesh filename="../meshes/arm_1_link.stl" />
+				</geometry>
+			</collision>
+		</link>
+
+		<!--  Joint 2-->
+		<joint name="L2_joint" type="revolute">
+			<origin xyz="0 0 0" rpy="1.5708 0 0"/>
+			<parent link="L1_link"/>
+			<child link="L2_link"/>
+			<axis xyz="0 0 1"/>
+			<dynamics damping="10" />
+			<limit effort="370" velocity="2.0" lower="-2.0943951" upper="2.0943951"/>
+		</joint>
+
+		<!--  Link 2-->
+		<link name="L2_link">
+			<inertial>
+				<origin xyz="0 0 0" rpy="0 0 0"/>
+				<mass value="1.68311"/>
+				<inertia ixx="0.03" ixy="0" ixz="0" iyy="0.03" iyz="0" izz="0.03" />
+			</inertial>
+			
+			<visual>
+				<origin xyz="0 0 0" rpy="0 0 0" />
+				<geometry>
+					<mesh filename="../meshes/arm_2_link.stl" />
+				</geometry>
+				<material name="Schunk_LightGrey" />
+			</visual>
+			
+			<collision>
+				<origin xyz="0 0 0" rpy="0 0 0" />
+				<geometry>
+					<mesh filename="../meshes/arm_2_link.stl" />
+				</geometry>
+			</collision>
+		</link>
+
+		<!--  Joint 3 -->
+		<joint name="L3_joint" type="revolute">
+			<origin xyz="0 0.350 0" rpy="0 3.14159 0"/>
+			<parent link="L2_link"/>
+			<child link="L3_link"/>
+			<axis xyz="0 0 1"/>
+			<dynamics damping="5" />
+			<limit effort="176" velocity="2.0" lower="-6.2831853" upper="6.2831853"/>
+		</joint>
+
+		<!--  Link 3-->
+		<link name="L3_link">
+			<inertial>
+				<origin xyz="0 0 0" rpy="0 0 0"/>
+				<mass value="2.1"/>
+				<inertia ixx="0.03" ixy="0" ixz="0" iyy="0.03" iyz="0" izz="0.03" />
+			</inertial>
+			
+			<visual>
+				<origin xyz="0 0 0" rpy="0 0 0" />
+				<geometry>
+					<mesh filename="../meshes/arm_3_link.stl" />
+				</geometry>
+				<material name="Schunk_Blue" />
+			</visual>
+			
+			<collision>
+				<origin xyz="0 0 0" rpy="0 0 0" />
+				<geometry>
+					<mesh filename="../meshes/arm_3_link.stl" />
+				</geometry>
+			</collision>
+		</link>	
+
+		<!--  Joint 4-->
+		<joint name="L4_joint" type="revolute">
+			<origin xyz="0 0 0" rpy="-1.5708 3.14159 0" />
+			<parent link="L3_link"/>
+			<child link="L4_link"/>
+			<axis xyz="0 0 1" />
+			<dynamics damping="5" />
+			<limit effort="176" velocity="2.0" lower="-2.0943951" upper="2.0943951"/>
+		</joint>
+
+		<!--  Link 4-->
+		<link name="L4_link">
+			<inertial>
+				<origin xyz="0 0 0" rpy="0 0 0"/>
+				<mass value="1.68311"/>
+				<inertia ixx="0.03" ixy="0" ixz="0" iyy="0.03" iyz="0" izz="0.03" />
+			</inertial>
+			
+			<visual>
+				<origin xyz="0 0 0" rpy="0 0 0" />
+				<geometry>
+					<mesh filename="../meshes/arm_4_link.stl" />
+				</geometry>
+				<material name="Schunk_LightGrey" />
+			</visual>
+			
+			<collision>
+				<origin xyz="0 0 0" rpy="0 0 0" />
+				<geometry>
+					<mesh filename="../meshes/arm_4_link.stl" />
+				</geometry>
+			</collision>
+		</link>
+
+		<!--  Joint 5 -->
+		<joint name="L5_joint" type="revolute">
+			<origin xyz="0 0.005263 0.365" rpy="1.5708 0 3.14159" />
+			<parent link="L4_link"/>
+			<child link="L5_link"/>
+			<axis xyz="0 0 1" />
+			<dynamics damping="5" />
+			<limit effort="41.6" velocity="2.0" lower="-6.2831853" upper="6.2831853" />
+		</joint>
+
+		<!--  Link 5-->
+		<link name="L5_link">
+			<inertial>
+				<origin xyz="0 0 0" rpy="0 0 0"/>
+				<mass value="0.807"/>
+				<inertia ixx="0.03" ixy="0" ixz="0" iyy="0.03" iyz="0" izz="0.03" />
+			</inertial>
+			
+			<visual>
+				<origin xyz="0 0 0" rpy="0 0 0" />
+				<geometry>
+					<mesh filename="../meshes/arm_5_link.stl" />
+				</geometry>
+				<material name="Schunk_Blue" />
+			</visual>
+			
+			<collision>
+				<origin xyz="0 0 0" rpy="0 0 0" />
+				<geometry>
+					<mesh filename="../meshes/arm_5_link.stl" />
+				</geometry>
+			</collision>
+		</link>
+
+		<!--  Joint 6-->
+		<joint name="L6_joint" type="revolute">
+			<origin xyz="0 0 0" rpy="-1.5708 0 0" />
+			<parent link="L5_link"/>
+			<child link="L6_link"/>
+			<axis xyz="0 0 1" />
+			<dynamics damping="5" />
+			<limit effort="20.1" velocity="2.0" lower="-2.0943951" upper="2.0943951" />
+		</joint>
+
+		<!--  Link 6-->
+		<link name="L6_link">
+			<inertial>
+				<origin xyz="0 0 0" rpy="0 0 0"/>
+				<mass value="0.819"/>
+				<inertia ixx="0.01" ixy="0" ixz="0" iyy="0.01" iyz="0" izz="0.01" />
+			</inertial>
+			
+			<visual>
+				<origin xyz="0 0 0" rpy="0 0 0" />
+				<geometry>
+					<mesh filename="../meshes/arm_6_link.stl" />
+				</geometry>
+				<material name="Schunk_LightGrey" />
+			</visual>
+			
+			<collision>
+				<origin xyz="0 0 0" rpy="0 0 0" />
+				<geometry>
+					<mesh filename="../meshes/arm_6_link.stl" />
+				</geometry>
+			</collision>
+		</link>
+
+
+
+</robot>

@@ -1,0 +1,41 @@
+<?xml version="1.0"?>
+<robot  name="lwa4d">
+
+	<link name="world" />
+
+	<!-- J0 -->
+	<joint name="L0_joint" type="fixed" >
+   		<origin  rpy="0 0 0" xyz="0 0 0" />
+		<parent link="world" />
+		<child link="L0_link" />
+	</joint>
+
+	<!-- L0 -->
+	<link name="L0_link">
+		<inertial>
+				<origin xyz="0 0 0" rpy="0 0 0"/>
+				<mass value="1.0"/>
+				<inertia ixx="0.01" ixy="0" ixz="0" iyy="0.01" iyz="0" izz="0.01" />
+			</inertial>
+
+			<visual>
+				<origin xyz="0 0 0.004" rpy="0 0 0" />
+				<geometry>
+					<cylinder radius="0.06" length="1.2"/>
+				</geometry>
+				<material name="Schunk_Black">
+					<color rgba="0.0 0.0 0.0 1.0"/>
+				</material>
+			</visual>
+
+			<collision>
+				<origin xyz="0 0 0.004" rpy="0 0 0" />
+				<geometry>
+					<cylinder radius="0.1" length="0.9"/>
+				</geometry>
+			</collision>
+		</link>
+
+
+
+</robot>

@@ -1,0 +1,22 @@
+<robot name="LWA4_table">
+  <link name="LWA4_table">
+    <inertial>
+      <origin xyz="0.0 0.0 0.0" rpy="0 0 0"/>
+      <mass value="5.0"/>
+      <inertia ixx="1" ixy="0.0" ixz="0.0" iyy="1" iyz="0.0" izz="1" />
+    </inertial>
+
+    <visual>
+      <geometry>
+        <mesh filename="../meshes/LWA4_table_title_MARKER.dae" scale="1 1 1" />
+      </geometry>
+     </visual>
+
+    <collision>
+      <geometry>
+        <mesh filename="../meshes/LWA4_table_title_MARKER.dae" scale="1 1 1" />
+      </geometry>
+    </collision>
+
+  </link>
+</robot>
