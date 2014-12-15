@@ -1,12 +1,10 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(apc_ros)
+project(apc_description)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-  roscpp
-  rospy
   std_msgs
 )
 
@@ -81,8 +79,8 @@ find_package(catkin REQUIRED COMPONENTS
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
 #  INCLUDE_DIRS include
-#  LIBRARIES apc_ros
-#  CATKIN_DEPENDS roscpp rospy std_msgs
+#  LIBRARIES apc_description
+#  CATKIN_DEPENDS std_msgs
 #  DEPENDS system_lib
 )
 
@@ -98,19 +96,19 @@ include_directories(
 )
 
 ## Declare a cpp library
-# add_library(apc_ros
-#   src/${PROJECT_NAME}/apc_ros.cpp
+# add_library(apc_description
+#   src/${PROJECT_NAME}/apc_description.cpp
 # )
 
 ## Declare a cpp executable
-# add_executable(apc_ros_node src/apc_ros_node.cpp)
+# add_executable(apc_description_node src/apc_description_node.cpp)
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
-# add_dependencies(apc_ros_node apc_ros_generate_messages_cpp)
+# add_dependencies(apc_description_node apc_description_generate_messages_cpp)
 
 ## Specify libraries to link a library or executable target against
-# target_link_libraries(apc_ros_node
+# target_link_libraries(apc_description_node
 #   ${catkin_LIBRARIES}
 # )
 
@@ -129,7 +127,7 @@ include_directories(
 # )
 
 ## Mark executables and/or libraries for installation
-# install(TARGETS apc_ros apc_ros_node
+# install(TARGETS apc_description apc_description_node
 #   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 #   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 #   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
@@ -154,7 +152,7 @@ include_directories(
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_apc_ros.cpp)
+# catkin_add_gtest(${PROJECT_NAME}-test test/test_apc_description.cpp)
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()

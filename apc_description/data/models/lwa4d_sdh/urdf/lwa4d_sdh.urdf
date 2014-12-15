@@ -24,7 +24,7 @@
 					<cylinder radius="0.045" length="0.08"/>
 				</geometry>
 				<material name="Schunk_LightGrey">
-					<color rgba="0.0 0.0 0.0 1.0"/>
+					<color rgba="0.7 0.7 0.7 1.0"/>
 				</material>
 			</visual>
 
@@ -58,7 +58,7 @@
 			<visual>
 				<origin xyz="0 0 0" rpy="0 0 0" />
 				<geometry>
-					<mesh filename="package://apc_ros/data/models/lwa4d/meshes/arm_1_link.stl" />
+					<mesh filename="package://apc_ros/data/models/lwa4d/meshes/arm_1_link.dae" />
 				</geometry>
 				<material name="Schunk_LightGrey">
 					<color rgba="0.7 0.7 0.7 1.0"/>
@@ -68,7 +68,7 @@
 			<collision>
 				<origin xyz="0 0 0" rpy="0 0 0" />
 				<geometry>
-					<mesh filename="package://apc_ros/data/models/lwa4d/meshes/arm_1_link.stl" />
+					<mesh filename="package://apc_ros/data/models/lwa4d/meshes/arm_1_link.dae" />
 				</geometry>
 			</collision>
 		</link>
@@ -94,15 +94,17 @@
 			<visual>
 				<origin xyz="0 0 0" rpy="0 0 0" />
 				<geometry>
-					<mesh filename="package://apc_ros/data/models/lwa4d/meshes/arm_2_link.stl" />
+					<mesh filename="package://apc_ros/data/models/lwa4d/meshes/arm_2_link.dae" />
 				</geometry>
-				<material name="Schunk_LightGrey" />
+				<material name="Schunk_Black">
+					<color rgba="0.0 0.0 0.0 1.0"/>
+				</material>
 			</visual>
 			
 			<collision>
 				<origin xyz="0 0 0" rpy="0 0 0" />
 				<geometry>
-					<mesh filename="package://apc_ros/data/models/lwa4d/meshes/arm_2_link.stl"/>
+					<mesh filename="package://apc_ros/data/models/lwa4d/meshes/arm_2_link.dae"/>
 				</geometry>
 			</collision>
 		</link>
@@ -128,7 +130,7 @@
 			<visual>
 				<origin xyz="0 0 0" rpy="0 0 0" />
 				<geometry>
-					<mesh filename="package://apc_ros/data/models/lwa4d/meshes/arm_3_link.stl" />
+					<mesh filename="package://apc_ros/data/models/lwa4d/meshes/arm_3_link.dae" />
 				</geometry>
 				<material name="Schunk_LightGrey" />
 			</visual>
@@ -136,7 +138,7 @@
 			<collision>
 				<origin xyz="0 0 0" rpy="0 0 0" />
 				<geometry>
-					<mesh filename="package://apc_ros/data/models/lwa4d/meshes/arm_3_link.stl"/>
+					<mesh filename="package://apc_ros/data/models/lwa4d/meshes/arm_3_link.dae"/>
 				</geometry>
 			</collision>
 		</link>	
@@ -162,15 +164,17 @@
 			<visual>
 				<origin xyz="0 0 0" rpy="0 0 0" />
 				<geometry>
-					<mesh filename="package://apc_ros/data/models/lwa4d/meshes/arm_4_link.stl" />
+					<mesh filename="package://apc_ros/data/models/lwa4d/meshes/arm_4_link.dae" />
 				</geometry>
-				<material name="Schunk_LightGrey" />
+				<material name="Schunk_Black">
+					<color rgba="0.0 0.0 0.0 1.0"/>
+				</material>
 			</visual>
 			
 			<collision>
 				<origin xyz="0 0 0" rpy="0 0 0" />
 				<geometry>
-					<mesh filename="package://apc_ros/data/models/lwa4d/meshes/arm_4_link.stl"/>
+					<mesh filename="package://apc_ros/data/models/lwa4d/meshes/arm_4_link.dae"/>
 				</geometry>
 			</collision>
 		</link>
@@ -196,7 +200,7 @@
 			<visual>
 				<origin xyz="0 0 0" rpy="0 0 0" />
 				<geometry>
-					<mesh filename="package://apc_ros/data/models/lwa4d/meshes/arm_5_link.stl" />
+					<mesh filename="package://apc_ros/data/models/lwa4d/meshes/arm_5_link.dae" />
 				</geometry>
 				<material name="Schunk_LightGrey" />
 			</visual>
@@ -204,7 +208,7 @@
 			<collision>
 				<origin xyz="0 0 0" rpy="0 0 0" />
 				<geometry>
-					<mesh filename="package://apc_ros/data/models/lwa4d/meshes/arm_5_link.stl"/>
+					<mesh filename="package://apc_ros/data/models/lwa4d/meshes/arm_5_link.dae"/>
 				</geometry>
 			</collision>
 		</link>
@@ -230,15 +234,17 @@
 			<visual>
 				<origin xyz="0 0 0" rpy="0 0 0" />
 				<geometry>
-					<mesh filename="package://apc_ros/data/models/lwa4d/meshes/arm_6_link.stl" />
+					<mesh filename="package://apc_ros/data/models/lwa4d/meshes/arm_6_link.dae" />
 				</geometry>
-				<material name="Schunk_LightGrey" />
+				<material name="Schunk_Black">
+					<color rgba="0.0 0.0 0.0 1.0"/>
+				</material>
 			</visual>
 			
 			<collision>
 				<origin xyz="0 0 0" rpy="0 0 0" />
 				<geometry>
-					<mesh filename="package://apc_ros/data/models/lwa4d/meshes/arm_6_link.stl"/>
+					<mesh filename="package://apc_ros/data/models/lwa4d/meshes/arm_6_link.dae"/>
 				</geometry>
 			</collision>
 		</link>
@@ -264,7 +270,7 @@
 			<visual>
 				<origin xyz="0 0 0" rpy="0 0 0" />
 				<geometry>
-					<mesh filename="package://apc_ros/data/models/lwa4d/meshes/arm_7_link.stl" />
+					<mesh filename="package://apc_ros/data/models/lwa4d/meshes/arm_7_link.dae" />
 				</geometry>
 				<material name="Schunk_LightGrey" />
 			</visual>
@@ -272,13 +278,13 @@
 			<collision>
 				<origin xyz="0 0 0" rpy="0 0 0" />
 				<geometry>
-					<mesh filename="package://apc_ros/data/models/lwa4d/meshes/arm_7_link.stl"/>
+					<mesh filename="package://apc_ros/data/models/lwa4d/meshes/arm_7_link.dae"/>
 				</geometry>
 			</collision>
 		</link>
 
 		<!-- joint between L7_link and sdh_palm_link -->
-		<joint name="palm_joint" type="fixed" >
+		<joint name="palm_joint" type="fixed" >?
 			<origin xyz="0 0 -0.00" rpy="0 3.1416 0"/>
 			<parent link="L7_link" />
 			<child link="palm_link" />
@@ -330,7 +336,7 @@
 		<!-- finger1 -->
 		<!-- joint between sdh_palm_link and sdh_finger_11_link -->
 		<joint name="knuckle_joint" type="revolute">
-			<origin xyz="0.01905 0.033 0.0745" rpy="0 0 3.14159265" />
+			<origin xyz=" 0.033 -0.01905 0.0745" rpy="0 0 1.5708" />
 			<parent link="palm_link"/>
 			<child link="finger_11_link"/>
 			<axis xyz="0 0 1" />
@@ -432,7 +438,7 @@
 		<!-- joint between sdh_palm_link and sdh_finger_21_link -->
 		<joint name="finger_21_joint" type="revolute">
 			<mimic joint="knuckle_joint" multiplier="1" offset="0"/>
-			<origin xyz="0.01905 -0.033 0.0745" rpy="0 0 3.14159265" />
+			<origin xyz="-0.033 -0.01905 0.0745" rpy="0 0 1.5708" />
 			<parent link="palm_link"/>
 			<child link="finger_21_link"/>
 			<axis xyz="0 0 -1" />
@@ -532,7 +538,7 @@
 		<!-- thumb -->
 		<!-- joint between sdh_palm_link and sdh_thumb_1_link -->
 		<joint name="thumb_1_joint" type="fixed">
-			<origin xyz="-0.03811 0 0.0745 " rpy="0 0 0" />
+			<origin xyz="0.0 0.03811 0.0745 " rpy="0 0 -1.5708" />
 			<parent link="palm_link"/>
 			<child link="thumb_1_link"/>
 		</joint>

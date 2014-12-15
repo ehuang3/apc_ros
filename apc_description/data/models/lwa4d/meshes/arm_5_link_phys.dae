@@ -7,7 +7,7 @@
     </contributor>
     <created>2014-07-06T12:25:13</created>
     <modified>2014-07-06T12:25:13</modified>
-    <unit name="centimeter" meter="0.01"/>
+    <!-- <unit name="centimeter" meter="0.01"/> -->
     <up_axis>Z_UP</up_axis>
   </asset>
   <library_cameras>

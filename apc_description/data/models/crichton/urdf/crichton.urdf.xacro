@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<robot name="crichton" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+    <!-- Include SCHUNK decriptions for LWA4 and SDH -->
+    <xacro:include filename="$(find schunk_description)/schunk_description/urdf/lwa4d/lwa4d.urdf.xacro" />
+    <xacro:include filename="$(find schunk_description)/schunk_description/urdf/sdh/sdh.urdf.xacro"     />
+
+    <!-- Assemble Crichton -->
+    
+
+</robot>
