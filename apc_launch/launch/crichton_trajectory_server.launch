@@ -1,0 +1,23 @@
+<launch>
+    <!-- Crichton trajectory servers -->
+    <node name="crichton_left_arm_trajectory_server" pkg="apc_control" type="apc_arm_trajectory_node" respawn="false"
+	      output="screen">
+        <param name="topic" value="/crichton/left_arm/controller" />
+    </node>
+
+    <node name="crichton_right_arm_trajectory_server" pkg="apc_control" type="apc_arm_trajectory_node" respawn="false"
+	      output="screen">
+        <param name="topic" value="/crichton/right_arm/controller" />
+    </node>
+
+    <node name="crichton_left_hand_trajectory_server" pkg="apc_control" type="apc_gripper_trajectory_node" respawn="false"
+	      output="screen">
+        <param name="topic" value="/crichton/left_hand/controller" />
+    </node>
+
+    <node name="crichton_right_hand_trajectory_server" pkg="apc_control" type="apc_gripper_trajectory_node" respawn="false"
+	      output="screen">
+        <param name="topic" value="/crichton/right_hand/controller" />
+    </node>
+
+</launch>

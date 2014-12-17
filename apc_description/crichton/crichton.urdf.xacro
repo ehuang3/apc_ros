@@ -9,17 +9,17 @@
     <xacro:property name="M_PI" value="3.141592653" />
 
     <!-- World origin. -->
-    <link name="world" />
+    <link name="crichton_origin" />
 
     <!-- Assemble Crichton arms -->
     <xacro:macro name="crichton_arm_origin" params="side" >
         <origin xyz="0 ${side * 0.05} 0" rpy="${-side * M_PI / 2} ${(1+side) * M_PI / 2} 0" />
     </xacro:macro>
-    <xacro:schunk_lwa4d parent="world" name="crichton_left"
+    <xacro:schunk_lwa4d parent="crichton_origin" name="crichton_left"
                         arm_1_ref="0" arm_2_ref="0" arm_3_ref="0" arm_4_ref="0" arm_5_ref="0" arm_6_ref="0" arm_7_ref="0">
         <xacro:crichton_arm_origin side="1" />
     </xacro:schunk_lwa4d>
-    <xacro:schunk_lwa4d parent="world" name="crichton_right"
+    <xacro:schunk_lwa4d parent="crichton_origin" name="crichton_right"
                         arm_1_ref="0" arm_2_ref="0" arm_3_ref="0" arm_4_ref="0" arm_5_ref="0" arm_6_ref="0" arm_7_ref="0">
         <xacro:crichton_arm_origin side="-1" />
     </xacro:schunk_lwa4d>

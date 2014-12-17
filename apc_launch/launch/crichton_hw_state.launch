@@ -1,0 +1,40 @@
+<launch>
+
+    <!-- State accumulator -->
+    <node name="crichton_hw_state" pkg="joint_state_publisher" type="joint_state_publisher">
+        <param name="/use_gui" value="false"/>
+        <rosparam param="/source_list">
+            [/crichton/left_arm/joint_states,/crichton/right_arm/joint_states,/crichton/left_hand/joint_states,/crichton/right_hand/joint_states]
+        </rosparam>
+    </node>
+
+    <!-- Crichton states -->
+    <node name="crichton_left_arm_hw_state" pkg="apc_control" type="apc_arm_state_publisher" respawn="false"
+	      output="screen">
+        <param name="topic"   value="/crichton/left_arm/joint_states" />
+        <param name="side"    value="left" />
+        <param name="channel" value="state-left" />
+    </node>
+
+    <node name="crichton_right_arm_hw_state" pkg="apc_control" type="apc_arm_state_publisher" respawn="false"
+	      output="screen">
+        <param name="topic" value="/crichton/right_arm/joint_states" />
+        <param name="side"    value="right" />
+        <param name="channel" value="state-right" />
+    </node>
+
+    <node name="crichton_left_hand_hw_state" pkg="apc_control" type="apc_gripper_state_publisher" respawn="false"
+	      output="screen">
+        <param name="topic" value="/crichton/left_hand/joint_states" />
+        <param name="side"    value="left" />
+        <param name="channel" value="sdhstate-left" />
+    </node>
+
+    <node name="crichton_right_hand_hw_state" pkg="apc_control" type="apc_gripper_state_publisher" respawn="false"
+	      output="screen">
+        <param name="topic" value="/crichton/right_hand/joint_states" />
+        <param name="side"    value="right" />
+        <param name="channel" value="sdhstate-right" />
+    </node>
+
+</launch>

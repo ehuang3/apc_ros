@@ -1,0 +1,154 @@
+# joint_limits.yaml allows the dynamics properties specified in the URDF to be overwritten or augmented as needed
+# Specific joint properties can be changed with the keys [max_position, min_position, max_velocity, max_acceleration]
+# Joint limits can be turned off with [has_velocity_limits, has_acceleration_limits]
+joint_limits:
+  crichton_left_1_joint:
+    has_velocity_limits: true
+    max_velocity: 0.43633
+    has_acceleration_limits: false
+    max_acceleration: 0
+  crichton_left_2_joint:
+    has_velocity_limits: true
+    max_velocity: 0.43633
+    has_acceleration_limits: false
+    max_acceleration: 0
+  crichton_left_3_joint:
+    has_velocity_limits: true
+    max_velocity: 0.4189
+    has_acceleration_limits: false
+    max_acceleration: 0
+  crichton_left_4_joint:
+    has_velocity_limits: true
+    max_velocity: 0.4189
+    has_acceleration_limits: false
+    max_acceleration: 0
+  crichton_left_5_joint:
+    has_velocity_limits: true
+    max_velocity: 0.43633
+    has_acceleration_limits: false
+    max_acceleration: 0
+  crichton_left_6_joint:
+    has_velocity_limits: true
+    max_velocity: 1.2566
+    has_acceleration_limits: false
+    max_acceleration: 0
+  crichton_left_7_joint:
+    has_velocity_limits: true
+    max_velocity: 1.2566
+    has_acceleration_limits: false
+    max_acceleration: 0
+  crichton_left_finger_12_joint:
+    has_velocity_limits: true
+    max_velocity: 5
+    has_acceleration_limits: false
+    max_acceleration: 0
+  crichton_left_finger_13_joint:
+    has_velocity_limits: true
+    max_velocity: 5
+    has_acceleration_limits: false
+    max_acceleration: 0
+  crichton_left_finger_21_joint:
+    has_velocity_limits: true
+    max_velocity: 5
+    has_acceleration_limits: false
+    max_acceleration: 0
+  crichton_left_finger_22_joint:
+    has_velocity_limits: true
+    max_velocity: 5
+    has_acceleration_limits: false
+    max_acceleration: 0
+  crichton_left_finger_23_joint:
+    has_velocity_limits: true
+    max_velocity: 5
+    has_acceleration_limits: false
+    max_acceleration: 0
+  crichton_left_knuckle_joint:
+    has_velocity_limits: true
+    max_velocity: 5
+    has_acceleration_limits: false
+    max_acceleration: 0
+  crichton_left_thumb_2_joint:
+    has_velocity_limits: true
+    max_velocity: 5
+    has_acceleration_limits: false
+    max_acceleration: 0
+  crichton_left_thumb_3_joint:
+    has_velocity_limits: true
+    max_velocity: 5
+    has_acceleration_limits: false
+    max_acceleration: 0
+  crichton_right_1_joint:
+    has_velocity_limits: true
+    max_velocity: 0.43633
+    has_acceleration_limits: false
+    max_acceleration: 0
+  crichton_right_2_joint:
+    has_velocity_limits: true
+    max_velocity: 0.43633
+    has_acceleration_limits: false
+    max_acceleration: 0
+  crichton_right_3_joint:
+    has_velocity_limits: true
+    max_velocity: 0.4189
+    has_acceleration_limits: false
+    max_acceleration: 0
+  crichton_right_4_joint:
+    has_velocity_limits: true
+    max_velocity: 0.4189
+    has_acceleration_limits: false
+    max_acceleration: 0
+  crichton_right_5_joint:
+    has_velocity_limits: true
+    max_velocity: 0.43633
+    has_acceleration_limits: false
+    max_acceleration: 0
+  crichton_right_6_joint:
+    has_velocity_limits: true
+    max_velocity: 1.2566
+    has_acceleration_limits: false
+    max_acceleration: 0
+  crichton_right_7_joint:
+    has_velocity_limits: true
+    max_velocity: 1.2566
+    has_acceleration_limits: false
+    max_acceleration: 0
+  crichton_right_finger_12_joint:
+    has_velocity_limits: true
+    max_velocity: 5
+    has_acceleration_limits: false
+    max_acceleration: 0
+  crichton_right_finger_13_joint:
+    has_velocity_limits: true
+    max_velocity: 5
+    has_acceleration_limits: false
+    max_acceleration: 0
+  crichton_right_finger_21_joint:
+    has_velocity_limits: true
+    max_velocity: 5
+    has_acceleration_limits: false
+    max_acceleration: 0
+  crichton_right_finger_22_joint:
+    has_velocity_limits: true
+    max_velocity: 5
+    has_acceleration_limits: false
+    max_acceleration: 0
+  crichton_right_finger_23_joint:
+    has_velocity_limits: true
+    max_velocity: 5
+    has_acceleration_limits: false
+    max_acceleration: 0
+  crichton_right_knuckle_joint:
+    has_velocity_limits: true
+    max_velocity: 5
+    has_acceleration_limits: false
+    max_acceleration: 0
+  crichton_right_thumb_2_joint:
+    has_velocity_limits: true
+    max_velocity: 5
+    has_acceleration_limits: false
+    max_acceleration: 0
+  crichton_right_thumb_3_joint:
+    has_velocity_limits: true
+    max_velocity: 5
+    has_acceleration_limits: false
+    max_acceleration: 0
