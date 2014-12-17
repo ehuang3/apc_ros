@@ -1,0 +1,57 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+	<xacro:macro name="schunk_lwa4d_torso" params="parent name *origin">
+
+		<joint name="${name}_base_joint" type="fixed">
+			<xacro:insert_block name="origin"/>
+			<parent link="${parent}" />
+			<child  link="${name}_vertical_support" />
+		</joint>
+		
+		<link name="${name}_vertical_support">
+			<inertial>
+				<origin xyz="0.0 0.0 0.0" rpy="0 0 0"/>
+				<mass value="5.0"/>
+				<inertia ixx="1" ixy="0.0" ixz="0.0" iyy="1" iyz="0.0" izz="1" />
+			</inertial>
+			<visual>
+				<geometry>
+					<mesh filename="package://apc_description/meshes/vertical_support.dae" scale="1 1 1" />
+				</geometry>
+			</visual>
+			<collision>
+				<geometry>
+					<mesh filename="package://apc_description/meshes/vertical_support.dae" scale="1 1 1" />
+				</geometry>
+			</collision>
+		</link>
+
+		<!-- TODO Turn into revolute joint -->
+		<joint name="${name}_torso_joint" type="fixed">
+			<origin xyz="0 0 1.23" rpy="0 0 0" />
+			<parent link="${name}_vertical_support" />
+			<child  link="${name}_middle_support" />
+		</joint>
+
+		<link name="${name}_middle_support">
+			<inertial>
+				<origin xyz="0.0 0.0 0.0" rpy="0 0 0"/>
+				<mass value="5.0"/>
+				<inertia ixx="1" ixy="0.0" ixz="0.0" iyy="1" iyz="0.0" izz="1" />
+			</inertial>
+			<visual>
+				<geometry>
+					<mesh filename="package://apc_description/meshes/middle_support.dae" scale="1 1 1" />
+				</geometry>
+			</visual>
+			<collision>
+				<geometry>
+					<mesh filename="package://apc_description/meshes/middle_support.dae" scale="1 1 1" />
+				</geometry>
+			</collision>
+		</link>
+
+	</xacro:macro>
+
+</robot>

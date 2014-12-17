@@ -1,0 +1,43 @@
+<?xml version="1.0"?>
+<robot name="crichton" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+    <!-- Include APC decriptions for LWA4 and SDH -->
+    <xacro:include filename="$(find apc_description)/urdf/lwa4d_torso/lwa4d_torso.urdf.xacro"/>
+    <xacro:include filename="$(find apc_description)/urdf/lwa4d/lwa4d.urdf.xacro" />
+    <xacro:include filename="$(find apc_description)/urdf/sdh/sdh.urdf.xacro"     />
+    <xacro:include filename="$(find apc_description)/urdf/materials.urdf.xacro"   />
+
+    <!-- Math constants -->
+    <xacro:property name="M_PI" value="3.141592653" />
+
+    <!-- Crichton origin. -->
+    <link name="crichton_origin" />
+
+    <!-- Assemble Crichton torso -->
+    <xacro:schunk_lwa4d_torso parent="crichton_origin" name="crichton" >
+        <origin xyz="0 0 0" rpy="0 0 0" />
+    </xacro:schunk_lwa4d_torso>
+
+    <!-- Assemble Crichton arms -->
+    <xacro:macro name="crichton_arm_origin" params="side" >
+        <origin xyz="0 0 0" rpy="0 0 ${(1 + side) * M_PI / 2.0}" />
+    </xacro:macro>
+    <xacro:schunk_lwa4d parent="crichton_middle_support" name="crichton_left">
+        <xacro:crichton_arm_origin side="1" />
+    </xacro:schunk_lwa4d>
+    <xacro:schunk_lwa4d parent="crichton_middle_support" name="crichton_right">
+        <xacro:crichton_arm_origin side="-1" />
+    </xacro:schunk_lwa4d>
+
+    <!-- Assemble Crichton hands -->
+    <xacro:macro name="sdh_origin" >
+        <origin xyz="0 0 0.1" rpy="0 0 0" />
+    </xacro:macro>
+    <xacro:schunk_sdh parent="crichton_left_7_link" name="crichton_left" >
+        <xacro:sdh_origin />
+    </xacro:schunk_sdh>
+    <xacro:schunk_sdh parent="crichton_right_7_link" name="crichton_right" >
+        <xacro:sdh_origin />
+    </xacro:schunk_sdh>
+
+</robot>
