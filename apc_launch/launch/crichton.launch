@@ -4,6 +4,6 @@
     <include file="$(find apc_launch)/launch/crichton_hw_state.launch" />
 
     <!-- Trajectory and gripper command servers for Crichton -->
-    <!-- <include file="$(find apc_launch)/launch/crichton_trajectory_server.launch" /> -->
+    <include file="$(find apc_launch)/launch/crichton_trajectory_server.launch" />
 
 </launch>

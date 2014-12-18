@@ -12,7 +12,7 @@ ach_channel_t chan_path;
 
 void execute(const control_msgs::FollowJointTrajectoryGoalConstPtr& goal, Server* as)
 {
-	// std::cout << goal->trajectory << std::endl;
+	std::cout << goal->trajectory << std::endl;
 
 	// Get the number of dofs.
 	const int num_dofs = goal->trajectory.joint_names.size();
@@ -30,16 +30,17 @@ void execute(const control_msgs::FollowJointTrajectoryGoalConstPtr& goal, Server
 	int counter = 0;
 	for (int i = 0; i < num_steps; i++)
 	{
-		for (int j = 0; i < num_dofs; j++)
+		for (int j = 0; j < num_dofs; j++)
 		{
-			msg->x[counter] = goal->trajectory.points[i].positions[j];
+			msg->x[counter++] = goal->trajectory.points[i].positions[j];
 		}
 	}
 
 	// Send the trajectory.
-	ach_status_t r = ach_put( &chan_path, msg, sns_msg_path_dense_size(msg) );
+	ach_status_t r;
+	r = ach_put( &chan_path, msg, sns_msg_path_dense_size(msg) );
 
-	// Set success.
+	// set success.
 	if (r == ACH_OK)
 		as->setSucceeded();
 
@@ -52,12 +53,12 @@ int main(int argc, char** argv)
 {
 	sns_init();
 
-	ros::init(argc, argv, "APC Arm Trajectory Server");
+	ros::init(argc, argv, "apc_arm_trajectory_node");
 	ros::NodeHandle n("~");
-	std::string topic = "";
+	std::string topic = "/crichton/left_arm/controller";
 	n.getParam("topic", topic);
 
-	std::string chan_name;
+	std::string chan_name = "ref-left";
 	n.getParam("channel", chan_name);
 
 	sns_chan_open( &chan_path,  chan_name.c_str(),  NULL );

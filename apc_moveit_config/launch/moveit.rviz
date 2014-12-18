@@ -10,7 +10,11 @@ Panels:
         - /MotionPlanning1
         - /MotionPlanning1/Scene Robot1
         - /MotionPlanning1/Planning Request1
-      Splitter Ratio: 0.74256
+        - /MotionPlanning1/Planned Path1
+        - /TF1
+        - /TF1/Frames1
+        - /TF1/Tree1
+      Splitter Ratio: 0.486441
     Tree Height: 522
   - Class: rviz/Help
     Name: Help
@@ -527,157 +531,19 @@ Visualization Manager:
         Show Robot Visual: true
       Value: true
     - Class: rviz/TF
-      Enabled: true
+      Enabled: false
       Frame Timeout: 15
       Frames:
-        All Enabled: true
-        crichton_left_0_link:
-          Value: true
-        crichton_left_1_link:
-          Value: true
-        crichton_left_2_link:
-          Value: true
-        crichton_left_3_link:
-          Value: true
-        crichton_left_4_link:
-          Value: true
-        crichton_left_5_link:
-          Value: true
-        crichton_left_6_link:
-          Value: true
-        crichton_left_7_link:
-          Value: true
-        crichton_left_finger_11_link:
-          Value: true
-        crichton_left_finger_12_link:
-          Value: true
-        crichton_left_finger_13_link:
-          Value: true
-        crichton_left_finger_21_link:
-          Value: true
-        crichton_left_finger_22_link:
-          Value: true
-        crichton_left_finger_23_link:
-          Value: true
-        crichton_left_grasp_link:
-          Value: true
-        crichton_left_palm_link:
-          Value: true
-        crichton_left_thumb_1_link:
-          Value: true
-        crichton_left_thumb_2_link:
-          Value: true
-        crichton_left_thumb_3_link:
-          Value: true
-        crichton_left_tip_link:
-          Value: true
-        crichton_middle_support:
-          Value: true
-        crichton_origin:
-          Value: true
-        crichton_right_0_link:
-          Value: true
-        crichton_right_1_link:
-          Value: true
-        crichton_right_2_link:
-          Value: true
-        crichton_right_3_link:
-          Value: true
-        crichton_right_4_link:
-          Value: true
-        crichton_right_5_link:
-          Value: true
-        crichton_right_6_link:
-          Value: true
-        crichton_right_7_link:
-          Value: true
-        crichton_right_finger_11_link:
-          Value: true
-        crichton_right_finger_12_link:
-          Value: true
-        crichton_right_finger_13_link:
-          Value: true
-        crichton_right_finger_21_link:
-          Value: true
-        crichton_right_finger_22_link:
-          Value: true
-        crichton_right_finger_23_link:
-          Value: true
-        crichton_right_grasp_link:
-          Value: true
-        crichton_right_palm_link:
-          Value: true
-        crichton_right_thumb_1_link:
-          Value: true
-        crichton_right_thumb_2_link:
-          Value: true
-        crichton_right_thumb_3_link:
-          Value: true
-        crichton_right_tip_link:
-          Value: true
-        crichton_vertical_support:
-          Value: true
+        All Enabled: false
       Marker Scale: 0.2
       Name: TF
       Show Arrows: true
       Show Axes: true
       Show Names: true
       Tree:
-        crichton_origin:
-          crichton_vertical_support:
-            crichton_middle_support:
-              crichton_left_0_link:
-                crichton_left_1_link:
-                  crichton_left_2_link:
-                    crichton_left_3_link:
-                      crichton_left_4_link:
-                        crichton_left_5_link:
-                          crichton_left_6_link:
-                            crichton_left_7_link:
-                              crichton_left_palm_link:
-                                crichton_left_finger_11_link:
-                                  crichton_left_finger_12_link:
-                                    crichton_left_finger_13_link:
-                                      {}
-                                crichton_left_finger_21_link:
-                                  crichton_left_finger_22_link:
-                                    crichton_left_finger_23_link:
-                                      {}
-                                crichton_left_grasp_link:
-                                  {}
-                                crichton_left_thumb_1_link:
-                                  crichton_left_thumb_2_link:
-                                    crichton_left_thumb_3_link:
-                                      {}
-                                crichton_left_tip_link:
-                                  {}
-              crichton_right_0_link:
-                crichton_right_1_link:
-                  crichton_right_2_link:
-                    crichton_right_3_link:
-                      crichton_right_4_link:
-                        crichton_right_5_link:
-                          crichton_right_6_link:
-                            crichton_right_7_link:
-                              crichton_right_palm_link:
-                                crichton_right_finger_11_link:
-                                  crichton_right_finger_12_link:
-                                    crichton_right_finger_13_link:
-                                      {}
-                                crichton_right_finger_21_link:
-                                  crichton_right_finger_22_link:
-                                    crichton_right_finger_23_link:
-                                      {}
-                                crichton_right_grasp_link:
-                                  {}
-                                crichton_right_thumb_1_link:
-                                  crichton_right_thumb_2_link:
-                                    crichton_right_thumb_3_link:
-                                      {}
-                                crichton_right_tip_link:
-                                  {}
+        {}
       Update Interval: 0
-      Value: true
+      Value: false
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -693,22 +559,22 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/XYOrbit
-      Distance: 3.51884
+      Distance: 3.37932
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.06
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: -0.426223
-        Y: -0.0159211
-        Z: -1.86398e-06
+        X: -0.0763285
+        Y: 0.00267288
+        Z: -7.91091e-07
       Name: Current View
       Near Clip Distance: 0.01
-      Pitch: 0.909792
+      Pitch: 0.67479
       Target Frame: crichton_origin
       Value: XYOrbit (rviz)
-      Yaw: 3.51806
+      Yaw: 4.16806
     Saved: ~
 Window Geometry:
   Displays:
@@ -720,9 +586,9 @@ Window Geometry:
   Hide Right Dock: false
   Motion Planning:
     collapsed: false
-  QMainWindow State: 000000ff00000000fd0000000100000000000002a200000448fc0200000006fb000000100044006900730070006c00610079007301000000360000029b000000b700fffffffb0000000800480065006c00700000000342000000bb0000006500fffffffb0000000a0056006900650077007300000003b0000000b00000009b00fffffffb0000000c00430061006d00650072006100000002ff000001610000000000000000fb0000001e004d006f00740069006f006e00200050006c0061006e006e0069006e006701000002d7000001a70000016000fffffffb0000000800480065006c007000000003cd000000b10000006500ffffff000004d40000044800000001000000020000000100000002fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  QMainWindow State: 000000ff00000000fd00000001000000000000027100000448fc0200000006fb000000100044006900730070006c00610079007301000000360000029b000000b700fffffffb0000000800480065006c00700000000342000000bb0000006500fffffffb0000000a0056006900650077007300000003b0000000b00000009b00fffffffb0000000c00430061006d00650072006100000002ff000001610000000000000000fb0000001e004d006f00740069006f006e00200050006c0061006e006e0069006e006701000002d7000001a70000016000fffffffb0000000800480065006c007000000003cd000000b10000006500ffffff0000013f0000044800000001000000020000000100000002fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
   Views:
     collapsed: false
-  Width: 1916
-  X: 0
+  Width: 950
+  X: 1920
   Y: 20

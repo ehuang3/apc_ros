@@ -80,7 +80,7 @@ int main(int argc, char** argv)
 	sns_start();
 
 	// TODO Find a better polling method.
-	ros::Rate rate(10);
+	ros::Rate rate(30);
 	rate.sleep();
 	while (ros::ok())
 	{
