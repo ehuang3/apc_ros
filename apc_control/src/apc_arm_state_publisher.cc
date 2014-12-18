@@ -41,6 +41,8 @@ int main(int argc, char** argv)
 	std::string chan_name = "state-left";
 	n.getParam("channel", chan_name);
 
+	std::cout << chan_name << std::endl;
+
 	// Create state publisher.
 	state_publisher = n.advertise<sensor_msgs::JointState>(topic, 1);
 
@@ -114,7 +116,7 @@ int main(int argc, char** argv)
 			// assert(frame_size == sns_motor_state_size_n( (uint32_t) (*msg)->header.n )); // FIXME Why won't this compile?
 
 			// Publish motor state message as JointState.
-			// joint_state_msg.header.stamp = ros::Time::now();
+			joint_state_msg.header.stamp = ros::Time::now();
 
 			// Fill out joint state positions, velocities, and efforts.
 			for (int i = 0; i < msg->header.n; i++)

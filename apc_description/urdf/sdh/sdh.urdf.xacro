@@ -7,8 +7,8 @@
 	<xacro:macro name="schunk_sdh" params="parent name *origin">
 
 		<!-- joint between arm_7_link and sdh_palm_link -->
-		<joint name="${name}_palm_joint" type="floating" >
-			<origin xyz="0 0 0" rpy="0 0 0"/>
+		<joint name="${name}_palm_joint" type="fixed" >
+			<origin xyz="0 0 0" rpy="0 ${M_PI} ${- M_PI / 6}"/>
 			<parent link="${parent}" />
 			<child link="${name}_palm_link" />
 		</joint>
@@ -160,7 +160,7 @@
 		<!-- finger2 -->
 		<!-- joint between sdh_palm_link and sdh_finger_21_link -->
 		<joint name="${name}_finger_21_joint" type="revolute">
-			<mimic joint="knuckle_joint" multiplier="1" offset="0"/>
+			<mimic joint="${name}_knuckle_joint" multiplier="1" offset="0"/>
 			<origin xyz="-0.033 -0.01905 0.0745" rpy="0 0 1.5708" />
 			<parent link="${name}_palm_link"/>
 			<child link="${name}_finger_21_link"/>

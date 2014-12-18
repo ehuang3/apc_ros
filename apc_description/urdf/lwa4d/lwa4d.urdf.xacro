@@ -82,7 +82,7 @@
 			<visual>
 				<origin xyz="0 0 0" rpy="0 0 0" />
 				<geometry>
-					<mesh filename="package://apc_description/lwa4d/meshes/arm_2_link.dae" />
+					<mesh filename="package://apc_description/meshes/lwa4d/arm_2_link.dae" />
 				</geometry>
 				<material name="Schunk_Black" />
 			</visual>
@@ -223,7 +223,7 @@
 		</link>
 
 	    <!-- J0 -->
-	    <joint name="${name}_0_joint" type="floating" >
+	    <joint name="${name}_0_joint" type="fixed" >
             <xacro:insert_block name="origin"/>
 		    <parent link="${parent}" />
 		    <child link="${name}_0_link" />

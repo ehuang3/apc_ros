@@ -4,37 +4,37 @@
 joint_limits:
   crichton_left_1_joint:
     has_velocity_limits: true
-    max_velocity: 0.43633
+    max_velocity: 2
     has_acceleration_limits: false
     max_acceleration: 0
   crichton_left_2_joint:
     has_velocity_limits: true
-    max_velocity: 0.43633
+    max_velocity: 2
     has_acceleration_limits: false
     max_acceleration: 0
   crichton_left_3_joint:
     has_velocity_limits: true
-    max_velocity: 0.4189
+    max_velocity: 2
     has_acceleration_limits: false
     max_acceleration: 0
   crichton_left_4_joint:
     has_velocity_limits: true
-    max_velocity: 0.4189
+    max_velocity: 2
     has_acceleration_limits: false
     max_acceleration: 0
   crichton_left_5_joint:
     has_velocity_limits: true
-    max_velocity: 0.43633
+    max_velocity: 2
     has_acceleration_limits: false
     max_acceleration: 0
   crichton_left_6_joint:
     has_velocity_limits: true
-    max_velocity: 1.2566
+    max_velocity: 2
     has_acceleration_limits: false
     max_acceleration: 0
   crichton_left_7_joint:
     has_velocity_limits: true
-    max_velocity: 1.2566
+    max_velocity: 2
     has_acceleration_limits: false
     max_acceleration: 0
   crichton_left_finger_12_joint:
@@ -79,37 +79,37 @@ joint_limits:
     max_acceleration: 0
   crichton_right_1_joint:
     has_velocity_limits: true
-    max_velocity: 0.43633
+    max_velocity: 2
     has_acceleration_limits: false
     max_acceleration: 0
   crichton_right_2_joint:
     has_velocity_limits: true
-    max_velocity: 0.43633
+    max_velocity: 2
     has_acceleration_limits: false
     max_acceleration: 0
   crichton_right_3_joint:
     has_velocity_limits: true
-    max_velocity: 0.4189
+    max_velocity: 2
     has_acceleration_limits: false
     max_acceleration: 0
   crichton_right_4_joint:
     has_velocity_limits: true
-    max_velocity: 0.4189
+    max_velocity: 2
     has_acceleration_limits: false
     max_acceleration: 0
   crichton_right_5_joint:
     has_velocity_limits: true
-    max_velocity: 0.43633
+    max_velocity: 2
     has_acceleration_limits: false
     max_acceleration: 0
   crichton_right_6_joint:
     has_velocity_limits: true
-    max_velocity: 1.2566
+    max_velocity: 2
     has_acceleration_limits: false
     max_acceleration: 0
   crichton_right_7_joint:
     has_velocity_limits: true
-    max_velocity: 1.2566
+    max_velocity: 2
     has_acceleration_limits: false
     max_acceleration: 0
   crichton_right_finger_12_joint:

@@ -52,13 +52,13 @@ int main(int argc, char** argv)
 
 	// Joint names.
 	std::vector<std::string> joint_names;
+    joint_names.push_back("knuckle_joint");
 	joint_names.push_back("finger_22_joint");
     joint_names.push_back("finger_23_joint");
-    joint_names.push_back("knuckle_joint");
-    joint_names.push_back("finger_12_joint");
-    joint_names.push_back("finger_13_joint");
     joint_names.push_back("thumb_2_joint");
     joint_names.push_back("thumb_3_joint");
+    joint_names.push_back("finger_12_joint");
+    joint_names.push_back("finger_13_joint");
 
 	// Fill out joint state names.
 	for (int i = 1; i <= 7; i++)

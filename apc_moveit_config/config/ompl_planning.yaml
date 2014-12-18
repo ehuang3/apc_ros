@@ -65,8 +65,6 @@ crichton_left_arm:
     - TRRTkConfigDefault
     - PRMkConfigDefault
     - PRMstarkConfigDefault
-  projection_evaluator: joints(crichton_left_1_joint,crichton_left_2_joint)
-  longest_valid_segment_fraction: 0.05
 crichton_right_arm:
   planner_configs:
     - SBLkConfigDefault
@@ -80,8 +78,6 @@ crichton_right_arm:
     - TRRTkConfigDefault
     - PRMkConfigDefault
     - PRMstarkConfigDefault
-  projection_evaluator: joints(crichton_right_1_joint,crichton_right_2_joint)
-  longest_valid_segment_fraction: 0.05
 crichton_left_hand:
   planner_configs:
     - SBLkConfigDefault

@@ -1,8 +1,8 @@
 moveit_setup_assistant_config:
   URDF:
     package: apc_description
-    relative_path: crichton/crichton.urdf.xacro
+    relative_path: urdf/crichton/crichton.urdf.xacro
   SRDF:
     relative_path: config/crichton.srdf
   CONFIG:
-    generated_timestamp: 1418608320
+    generated_timestamp: 1418856147
