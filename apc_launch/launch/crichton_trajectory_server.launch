@@ -15,13 +15,15 @@
     <node name="crichton_left_hand_trajectory_server" pkg="apc_control" type="apc_gripper_trajectory_node" respawn="false"
 	      output="screen">
         <param name="topic" value="/crichton/left_hand/controller" />
-        <param name="channel" value="sdhtraj-left" />
+        <param name="channel" value="sdhref-left" />
+        <param name="side" value="left" />
     </node>
 
     <node name="crichton_right_hand_trajectory_server" pkg="apc_control" type="apc_gripper_trajectory_node" respawn="false"
 	      output="screen">
         <param name="topic" value="/crichton/right_hand/controller" />
-        <param name="channel" value="sdhtraj-right" />
+        <param name="channel" value="sdhref-right" />
+        <param name="side" value="right" />
     </node>
 
 </launch>

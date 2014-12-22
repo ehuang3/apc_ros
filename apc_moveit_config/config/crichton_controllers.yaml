@@ -25,7 +25,7 @@ controller_list:
       - crichton_right_7_joint
   - name: crichton/left_hand
     action_ns: controller
-    type: GripperCommand
+    type: FollowJointTrajectory
     default: true
     joints:
       - crichton_left_finger_22_joint
@@ -37,7 +37,7 @@ controller_list:
       - crichton_left_thumb_3_joint
   - name: crichton/right_hand
     action_ns: controller
-    type: GripperCommand
+    type: FollowJointTrajectory
     default: true
     joints:
       - crichton_right_finger_22_joint
