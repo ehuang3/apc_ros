@@ -14,7 +14,7 @@ Panels:
         - /TF1/Frames1
         - /TF1/Tree1
       Splitter Ratio: 0.486441
-    Tree Height: 410
+    Tree Height: 348
   - Class: rviz/Help
     Name: Help
   - Class: rviz/Views
@@ -534,16 +534,6 @@ Visualization Manager:
       Frame Timeout: 15
       Frames:
         All Enabled: false
-        camera_depth_frame:
-          Value: true
-        camera_depth_optical_frame:
-          Value: true
-        camera_link:
-          Value: true
-        camera_rgb_frame:
-          Value: true
-        camera_rgb_optical_frame:
-          Value: true
         crichton_left_0_link:
           Value: true
         crichton_left_1_link:
@@ -639,13 +629,6 @@ Visualization Manager:
         crichton_origin:
           crichton_vertical_support:
             crichton_middle_support:
-              camera_link:
-                camera_depth_frame:
-                  camera_depth_optical_frame:
-                    {}
-                camera_rgb_frame:
-                  camera_rgb_optical_frame:
-                    {}
               crichton_left_0_link:
                 crichton_left_1_link:
                   crichton_left_2_link:
@@ -728,7 +711,7 @@ Visualization Manager:
       Use rainbow: true
       Value: true
     - Class: rviz/Image
-      Enabled: true
+      Enabled: false
       Image Topic: /camera/rgb/image_rect_color
       Max Value: 1
       Median window: 5
@@ -737,7 +720,7 @@ Visualization Manager:
       Normalize Range: true
       Queue Size: 2
       Transport Hint: raw
-      Value: true
+      Value: false
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -765,15 +748,15 @@ Visualization Manager:
         Z: 1.25983
       Name: Current View
       Near Clip Distance: 0.01
-      Pitch: 0.0447964
+      Pitch: 0.769796
       Target Frame: crichton_origin
       Value: Orbit (rviz)
-      Yaw: 5.01499
+      Yaw: 4.43999
     Saved: ~
 Window Geometry:
   Displays:
     collapsed: false
-  Height: 1176
+  Height: 1056
   Help:
     collapsed: false
   Hide Left Dock: false
@@ -782,9 +765,9 @@ Window Geometry:
     collapsed: false
   Motion Planning:
     collapsed: false
-  QMainWindow State: 000000ff00000000fd00000002000000000000027100000448fc0200000006fb000000100044006900730070006c006100790073010000003600000235000000b700fffffffb0000000800480065006c00700000000342000000bb0000006500fffffffb0000000a00560069006500770073000000023f000000c30000009b00fffffffb0000000c00430061006d00650072006100000002ff000001610000000000000000fb0000001e004d006f00740069006f006e00200050006c0061006e006e0069006e006701000002710000020d0000017000fffffffb0000000800480065006c007000000003cd000000b10000006500ffffff000000020000050500000191fc0100000001fb0000000a0049006d0061006700650100000277000005050000005900ffffff00000505000002b100000001000000020000000100000002fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  QMainWindow State: 000000ff00000000fd000000020000000000000274000003d0fc0200000006fb000000100044006900730070006c0061007900730100000036000001f7000000b700fffffffb0000000800480065006c00700000000342000000bb0000006500fffffffb0000000a00560069006500770073000000023f000000c30000009b00fffffffb0000000c00430061006d00650072006100000002ff000001610000000000000000fb0000001e004d006f00740069006f006e00200050006c0061006e006e0069006e00670100000233000001d30000017000fffffffb0000000800480065006c007000000003cd000000b10000006500ffffff000000020000014200000191fc0100000001fb0000000a0049006d006100670065000000027a000001420000005a00ffffff00000142000003d000000001000000020000000100000002fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
   Views:
     collapsed: false
-  Width: 1916
+  Width: 956
   X: 0
   Y: 20
