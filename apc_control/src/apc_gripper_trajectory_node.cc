@@ -15,6 +15,7 @@ ach_channel_t chan_ref;
 
 std::vector<std::string> joint_names;
 
+bool allow_trajectory_execution;
 
 void execute(const GoalPtr& goal, Server* as)
 {
@@ -60,9 +61,12 @@ void execute(const GoalPtr& goal, Server* as)
 	int64_t valid_ns = (int64_t)((1000000000) / 1);
 	sns_msg_set_time( &msg->header, &now, valid_ns ); // valid_ns value taken from piranha/src/pirctrl.c
 
+	// Status.
+	ach_status_t r = ACH_OK;
+
 	// Send the reference command.
-	ach_status_t r;
-	r = ach_put( &chan_ref, msg, sns_msg_motor_ref_size(msg) );
+	if (allow_trajectory_execution)
+		r = ach_put( &chan_ref, msg, sns_msg_motor_ref_size(msg) );
 
 	// set success.
 	if (r == ACH_OK)
@@ -88,6 +92,9 @@ int main(int argc, char** argv)
 
 	std::string channel = "sdhref-left";
 	n.getParam("channel", channel);
+
+	allow_trajectory_execution = true;
+	n.getParam("allow_trajectory_execution", allow_trajectory_execution);
 
 	sns_chan_open( &chan_ref,  channel.c_str(),  NULL );
 

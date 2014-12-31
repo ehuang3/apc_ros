@@ -12,7 +12,6 @@
   </include>
 
   <!-- If needed, broadcast static tf for robot root -->
-  
 
   <!-- We do not have a robot connected, so publish fake joint states -->
   <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher">
@@ -22,6 +21,11 @@
   
   <!-- Given the published joint states, publish tf for the robot links -->
   <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" respawn="true" output="screen" />
+
+  <!-- Run the trajectory servers but do not let them execute! -->
+  <include file="$(find apc_launch)/launch/crichton_trajectory_server.launch">
+      <arg name="allow_trajectory_execution" value="false"/>
+  </include>
 
   <!-- Run the main MoveIt executable without trajectory execution (we do not have controllers configured by default) -->
   <include file="$(find apc_moveit_config)/launch/move_group.launch">

@@ -10,6 +10,8 @@ typedef control_msgs::FollowJointTrajectoryGoalConstPtr GoalPtr;
 
 ach_channel_t chan_path;
 
+bool allow_trajectory_execution;
+
 void execute(const control_msgs::FollowJointTrajectoryGoalConstPtr& goal, Server* as)
 {
 	std::cout << goal->trajectory << std::endl;
@@ -36,9 +38,12 @@ void execute(const control_msgs::FollowJointTrajectoryGoalConstPtr& goal, Server
 		}
 	}
 
+	// Status.
+	ach_status_t r = ACH_OK;
+
 	// Send the trajectory.
-	ach_status_t r;
-	r = ach_put( &chan_path, msg, sns_msg_path_dense_size(msg) );
+	if (allow_trajectory_execution)
+		r = ach_put( &chan_path, msg, sns_msg_path_dense_size(msg) );
 
 	// set success.
 	if (r == ACH_OK)
@@ -55,11 +60,15 @@ int main(int argc, char** argv)
 
 	ros::init(argc, argv, "apc_arm_trajectory_node");
 	ros::NodeHandle n("~");
+
 	std::string topic = "/crichton/left_arm/controller";
 	n.getParam("topic", topic);
 
 	std::string chan_name = "ref-left";
 	n.getParam("channel", chan_name);
+
+	allow_trajectory_execution = true;
+	n.getParam("allow_trajectory_execution", allow_trajectory_execution);
 
 	sns_chan_open( &chan_path,  chan_name.c_str(),  NULL );
 
