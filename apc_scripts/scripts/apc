@@ -1,0 +1,173 @@
+#!/bin/sh
+#
+# Copyright (c) 2013, Georgia Tech Research Corporation
+# All rights reserved.
+#
+# Author(s): Neil T. Dantam <ntd@gatech.edu>
+# Georgia Tech Humanoid Robotics Lab
+# Under Direction of Prof. Mike Stilman <mstilman@cc.gatech.edu>
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions
+# are met:
+#
+#     * Redistributions of source code must retain the above
+#       copyright notice, this list of conditions and the following
+#       disclaimer.
+#     * Redistributions in binary form must reproduce the above
+#       copyright notice, this list of conditions and the following
+#       disclaimer in the documentation and/or other materials
+#       provided with the distribution.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+# ''AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+# FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+# COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+# INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+# (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+# SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+# HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+# STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
+# OF THE POSSIBILITY OF SUCH DAMAGE.
+if test -z $SNS; then
+    if test -x ~/local/etc/init.d/sns; then
+	SNS=~/local/etc/init.d/sns
+    elif test -x /usr/local/etc/init.d/sns; then
+	SNS=/usr/local/etc/init.d/sns
+    elif test -x /etc/init.d/sns; then
+	SNS=/etc/init.d/sns
+    else
+	echo "Could not find SNS program"
+	exit 1
+    fi
+fi
+
+# Sns log channel.
+CHANNELS="sns-log"
+# Motor state channels.
+CHANNELS="$CHANNELS state-torso state-left state-right sdhstate-left sdhstate-right"
+# Motor reference command channels.
+CHANNELS="$CHANNELS ref-torso ref-left ref-right sdhref-left sdhref-right"
+# Trajectory message channels.
+CHANNELS="$CHANNELS traj-left traj-right"
+# Force-Torque channels.
+CHANNELS="$CHANNELS ft-left ft-right ft-bias-left ft-bias-right"
+# Tactile sensor channels.
+CHANNELS="$CHANNELS ts-left ts-right"
+# CHANNELS="$CHANNELS pir-ctrl pir-state pir-complete joystick pir-config"
+
+apc_ach_mk() {
+    for c in $CHANNELS; do
+        ach mk -1 -o 666 $c
+    done
+}
+
+apc_ach_rm() {
+    for c in $CHANNELS; do
+        ach rm $c
+    done
+}
+
+# SocketCAN interfaces
+CAN_L=can0
+CAN_R=can1
+CAN_T=can2
+
+# esd CAN interfaces
+CAN_SDH_L=0
+CAN_SDH_R=1
+
+apc_start() {
+    apc_ach_mk
+
+#     $SNS run -d -r lwa-left -- \
+#         can402 -f $CAN_L -R 1 -C 0 -n 3 -n 4 -n 5 -n 6 -n 7 -n 8 -n 9 -c ref-left -s state-left
+#     $SNS run -d -r lwa-right -- \
+#         can402 -f $CAN_R -R 1 -C 0 -n 3 -n 4 -n 5 -n 6 -n 7 -n 8 -n 9 -c ref-right -s state-right
+
+#     $SNS run -d -r torso -- \
+#         can402 -f can2 -R 1 -C 0 -n a  -c ref-torso -s state-torso
+
+#     $SNS run -d -r ft-left -- \
+        # cftd -f $CAN_L -n 27 -c ft-left -b ft-bias-left -W 1e6 -F 500
+#     $SNS run -d -r ft-right -- \
+#         cftd -f $CAN_R -n 27 -c ft-right -b ft-bias-right -W 1e6 -F 500
+
+#     $SNS run -d -r sdh-left -- \
+#         sdhiod -b $CAN_SDH_L -c sdhref-left -s sdhstate-left
+#     $SNS run -d -r sdh-right -- \
+#         sdhiod -b $CAN_SDH_R -c sdhref-right -s sdhstate-right
+}
+
+apc_expunge() {
+    sudo rm -rf /var/tmp/sns/lwa-left
+    sudo rm -rf /var/tmp/sns/lwa-right
+    sudo rm -rf /var/tmp/sns/torso
+    sudo rm -rf /var/tmp/sns/ft-left
+    sudo rm -rf /var/tmp/sns/ft-right
+    sudo rm -rf /var/tmp/sns/sdh-left
+    sudo rm -rf /var/tmp/sns/sdh-right
+
+    sudo rm -rf /var/run/sns/lwa-left
+    sudo rm -rf /var/run/sns/lwa-right
+    sudo rm -rf /var/run/sns/torso
+    sudo rm -rf /var/run/sns/ft-left
+    sudo rm -rf /var/run/sns/ft-right
+    sudo rm -rf /var/run/sns/sdh-left
+    sudo rm -rf /var/run/sns/sdh-right
+}
+
+apc_stop() {
+    $SNS kill lwa-left
+    $SNS kill lwa-right
+    $SNS kill torso
+    $SNS kill ft-left
+    $SNS kill ft-right
+    $SNS kill sdh-left
+    $SNS kill sdh-right
+}
+
+apc_steal() {
+    chown -R $1 /var/run/sns/lwa-left   \
+	/var/run/sns/lwa-right          \
+	/var/run/sns/torso              \
+	/var/run/sns/ft-left            \
+	/var/run/sns/ft-right           \
+	/var/run/sns/sdh-left           \
+	/var/run/sns/sdh-right          \
+	/var/tmp/sns/lwa-left           \
+	/var/tmp/sns/lwa-right          \
+	/var/tmp/sns/torso              \
+	/var/tmp/sns/ft-left            \
+	/var/tmp/sns/ft-right           \
+	/var/tmp/sns/sdh-left           \
+	/var/tmp/sns/sdh-right
+}
+
+case "$1" in
+    start)
+        apc_start
+        ;;
+    stop)
+        apc_stop
+        ;;
+    rm)
+        apc_ach_rm
+        ;;
+    mk)
+        apc_ach_mk
+        ;;
+   steal)
+	shift
+        apc_steal $@
+        ;;
+    expunge)
+        apc_expunge
+        ;;
+    *)
+        echo "Invalid command"
+        exit 1
+        ;;
+esac
