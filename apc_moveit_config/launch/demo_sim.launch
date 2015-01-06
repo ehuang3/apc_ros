@@ -1,7 +1,7 @@
 <launch>
 
   <!-- By default, we do not start a database (it can be large) -->
-  <arg name="db" default="false" />
+  <arg name="db" default="true" />
 
   <!-- By default, we are not in debug mode -->
   <arg name="debug" default="false" />
