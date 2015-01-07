@@ -11,7 +11,7 @@ find_package(catkin REQUIRED COMPONENTS
   moveit_msgs
   std_msgs
   trajectory_msgs
-  schunk_sdh
+  # schunk_sdh
 )
 
 ## System dependencies are found with CMake's conventions
@@ -73,7 +73,7 @@ add_message_files(
 ## Generate added messages and services with any dependencies listed here
 generate_messages(
   DEPENDENCIES
-  control_msgs   geometry_msgs   moveit_msgs   std_msgs   trajectory_msgs   schunk_sdh
+  control_msgs   geometry_msgs   moveit_msgs   std_msgs   trajectory_msgs#   schunk_sdh
 )
 
 ###################################
@@ -89,7 +89,7 @@ catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES apc_msgs
  # CATKIN_DEPENDS control_msgs geometry_msgs moveit_msgs std_msgs trajectory_msgs schunk_sdh
- DEPENDS control_msgs geometry_msgs moveit_msgs std_msgs trajectory_msgs schunk_sdh
+ DEPENDS control_msgs geometry_msgs moveit_msgs std_msgs trajectory_msgs# schunk_sdh
 )
 
 ###########
