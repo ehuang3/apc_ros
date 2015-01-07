@@ -57,7 +57,7 @@ bool use_haptic_profiles
 geometry_msgs/Pose[] ft_profile
 
 # the recorded tactile-sensor profile
-schunk_sdh/TactileSensor[] ts_profile
+TactileSensor[] ts_profile
 
 # duration of trajectory execution
 float64 duration

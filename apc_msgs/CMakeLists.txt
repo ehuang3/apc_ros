@@ -54,6 +54,8 @@ add_message_files(
   FILES
   PrimitiveAction.msg
   PrimitivePlan.msg
+  TactileSensor.msg
+  TactileMatrix.msg
 )
 
 ## Generate services in the 'srv' folder
