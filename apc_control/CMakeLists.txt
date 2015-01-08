@@ -16,7 +16,8 @@ find_package(
     roscpp
     rospy
     std_msgs
-
+    apc_msgs
+    apc_path
 )
 
 find_package(
@@ -28,6 +29,9 @@ find_package(
 find_package(
     Amino REQUIRED
 )
+find_package(
+    Eigen REQUIRED
+)
 
 set(catkin_LIBRARIES 
     ${catkin_LIBRARIES}
@@ -36,7 +40,7 @@ set(catkin_LIBRARIES
     ${AMINO_LIBRARY}
 )
 
-include_directories(${AMINO_INCLUDE_DIR}  ${ACH_INCLUDE_DIR} ${SNS_INCLUDE_DIR})
+include_directories(${AMINO_INCLUDE_DIR}  ${ACH_INCLUDE_DIR} ${SNS_INCLUDE_DIR} ${EIGEN_INCLUDE_DIR})
 
 
 ## System dependencies are found with CMake's conventions
@@ -111,7 +115,7 @@ include_directories(${AMINO_INCLUDE_DIR}  ${ACH_INCLUDE_DIR} ${SNS_INCLUDE_DIR})
 catkin_package(
   # INCLUDE_DIRS include
   # LIBRARIES apc_control
-  CATKIN_DEPENDS actionlib actionlib_msgs control_msgs roscpp rospy std_msgs
+  CATKIN_DEPENDS actionlib actionlib_msgs control_msgs roscpp rospy std_msgs apc_msgs apc_path
   DEPENDS system_lib
 )
 
@@ -136,6 +140,7 @@ add_executable(apc_arm_trajectory_node     src/apc_arm_trajectory_node.cc)
 add_executable(apc_gripper_trajectory_node src/apc_gripper_trajectory_node.cc)
 add_executable(apc_arm_state_publisher     src/apc_arm_state_publisher.cc)
 add_executable(apc_gripper_state_publisher src/apc_gripper_state_publisher.cc)
+add_executable(apc_trajectory_bridge       src/apc_trajectory_bridge.cc)
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
@@ -152,6 +157,9 @@ target_link_libraries(apc_arm_state_publisher
   ${catkin_LIBRARIES}
 )
 target_link_libraries(apc_gripper_state_publisher
+  ${catkin_LIBRARIES}
+)
+target_link_libraries(apc_trajectory_bridge
   ${catkin_LIBRARIES}
 )
 
@@ -176,6 +184,7 @@ install(
     apc_gripper_trajectory_node#  apc_control
     apc_arm_state_publisher   
     apc_gripper_state_publisher#  apc_control
+    apc_trajectory_bridge
     ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
     LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
     RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}

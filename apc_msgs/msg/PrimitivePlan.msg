@@ -1,5 +1,8 @@
 # a primitive plan
 
+# Header information
+Header header
+
 # the name of this primitive plan
 string plan_name
 

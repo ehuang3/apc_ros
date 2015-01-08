@@ -1,5 +1,8 @@
 # a primitive manipulation action
 
+# Header information
+Header header
+
 # unique id for this action
 int64 unique_id
 

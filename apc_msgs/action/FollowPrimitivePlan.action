@@ -27,12 +27,15 @@ duration goal_time_tolerance
 
 ---
 int32 error_code
+int32 STALE_FRAMES = 1
 int32 SUCCESSFUL = 0
 int32 INVALID_GOAL = -1
 int32 INVALID_JOINTS = -2
 int32 OLD_HEADER_TIMESTAMP = -3
 int32 PATH_TOLERANCE_VIOLATED = -4
 int32 GOAL_TOLERANCE_VIOLATED = -5
+int32 FAILED_CLOCK_GETTIME = -6
+
 
 # Human readable description of the error code. Contains complementary
 # information that is especially useful when execution fails, for instance:
@@ -50,3 +53,4 @@ string[] joint_names
 trajectory_msgs/JointTrajectoryPoint desired
 trajectory_msgs/JointTrajectoryPoint actual
 trajectory_msgs/JointTrajectoryPoint error
+float32 progress
