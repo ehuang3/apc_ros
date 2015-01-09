@@ -8,6 +8,7 @@
 
 typedef actionlib::SimpleActionServer<apc_msgs::FollowPrimitivePlanAction> ActionServer;
 typedef apc_msgs::FollowPrimitivePlanGoalConstPtr GoalConstPtr;
+typedef apc_msgs::FollowPrimitivePlanFeedback Feedback;
 typedef apc_msgs::FollowPrimitivePlanResult Result;
 typedef apc_msgs::PrimitiveAction Action;
 
@@ -209,6 +210,13 @@ Result send_motor_ref(sns_msg_motor_ref* msg,
     // Send reference command message, if enabled.
     if (params->allow_execution)
         status = ach_put( &group->chan_ref, msg, sns_msg_motor_ref_size(msg) );
+    else
+    {
+        std::stringstream cmd;
+        for (int i=0; i < msg->header.n; i++)
+            cmd << msg->u[i] << " ";
+        ROS_DEBUG_STREAM(group->name_ref << ": " << cmd.str());
+    }
 
     // Handle ach errors.
     if(status != ACH_OK)
@@ -227,6 +235,17 @@ Result set_and_check_start_state(const Action& action,
                                  Parameters* params)
 {
     Result r;
+
+    // If we are not executing, fake the robot state with the action's start state.
+    if (!params->allow_execution)
+    {
+        const std::vector<std::string>& joint_names = action.joint_trajectory.joint_names;
+        const trajectory_msgs::JointTrajectoryPoint& start = action.joint_trajectory.points.front();
+        point.resize(joint_names.size());
+        for (int i = 0; i < joint_names.size(); i++)
+            point[i] = start.positions[group->map[joint_names[i]]];
+        return r;
+    }
 
     // Get the joint trajectory
     const trajectory_msgs::JointTrajectory& T = action.joint_trajectory;
@@ -280,6 +299,7 @@ Result set_velocity_to_zero(const Action& action,
                             Parameters* params)
 {
     Result r;
+    ROS_INFO("Setting velocity to 0");
     if (group->mode == SNS_MOTOR_MODE_VEL)
     {
         // Set to zero.
@@ -302,12 +322,15 @@ Result set_velocity_to_zero(const Action& action,
 }
 
 Result execute_trajectory(const Action& action,
+                          ActionServer* server,
                           Group* group,
                           Parameters* params)
 {
     // Return value.
     Result r;
     r.error_code = Result::SUCCESSFUL;
+
+    ROS_INFO("Preparing trajectory: %s", action.group_name.c_str());
 
     // PRE-CONDITION: Assert joints in map and action agree.
     r = check_joint_names(action.joint_trajectory.joint_names, group->map);
@@ -336,7 +359,7 @@ Result execute_trajectory(const Action& action,
             return r;
 
         // Wait a bit to let the joints stop moving.
-        usleep( (useconds_t) 10 * 1e6 ); // TODO Based on can402 control loop frequency?
+        usleep( (useconds_t) 10 * 1e3 ); // TODO Based on can402 control loop frequency?
     }
 
     // PRE-CONDITION: Assert group state is near the start point.
@@ -380,6 +403,8 @@ Result execute_trajectory(const Action& action,
     // Get the total trajectory time.
     double duration = T.getDuration();
 
+    ROS_INFO("Executing trajectory: %s", action.group_name.c_str());
+
     // Current timespec.
     struct timespec ts;
     r = get_time( &ts );
@@ -395,6 +420,16 @@ Result execute_trajectory(const Action& action,
     // Execute trajectory on robot.
     while (time < start + duration)
     {
+        // Check for preemption.
+        if (server->isPreemptRequested())
+        {
+            ROS_INFO("Trajectory execution preempted");
+            server->setPreempted();
+            r.error_code = Result::PREEMPTED;
+            r.error_string = "Trajectory execution preempted";
+            break;
+        }
+
         // Get the current time.
         r = get_time( &ts );
 
@@ -426,7 +461,7 @@ Result execute_trajectory(const Action& action,
         aa_mem_region_local_release();
 
         // Sleep.
-        usleep( (useconds_t) 10 * 1e6 ); // TODO Based on can402 control loop frequency?
+        usleep( (useconds_t) 10 * 1e3 ); // TODO Based on can402 control loop frequency?
     }
 
     // POST-CONDITION: Set velocities to zero.
@@ -442,6 +477,8 @@ void execute(const GoalConstPtr& goal, ActionServer* action_server, Parameters* 
 {
     // The action request result.
     Result r;
+
+    ROS_INFO("Received %lu actions to execute", goal->plan.actions.size());
 
     // For each primitive action in the primitive plan...
     for (int i = 0; i < goal->plan.actions.size(); i++)
@@ -462,19 +499,42 @@ void execute(const GoalConstPtr& goal, ActionServer* action_server, Parameters* 
             group = &params->left_arm;
         if (group_name == "crichton_right_arm")
             group = &params->right_arm;
+        if (group_name == "crichton_torso")
+            group = &params->torso;
+        if (!group)
+        {
+            r.error_code = Result::INVALID_GOAL;
+            r.error_string = "Failed to get group: " + group_name;
+            break;
+        }
 
         // Execute the trajectory.
-        r = execute_trajectory(goal->plan.actions[i], group, params);
+        r = execute_trajectory(goal->plan.actions[i], action_server, group, params);
 
         // If something erred, stop further execution.
         if (r.error_code)
             break;
 
-        // TODO Provide feedback.
+        // Provide feedback.
+        {
+            Feedback fb;
+            fb.progress = (i+1) / (double) goal->plan.actions.size();
+            std::stringstream s;
+            s << "Finished executing: (" << i << ") " << group_name;
+            fb.progress_string = s.str();
+            ROS_INFO("%s (%.2f)", fb.progress_string.c_str(), fb.progress);
+            action_server->publishFeedback(fb);
+        }
     }
 
     // Clean up memory.
     aa_mem_region_local_release();
+
+    // Print out result.
+    if (r.error_code)
+        ROS_ERROR_STREAM("Execution failed: " << r.error_string);
+    else
+        ROS_INFO_STREAM("Execution succeeded!");
 
     // Return the result to the client.
     if (r.error_code)
@@ -523,6 +583,20 @@ int main(int argc, char** argv)
     }
 }
 
+bool setMotorMode(std::string mode_name, enum sns_motor_mode* mode)
+{
+    if (mode_name == "SNS_MOTOR_MODE_VEL")
+        *mode = SNS_MOTOR_MODE_VEL;
+    else if (mode_name == "SNS_MOTOR_MODE_POS")
+        *mode = SNS_MOTOR_MODE_POS;
+    else
+    {
+        std::cerr << "Unsupported SNS MOTOR MODE: " << mode_name << std::endl;
+        exit(1);
+    }
+    return true;
+}
+
 bool Parameters::getParams(ros::NodeHandle& node)
 {
     bool success = true;
@@ -535,35 +609,51 @@ bool Parameters::getParams(ros::NodeHandle& node)
     success &= node.getParam(key, this->max_vel);
     key = "max_accel";
     success &= node.getParam(key, this->max_accel);
-    key = "lh_map";
+    key = "left_hand_map";
     success &= node.getParam(key, this->left_hand.map);
-    key = "rh_map";
+    key = "right_hand_map";
     success &= node.getParam(key, this->right_hand.map);
-    key = "la_map";
+    key = "left_arm_map";
     success &= node.getParam(key, this->left_arm.map);
-    key = "ra_map";
+    key = "right_arm_map";
     success &= node.getParam(key, this->right_arm.map);
-    key = "t_map";
+    key = "torso_map";
     success &= node.getParam(key, this->torso.map);
-    key = "lh_state";
+    key = "left_hand_state";
     success &= node.getParam(key, this->left_hand.name_state);
-    key = "rh_state";
+    key = "right_hand_state";
     success &= node.getParam(key, this->right_hand.name_state);
-    key = "la_state";
+    key = "left_arm_state";
     success &= node.getParam(key, this->left_arm.name_state);
-    key = "ra_state";
+    key = "right_arm_state";
     success &= node.getParam(key, this->right_arm.name_state);
-    key = "t_state";
+    key = "torso_state";
     success &= node.getParam(key, this->torso.name_state);
-    key = "lh_ref";
+    key = "left_hand_ref";
     success &= node.getParam(key, this->left_hand.name_ref);
-    key = "rh_ref";
+    key = "right_hand_ref";
     success &= node.getParam(key, this->right_hand.name_ref);
-    key = "la_ref";
+    key = "left_arm_ref";
     success &= node.getParam(key, this->left_arm.name_ref);
-    key = "ra_ref";
+    key = "right_arm_ref";
     success &= node.getParam(key, this->right_arm.name_ref);
-    key = "t_ref";
+    key = "torso_ref";
     success &= node.getParam(key, this->torso.name_ref);
+    std::string name_mode;
+    key = "left_hand_mode";
+    success &= node.getParam(key, name_mode);
+    success &= setMotorMode(name_mode, &this->left_hand.mode);
+    key = "right_hand_mode";
+    success &= node.getParam(key, name_mode);
+    success &= setMotorMode(name_mode, &this->right_hand.mode);
+    key = "left_arm_mode";
+    success &= node.getParam(key, name_mode);
+    success &= setMotorMode(name_mode, &this->left_arm.mode);
+    key = "right_arm_mode";
+    success &= node.getParam(key, name_mode);
+    success &= setMotorMode(name_mode, &this->right_arm.mode);
+    key = "torso_mode";
+    success &= node.getParam(key, name_mode);
+    success &= setMotorMode(name_mode, &this->torso.mode);
     return success;
 }

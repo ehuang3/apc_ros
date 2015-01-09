@@ -38,6 +38,14 @@ bool relative_to_previous_pose
 # if true, record a dense trajectory from teleoperation for playback
 bool record_dense_trajectory
 
+# if true, linearly interpolate in the trajectory space
+bool interpolate_linear
+
+# the type of trajectory message to use
+int32 use_type_trajectory
+int32 USE_JOINT_TRAJECTORY = 0
+int32 USE_EEF_TRAJECTORY = 1
+
 # if applicable, the trajectory of the joints
 trajectory_msgs/JointTrajectory joint_trajectory
 

@@ -1,0 +1,13 @@
+<launch>
+    <arg name="allow_execution" default="false"/>
+    <arg name="action_topic"    default="/crichton/trajectory_bridge"/>
+
+    <node name="crichton_trajectory_bridge" pkg="apc_control" type="apc_trajectory_bridge" respawn="false"
+	      output="screen">
+        <param name="allow_execution" value="$(arg allow_execution)" />
+        <param name="action_topic"    value="$(arg action_topic)" />
+        <param name="max_vel"         value="0.4" />
+        <param name="max_accel"       value="0.1" />
+        <rosparam command="load" file="$(find apc_config)/config/crichton_groups.yaml" />
+    </node>
+</launch>

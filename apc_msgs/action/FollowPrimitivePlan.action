@@ -35,6 +35,7 @@ int32 OLD_HEADER_TIMESTAMP = -3
 int32 PATH_TOLERANCE_VIOLATED = -4
 int32 GOAL_TOLERANCE_VIOLATED = -5
 int32 FAILED_CLOCK_GETTIME = -6
+int32 PREEMPTED = -7
 
 
 # Human readable description of the error code. Contains complementary
@@ -49,8 +50,13 @@ string error_string
 
 ---
 Header header
-string[] joint_names
-trajectory_msgs/JointTrajectoryPoint desired
-trajectory_msgs/JointTrajectoryPoint actual
-trajectory_msgs/JointTrajectoryPoint error
+
+# execute state feedback
+# string[] joint_names
+# trajectory_msgs/JointTrajectoryPoint desired
+# trajectory_msgs/JointTrajectoryPoint actual
+# trajectory_msgs/JointTrajectoryPoint error
+
+# execution progress feedback
 float32 progress
+string progress_string
