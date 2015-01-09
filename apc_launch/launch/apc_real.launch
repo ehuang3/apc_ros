@@ -1,0 +1,8 @@
+<launch>
+
+	<include file="$(find apc_launch)/launch/crichton_trajectory_bridge.launch">
+        <arg name="allow_execution" value="true" />
+        <arg name="action_topic"    value="/crichton/trajectory_bridge"/>
+    </include>
+
+</launch>

@@ -141,11 +141,16 @@ Result read_motor_state(struct sns_msg_motor_state* msg,
     case ACH_OK:
     case ACH_MISSED_FRAME:
     {
-        // Convert raw buffer to motor state message.
-        *msg = *((struct sns_msg_motor_state*) buf);
-
         // Sanity check the size of the message.
-        assert(group->map.size() == msg->header.n);
+        if (frame_size != sns_msg_motor_state_size_n(group->map.size()))
+        {
+            r.error_code = Result::INVALID_JOINTS;
+            r.error_string = "Failed to get the correct motor states";
+            break;
+        }
+
+        // Convert raw buffer to motor state message.
+        memcpy(msg, buf, frame_size);
 
         break;
     }
@@ -291,6 +296,19 @@ Result set_and_check_start_state(const Action& action,
         point[j_i] = msg->X[j_i].pos;
     }
 
+    // Print out errors.
+    if (r.error_code)
+        for (int i = 0; i < T.joint_names.size(); i++)
+        {
+            int j = group->map[T.joint_names[i]];
+            ROS_ERROR("%s desired[%d]: %+.6f actual[%d]: %+.6f",
+                      T.joint_names[i].c_str(),
+                      i,
+                      T.points[0].positions[i],
+                      j,
+                      msg->X[j].pos);
+        }
+
     return r;
 }
 
@@ -358,8 +376,8 @@ Result execute_trajectory(const Action& action,
         if (r.error_code)
             return r;
 
-        // Wait a bit to let the joints stop moving.
-        usleep( (useconds_t) 10 * 1e3 ); // TODO Based on can402 control loop frequency?
+        // Wait 10ms to let the joints stop moving.
+        usleep( (useconds_t) 10 * 1e3 ); // Based on can402 control loop frequency
     }
 
     // PRE-CONDITION: Assert group state is near the start point.
@@ -439,8 +457,27 @@ Result execute_trajectory(const Action& action,
         // Convert the current time to seconds.
         time = ts.tv_sec + ts.tv_nsec / (double) 1e9;
 
-        // Get the velocity command at this time.
-        const Eigen::VectorXd cmd = T.getVelocity(time - start);
+        // Get the reference command at this time.
+        Eigen::VectorXd cmd;
+        switch (group->mode)
+        {
+        case SNS_MOTOR_MODE_POS:
+            cmd = T.getPosition(time - start);
+            break;
+        case SNS_MOTOR_MODE_VEL:
+            cmd = T.getVelocity(time - start);
+            break;
+        default:
+            r.error_code = Result::INVALID_GOAL;
+            std::stringstream err;
+            err << "Unsupported motor mode: " << group->mode;
+            r.error_string = err.str();
+            ROS_ERROR_STREAM(err.str());
+            break;
+        }
+
+        // On failure, break to ensure post-conditions.
+        if (r.error_code) break;
 
         // Locally allocate a reference command message.
         struct sns_msg_motor_ref* msg = sns_msg_motor_ref_local_alloc(p.size());
@@ -460,8 +497,8 @@ Result execute_trajectory(const Action& action,
         // Clear local memory.
         aa_mem_region_local_release();
 
-        // Sleep.
-        usleep( (useconds_t) 10 * 1e3 ); // TODO Based on can402 control loop frequency?
+        // Sleep for 10 ms.
+        usleep( (useconds_t) 10 * 1e3 ); // Based on can402 control loop frequency
     }
 
     // POST-CONDITION: Set velocities to zero.
