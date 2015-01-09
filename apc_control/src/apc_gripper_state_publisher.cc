@@ -134,6 +134,9 @@ int main(int argc, char** argv)
 			state_publisher.publish(joint_state_msg);
 
 			break;
+		case ACH_STALE_FRAMES:
+			// No new messages.
+			break;
 		default:
 			// Log error on failure.
 			SNS_LOG(LOG_ERR, "Failed ach_get: %s\n", ach_result_to_string(r));
