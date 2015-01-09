@@ -102,19 +102,6 @@ Result get_time(struct timespec* time)
     return r;
 }
 
-Result set_future_timeout(struct sns_msg_header* msg, int ms)
-{
-    Result r;
-    struct timespec ts;
-    r = get_time(&ts);
-    if (!r.error_code)
-        return r;
-    const int64_t tf = ms*1e6;
-    // Set message time into the future.
-    sns_msg_set_time( msg, &ts, tf );
-    return r;
-}
-
 Result read_motor_state(struct sns_msg_motor_state* msg,
                         struct timespec* time_out,
                         Group* group,
@@ -181,24 +168,19 @@ Result build_motor_ref(sns_msg_motor_ref* msg,
 {
     Result r;
 
-    // Fill the message header.
-    sns_msg_header_fill( &msg->header );
-
-    // Set the number of motors.
-    msg->header.n = point.size();
-
-    // Copy the velocity command to the motor reference message.
-    AA_MEM_CPY(msg->u, point.data(), msg->header.n);
+    // Initialize the message.
+    sns_msg_motor_ref_init( msg, point.size() );
 
     // Set motor control mode.
     msg->mode = group->mode;
 
-    // 100ms in the future. TODO Based on can402 control loop frequency?
-    int ms = 100;
+    // Copy the velocity command to the motor reference message.
+    AA_MEM_CPY(msg->u, point.data(), msg->header.n);
 
-    // Set the motor command to be executed in the future. This is
-    // to avoid the timeout in can402.
-    r = set_future_timeout( &msg->header, ms );
+    // Set a timeout 1 second in the future.
+    struct timespec now;
+    clock_gettime( ACH_DEFAULT_CLOCK, &now );
+    sns_msg_set_time( &msg->header, &now, 1e9 ); /* 1 second duration */
 
     return r;
 }
