@@ -220,7 +220,7 @@ Result send_motor_ref(sns_msg_motor_ref* msg,
         std::stringstream cmd;
         for (int i=0; i < msg->header.n; i++)
             cmd << msg->u[i] << " ";
-        ROS_DEBUG_STREAM(group->name_ref << ": " << cmd.str());
+        ROS_INFO_STREAM("sim " << group->name_ref << ": " << cmd.str());
     }
 
     // Handle ach errors.
