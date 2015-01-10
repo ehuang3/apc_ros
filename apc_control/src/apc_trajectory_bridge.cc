@@ -257,7 +257,7 @@ Result set_and_check_start_state(const Action& action,
         return r;
 
     // Apply a timeout when reading messages.
-    const int64_t ms = 5;
+    const int64_t ms = 100;
     struct timespec to = sns_time_add_ns( ts, ms*1e6 );
 
     // Read motor state.
@@ -444,6 +444,9 @@ Result execute_trajectory(const Action& action,
     // The current time in seconds.
     double time = start;
 
+    // HACK The boolean that checks if we've sent a position command before.
+    int sent_pos_command = 0;
+
     // Execute trajectory on robot.
     while (time < start + duration)
     {
@@ -526,7 +529,7 @@ Result execute_trajectory(const Action& action,
             r = send_motor_ref(msg, group, params);
             break;
         case SNS_MOTOR_MODE_POS:
-            if (!moving)        // HACK Only send motor commands to the SDH if it is not moving.
+            if (!moving && !sent_pos_command++)        // HACK Only send motor commands to the SDH if it is not moving.
                 r = send_motor_ref(msg, group, params);
             break;
         default:
