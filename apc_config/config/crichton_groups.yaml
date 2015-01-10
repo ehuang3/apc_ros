@@ -49,8 +49,8 @@ right_arm_map:
 left_hand_state: "sdhstate-left"
 left_hand_ref:   "sdhref-left"
 left_hand_mode:  "SNS_MOTOR_MODE_POS"
-left_hand_max_vel:   1.5
-left_hand_max_accel: 0.7
+left_hand_max_vel:   1.0
+left_hand_max_accel: 0.5
 left_hand_map:
   {
   crichton_left_knuckle_joint: 0,
@@ -66,8 +66,8 @@ left_hand_map:
 right_hand_state: "sdhstate-right"
 right_hand_ref:   "sdhref-right"
 right_hand_mode:   "SNS_MOTOR_MODE_POS"
-right_hand_max_vel:   1.5
-right_hand_max_accel: 0.7
+right_hand_max_vel:   1.0
+right_hand_max_accel: 0.5
 right_hand_map:
   {
   crichton_right_knuckle_joint: 0,

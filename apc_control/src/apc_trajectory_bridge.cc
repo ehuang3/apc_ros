@@ -146,6 +146,10 @@ Result read_motor_state(struct sns_msg_motor_state* msg,
     }
     case ACH_STALE_FRAMES:
     {
+        // If we are polling quickly..it's okay for stale frames
+        if (!time_out)
+            break;
+
         r.error_code = Result::STALE_FRAMES;
         r.error_string = "No new data has been published to channel: " + group->name_state;
 
@@ -324,6 +328,23 @@ Result set_velocity_to_zero(const Action& action,
     return r;
 }
 
+bool check_for_goal(const Eigen::VectorXd& goal,
+                    struct sns_msg_motor_state* state)
+{
+    for (int i = 0; i < state->header.n; i++)
+        if (std::abs(goal[i] - state->X[i].pos) > 0.005)
+            return false;
+    return true;
+}
+
+bool check_for_motion(struct sns_msg_motor_state* state)
+{
+    for (int i = 0; i < state->header.n; i++)
+        if (std::abs(state->X[i].vel) > 0.000001)
+            return true;
+    return false;
+}
+
 Result execute_trajectory(const Action& action,
                           ActionServer* server,
                           Group* group,
@@ -406,6 +427,9 @@ Result execute_trajectory(const Action& action,
     // Get the total trajectory time.
     const double duration = T.getDuration();
 
+    // Get the goal point.
+    const Eigen::VectorXd goal = T.getPosition(duration);
+
     ROS_INFO("Executing trajectory: %s", action.group_name.c_str());
 
     // Current timespec.
@@ -432,6 +456,28 @@ Result execute_trajectory(const Action& action,
             r.error_string = "Trajectory execution preempted";
             break;
         }
+
+        // Check whether we have reached the goal and check whether velocity is zero.
+        bool near_goal = false;
+        bool moving = false;
+        if (params->allow_execution)
+        {
+            // Read motor state.
+            struct sns_msg_motor_state* state = sns_msg_motor_state_local_alloc(n_dof);
+            r = read_motor_state(state, NULL, group, params);
+            if (r.error_code)
+                return r;
+
+            // Check whether we have reached the goal.
+            near_goal = check_for_goal(goal, state);
+
+            // Check whether velocity is zero.
+            moving = check_for_motion(state);
+        }
+
+        // Stop execution if we are near the goal and stopped moving.
+        if (near_goal && !moving)
+            break;
 
         // Get the current time.
         r = get_time( &ts );
@@ -474,7 +520,18 @@ Result execute_trajectory(const Action& action,
         if (r.error_code) break;
 
         // Send motor reference command.
-        r = send_motor_ref(msg, group, params);
+        switch (group->mode)
+        {
+        case SNS_MOTOR_MODE_VEL:
+            r = send_motor_ref(msg, group, params);
+            break;
+        case SNS_MOTOR_MODE_POS:
+            if (!moving)        // HACK Only send motor commands to the SDH if it is not moving.
+                r = send_motor_ref(msg, group, params);
+            break;
+        default:
+            break;
+        }
 
         // On failure, break to ensure post-conditions.
         if (r.error_code) break;
