@@ -21,6 +21,8 @@ struct Group
     ach_channel_t chan_state;            // Channel to read motor states from.
     ach_channel_t chan_ref;              // Channel to send reference commands to.
     enum sns_motor_mode mode;            // Operating mode of motor reference commands.
+    double max_vel;                      // Maximum joint velocity along the path.
+    double max_accel;                    // Maximum joint acceleration along the path.
 };
 
 struct Parameters
@@ -387,8 +389,8 @@ Result execute_trajectory(const Action& action,
     }
 
     // Create velocity and acceleration limits.
-    const Eigen::VectorXd max_vel   = params->max_vel * Eigen::VectorXd::Ones(n_dof);
-    const Eigen::VectorXd max_accel = params->max_accel * Eigen::VectorXd::Ones(n_dof);
+    const Eigen::VectorXd max_vel   = group->max_vel * Eigen::VectorXd::Ones(n_dof);
+    const Eigen::VectorXd max_accel = group->max_accel * Eigen::VectorXd::Ones(n_dof);
 
     // Pass path through Toby's code.
     Trajectory T(Path(P, 0.1), max_vel, max_accel);
@@ -402,7 +404,7 @@ Result execute_trajectory(const Action& action,
     }
 
     // Get the total trajectory time.
-    double duration = T.getDuration();
+    const double duration = T.getDuration();
 
     ROS_INFO("Executing trajectory: %s", action.group_name.c_str());
 
@@ -675,5 +677,25 @@ bool Parameters::getParams(ros::NodeHandle& node)
     key = "torso_mode";
     success &= node.getParam(key, name_mode);
     success &= setMotorMode(name_mode, &this->torso.mode);
+    key = "left_hand_max_vel";
+    success &= node.getParam(key, this->left_hand.max_vel);
+    key = "right_hand_max_vel";
+    success &= node.getParam(key, this->right_hand.max_vel);
+    key = "left_arm_max_vel";
+    success &= node.getParam(key, this->left_arm.max_vel);
+    key = "right_arm_max_vel";
+    success &= node.getParam(key, this->right_arm.max_vel);
+    key = "torso_max_vel";
+    success &= node.getParam(key, this->torso.max_vel);
+    key = "left_hand_max_accel";
+    success &= node.getParam(key, this->left_hand.max_accel);
+    key = "right_hand_max_accel";
+    success &= node.getParam(key, this->right_hand.max_accel);
+    key = "left_arm_max_accel";
+    success &= node.getParam(key, this->left_arm.max_accel);
+    key = "right_arm_max_accel";
+    success &= node.getParam(key, this->right_arm.max_accel);
+    key = "torso_max_accel";
+    success &= node.getParam(key, this->torso.max_accel);
     return success;
 }

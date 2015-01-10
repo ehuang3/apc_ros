@@ -4,6 +4,8 @@
 torso_state: "state-torso"
 torso_ref:   "ref-torso"
 torso_mode:  "SNS_MOTOR_MODE_VEL"
+torso_max_vel:   0.3
+torso_max_accel: 0.1
 torso_map:
   {
   crichton_torso_joint: 0
@@ -13,6 +15,8 @@ torso_map:
 left_arm_state: "state-left"
 left_arm_ref:   "ref-left"
 left_arm_mode:  "SNS_MOTOR_MODE_VEL"
+left_arm_max_vel:   0.4
+left_arm_max_accel: 0.1
 left_arm_map:
   {
   crichton_left_1_joint: 0,
@@ -28,6 +32,8 @@ left_arm_map:
 right_arm_state: "state-right"
 right_arm_ref:   "ref-right"
 right_arm_mode:  "SNS_MOTOR_MODE_VEL"
+right_arm_max_vel:   0.4
+right_arm_max_accel: 0.1
 right_arm_map:
   {
   crichton_right_1_joint: 0,
@@ -43,6 +49,8 @@ right_arm_map:
 left_hand_state: "sdhstate-left"
 left_hand_ref:   "sdhref-left"
 left_hand_mode:  "SNS_MOTOR_MODE_POS"
+left_hand_max_vel:   5.0
+left_hand_max_accel: 5.0
 left_hand_map:
   {
   crichton_left_knuckle_joint: 0,
@@ -58,6 +66,8 @@ left_hand_map:
 right_hand_state: "sdhstate-right"
 right_hand_ref:   "sdhref-right"
 right_hand_mode:   "SNS_MOTOR_MODE_POS"
+right_hand_max_vel:   5.0
+right_hand_max_accel: 5.0
 right_hand_map:
   {
   crichton_right_knuckle_joint: 0,
