@@ -332,7 +332,7 @@ bool check_for_goal(const Eigen::VectorXd& goal,
                     struct sns_msg_motor_state* state)
 {
     for (int i = 0; i < state->header.n; i++)
-        if (std::abs(goal[i] - state->X[i].pos) > 0.005)
+        if (std::abs(goal[i] - state->X[i].pos) > 0.017453)   // 1 degree in radians
             return false;
     return true;
 }
