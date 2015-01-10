@@ -15,6 +15,7 @@ typedef apc_msgs::PrimitiveAction Action;
 struct Group
 {
     std::map<std::string, int> map;      // Mapping from joint name to reference index.
+    std::string name_group;              // Name of this group.
     std::string name_state;              // Name of read motor states channel.
     std::string name_ref;                // Name of send reference commands channel.
     ach_channel_t chan_state;            // Channel to read motor states from.
@@ -444,7 +445,7 @@ Result execute_trajectory(const Action& action,
         switch (group->mode)
         {
         case SNS_MOTOR_MODE_POS:
-            cmd = T.getPosition(time - start);
+            cmd = T.getPosition(duration); // HACK
             break;
         case SNS_MOTOR_MODE_VEL:
             cmd = T.getVelocity(time - start);
