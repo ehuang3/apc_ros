@@ -35,16 +35,14 @@ bool relative_to_object
 # if the action should be executed relative to the previous eef pose
 bool relative_to_previous_pose
 
-# if true, record a dense trajectory from teleoperation for playback
-bool record_dense_trajectory
+# if true, a dense trajectory from teleoperation for playback
+bool dense_trajectory
 
-# if true, linearly interpolate in the trajectory space
-bool interpolate_linear
+# if true, interpolate in cartesian space
+bool interpolate_cartesian
 
 # the type of trajectory message to use
-int32 use_type_trajectory
-int32 USE_JOINT_TRAJECTORY = 0
-int32 USE_EEF_TRAJECTORY = 1
+bool use_eef_trajectory
 
 # if applicable, the trajectory of the joints
 trajectory_msgs/JointTrajectory joint_trajectory
@@ -62,7 +60,7 @@ geometry_msgs/PoseArray object_trajectory
 bool stop_on_contact
 
 # use previous haptic experiences to gauge correctness of action execution
-bool use_haptic_profiles
+bool use_haptic_profile
 
 # the recorded force-torque profile
 geometry_msgs/Pose[] ft_profile
