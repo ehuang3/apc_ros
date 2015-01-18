@@ -6,7 +6,8 @@
   <arg name="debug" default="false" />
   <arg unless="$(arg debug)" name="launch_prefix" value="" />
   <arg     if="$(arg debug)" name="launch_prefix"
-	   value="gdb -x $(find apc_moveit_config)/launch/gdb_settings.gdb --ex run --args" />
+	   value="gdb -i=mi -x $(find apc_moveit_config)/launch/gdb_settings.gdb --args" />
+	   <!-- value="gdb -i=mi -\-annotate=3 -\-args" /> -->
 
   <!-- Verbose Mode Option -->
   <arg name="info" default="$(arg debug)" />
