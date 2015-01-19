@@ -144,7 +144,7 @@ add_executable(apc_trajectory_bridge       src/apc_trajectory_bridge.cc)
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
-# add_dependencies(apc_trajectory_node apc_control_generate_messages_cpp)
+add_dependencies(apc_trajectory_bridge apc_msgs_generate_messages_cpp)
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(apc_arm_trajectory_node
