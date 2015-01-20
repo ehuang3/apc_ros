@@ -82,10 +82,10 @@ CAN_SDH_R=1
 apc_start() {
     apc_ach_mk
 
-#     $SNS run -d -r lwa-left -- \
-#         can402 -f $CAN_L -R 1 -C 0 -n 3 -n 4 -n 5 -n 6 -n 7 -n 8 -n 9 -c ref-left -s state-left
-#     $SNS run -d -r lwa-right -- \
-#         can402 -f $CAN_R -R 1 -C 0 -n 3 -n 4 -n 5 -n 6 -n 7 -n 8 -n 9 -c ref-right -s state-right
+    $SNS run -d -r lwa-left -- \
+        can402 -f $CAN_L -R 1 -C 0 -n 3 -n 4 -n 5 -n 6 -n 7 -n 8 -n 9 -c ref-left -s state-left
+    $SNS run -d -r lwa-right -- \
+        can402 -f $CAN_R -R 1 -C 0 -n 3 -n 4 -n 5 -n 6 -n 7 -n 8 -n 9 -c ref-right -s state-right
 
 #     $SNS run -d -r torso -- \
 #         can402 -f can2 -R 1 -C 0 -n a  -c ref-torso -s state-torso
@@ -95,10 +95,10 @@ apc_start() {
 #     $SNS run -d -r ft-right -- \
 #         cftd -f $CAN_R -n 27 -c ft-right -b ft-bias-right -W 1e6 -F 500
 
-#     $SNS run -d -r sdh-left -- \
-#         sdhiod -b $CAN_SDH_L -c sdhref-left -s sdhstate-left
-#     $SNS run -d -r sdh-right -- \
-#         sdhiod -b $CAN_SDH_R -c sdhref-right -s sdhstate-right
+    $SNS run -d -r sdh-left -- \
+        sdhiod -b $CAN_SDH_L -c sdhref-left -s sdhstate-left
+    $SNS run -d -r sdh-right -- \
+        sdhiod -b $CAN_SDH_R -c sdhref-right -s sdhstate-right
 }
 
 apc_expunge() {
@@ -122,9 +122,9 @@ apc_expunge() {
 apc_stop() {
     $SNS kill lwa-left
     $SNS kill lwa-right
-    $SNS kill torso
-    $SNS kill ft-left
-    $SNS kill ft-right
+    # $SNS kill torso
+    # $SNS kill ft-left
+    # $SNS kill ft-right
     $SNS kill sdh-left
     $SNS kill sdh-right
 }
