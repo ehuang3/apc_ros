@@ -46,6 +46,8 @@ fi
 
 # Sns log channel.
 CHANNELS="sns-log"
+# Controller channels
+CHANNELS="$CHANNELS lwa-left lwa-right sdh-left sdh-right"
 # Motor state channels.
 CHANNELS="$CHANNELS state-torso state-left state-right sdhstate-left sdhstate-right"
 # Motor reference command channels.
