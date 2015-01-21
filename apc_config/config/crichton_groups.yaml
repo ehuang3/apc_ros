@@ -54,12 +54,12 @@ left_hand_max_accel: 0.1
 left_hand_map:
   {
   crichton_left_knuckle_joint: 0,
-  crichton_left_finger_12_joint: 1,
-  crichton_left_finger_13_joint: 2,
+  crichton_left_finger_22_joint: 1,
+  crichton_left_finger_23_joint: 2,
   crichton_left_thumb_2_joint: 3,
   crichton_left_thumb_3_joint: 4,
-  crichton_left_finger_22_joint: 5,
-  crichton_left_finger_23_joint: 6
+  crichton_left_finger_12_joint: 5,
+  crichton_left_finger_13_joint: 6
   }
 
 # Right hand
@@ -71,10 +71,10 @@ right_hand_max_accel: 0.1
 right_hand_map:
   {
   crichton_right_knuckle_joint: 0,
-  crichton_right_finger_12_joint: 1,
-  crichton_right_finger_13_joint: 2,
+  crichton_right_finger_22_joint: 1,
+  crichton_right_finger_23_joint: 2,
   crichton_right_thumb_2_joint: 3,
   crichton_right_thumb_3_joint: 4,
-  crichton_right_finger_22_joint: 5,
-  crichton_right_finger_23_joint: 6
+  crichton_right_finger_12_joint: 5,
+  crichton_right_finger_13_joint: 6
   }
