@@ -237,7 +237,7 @@
 			<child link="${name}_1_link"/>
 			<axis xyz="0 0 1"/>
 			<dynamics damping="10" />
-			<limit effort="370" velocity="2.0" lower="-6.2831853" upper="6.2831853"/>
+			<limit effort="370" velocity="2.0" lower="-3.14" upper="3.14"/>
 		</joint>
 
 
@@ -259,7 +259,7 @@
 			<child link="${name}_3_link"/>
 			<axis xyz="0 0 1"/>
 			<dynamics damping="5" />
-			<limit effort="176" velocity="2.0" lower="-6.2831853" upper="6.2831853"/>
+			<limit effort="176" velocity="2.0" lower="-3.14" upper="3.14"/>
 		</joint>
 
 
@@ -281,7 +281,7 @@
 			<child link="${name}_5_link"/>
 			<axis xyz="0 0 1" />
 			<dynamics damping="5" />
-			<limit effort="41.6" velocity="2.0" lower="-6.2831853" upper="6.2831853" />
+			<limit effort="41.6" velocity="2.0" lower="-3.14" upper="3.14" />
 		</joint>
 
 
@@ -303,7 +303,7 @@
 			<child link="${name}_7_link"/>
 			<axis xyz="0 0 -1" />
 			<dynamics damping="5" />
-			<limit effort="9.6" velocity="2.0" lower="-6.2831853" upper="6.2831853" />
+			<limit effort="9.6" velocity="2.0" lower="-3.14" upper="3.14" />
 		</joint>
 
         <!-- extensions -->
