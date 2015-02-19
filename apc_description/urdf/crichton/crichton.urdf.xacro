@@ -2,9 +2,9 @@
 <robot name="crichton" xmlns:xacro="http://www.ros.org/wiki/xacro">
 
     <!-- Include APC decriptions for LWA4 and SDH -->
-    <xacro:include filename="$(find apc_description)/urdf/lwa4d_torso/lwa4d_torso.urdf.xacro"/>
-    <xacro:include filename="$(find apc_description)/urdf/lwa4d/lwa4d.urdf.xacro" />
-    <xacro:include filename="$(find apc_description)/urdf/sdh/sdh.urdf.xacro"     />
+    <xacro:include filename="$(find apc_description)/urdf/lwa4d_torso/lwa4d_torso.xacro"/>
+    <xacro:include filename="$(find apc_description)/urdf/lwa4d/lwa4d.xacro" />
+    <xacro:include filename="$(find apc_description)/urdf/sdh/sdh.xacro"     />
     <xacro:include filename="$(find apc_description)/urdf/materials.urdf.xacro"   />
 
     <!-- Math constants -->

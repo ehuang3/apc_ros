@@ -35,3 +35,49 @@ controller_list:
       - crichton_right_finger_13_joint
       - crichton_right_thumb_2_joint
       - crichton_right_thumb_3_joint
+  - name: fake_crichton_fullbody_controller
+    joints:
+      - crichton_left_1_joint
+      - crichton_left_2_joint
+      - crichton_left_3_joint
+      - crichton_left_4_joint
+      - crichton_left_5_joint
+      - crichton_left_6_joint
+      - crichton_left_7_joint
+      - crichton_left_finger_22_joint
+      - crichton_left_finger_23_joint
+      - crichton_left_knuckle_joint
+      - crichton_left_finger_12_joint
+      - crichton_left_finger_13_joint
+      - crichton_left_thumb_2_joint
+      - crichton_left_thumb_3_joint
+      - crichton_right_1_joint
+      - crichton_right_2_joint
+      - crichton_right_3_joint
+      - crichton_right_4_joint
+      - crichton_right_5_joint
+      - crichton_right_6_joint
+      - crichton_right_7_joint
+      - crichton_right_finger_22_joint
+      - crichton_right_finger_23_joint
+      - crichton_right_knuckle_joint
+      - crichton_right_finger_12_joint
+      - crichton_right_finger_13_joint
+      - crichton_right_thumb_2_joint
+      - crichton_right_thumb_3_joint
+  - name: fake_crichton_dual_arm_controller
+    joints:
+      - crichton_left_1_joint
+      - crichton_left_2_joint
+      - crichton_left_3_joint
+      - crichton_left_4_joint
+      - crichton_left_5_joint
+      - crichton_left_6_joint
+      - crichton_left_7_joint
+      - crichton_right_1_joint
+      - crichton_right_2_joint
+      - crichton_right_3_joint
+      - crichton_right_4_joint
+      - crichton_right_5_joint
+      - crichton_right_6_joint
+      - crichton_right_7_joint

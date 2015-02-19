@@ -2,7 +2,7 @@
 
   <arg name="debug" default="false" />
   <arg unless="$(arg debug)" name="launch_prefix" value="" />
-  <arg     if="$(arg debug)" name="launch_prefix" value="gdb --ex run --args" />
+  <arg     if="$(arg debug)" name="launch_prefix" value="gdb -i=mi --args" />
 
   <arg name="config" default="false" />
   <arg unless="$(arg config)" name="command_args" value="" />

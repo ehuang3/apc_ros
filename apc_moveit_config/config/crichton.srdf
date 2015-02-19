@@ -46,6 +46,18 @@
         <joint name="crichton_right_7_joint" />
     </group>
     <group name="crichton_left_hand">
+        <link name="crichton_left_palm_link" />
+        <link name="crichton_left_finger_21_link" />
+        <link name="crichton_left_finger_22_link" />
+        <link name="crichton_left_finger_23_link" />
+        <link name="crichton_left_grasp_link" />
+        <link name="crichton_left_finger_11_link" />
+        <link name="crichton_left_finger_12_link" />
+        <link name="crichton_left_finger_13_link" />
+        <link name="crichton_left_thumb_1_link" />
+        <link name="crichton_left_thumb_2_link" />
+        <link name="crichton_left_thumb_3_link" />
+        <link name="crichton_left_tip_link" />
         <joint name="crichton_left_palm_joint" />
         <joint name="crichton_left_finger_21_joint" />
         <joint name="crichton_left_finger_22_joint" />
@@ -60,6 +72,18 @@
         <joint name="crichton_left_tip_joint" />
     </group>
     <group name="crichton_right_hand">
+        <link name="crichton_right_palm_link" />
+        <link name="crichton_right_finger_21_link" />
+        <link name="crichton_right_finger_22_link" />
+        <link name="crichton_right_finger_23_link" />
+        <link name="crichton_right_grasp_link" />
+        <link name="crichton_right_finger_11_link" />
+        <link name="crichton_right_finger_12_link" />
+        <link name="crichton_right_finger_13_link" />
+        <link name="crichton_right_thumb_1_link" />
+        <link name="crichton_right_thumb_2_link" />
+        <link name="crichton_right_thumb_3_link" />
+        <link name="crichton_right_tip_link" />
         <joint name="crichton_right_palm_joint" />
         <joint name="crichton_right_finger_21_joint" />
         <joint name="crichton_right_finger_22_joint" />
@@ -73,6 +97,169 @@
         <joint name="crichton_right_thumb_3_joint" />
         <joint name="crichton_right_tip_joint" />
     </group>
+    <group name="crichton_fullbody">
+        <group name="crichton_left_hand" />
+        <group name="crichton_right_hand" />
+        <group name="crichton_left_arm" />
+        <group name="crichton_right_arm" />
+    </group>
+    <group name="crichton_dual_arm">
+        <group name="crichton_left_arm" />
+        <group name="crichton_right_arm" />
+    </group>
+    <!--GROUP STATES: Purpose: Define a named state for a particular group, in terms of joint values. This is useful to define states like 'folded arms'-->
+    <group_state name="crichton_forward_zero" group="crichton_dual_arm">
+        <joint name="crichton_left_1_joint" value="0" />
+        <joint name="crichton_left_2_joint" value="-1.5707" />
+        <joint name="crichton_left_3_joint" value="0.015" />
+        <joint name="crichton_left_4_joint" value="0" />
+        <joint name="crichton_left_5_joint" value="0" />
+        <joint name="crichton_left_6_joint" value="0" />
+        <joint name="crichton_left_7_joint" value="0.015" />
+        <joint name="crichton_right_1_joint" value="0" />
+        <joint name="crichton_right_2_joint" value="1.5707" />
+        <joint name="crichton_right_3_joint" value="0" />
+        <joint name="crichton_right_4_joint" value="0" />
+        <joint name="crichton_right_5_joint" value="0" />
+        <joint name="crichton_right_6_joint" value="0" />
+        <joint name="crichton_right_7_joint" value="0" />
+    </group_state>
+    <group_state name="crichton_left_hand_zero" group="crichton_left_hand">
+        <joint name="crichton_left_finger_12_joint" value="0" />
+        <joint name="crichton_left_finger_13_joint" value="0" />
+        <joint name="crichton_left_finger_21_joint" value="0" />
+        <joint name="crichton_left_finger_22_joint" value="0" />
+        <joint name="crichton_left_finger_23_joint" value="0" />
+        <joint name="crichton_left_knuckle_joint" value="0" />
+        <joint name="crichton_left_thumb_2_joint" value="0" />
+        <joint name="crichton_left_thumb_3_joint" value="0" />
+    </group_state>
+    <group_state name="crichton_right_hand_zero" group="crichton_right_hand">
+        <joint name="crichton_right_finger_12_joint" value="0" />
+        <joint name="crichton_right_finger_13_joint" value="0" />
+        <joint name="crichton_right_finger_21_joint" value="0" />
+        <joint name="crichton_right_finger_22_joint" value="0" />
+        <joint name="crichton_right_finger_23_joint" value="0" />
+        <joint name="crichton_right_knuckle_joint" value="0" />
+        <joint name="crichton_right_thumb_2_joint" value="0" />
+        <joint name="crichton_right_thumb_3_joint" value="0" />
+    </group_state>
+    <group_state name="crichton_left_foward_zero" group="crichton_left_arm">
+        <joint name="crichton_left_1_joint" value="0" />
+        <joint name="crichton_left_2_joint" value="-1.5707" />
+        <joint name="crichton_left_3_joint" value="0.015" />
+        <joint name="crichton_left_4_joint" value="0" />
+        <joint name="crichton_left_5_joint" value="0" />
+        <joint name="crichton_left_6_joint" value="0" />
+        <joint name="crichton_left_7_joint" value="0.015" />
+    </group_state>
+    <group_state name="crichton_right_forward_zero" group="crichton_right_arm">
+        <joint name="crichton_right_1_joint" value="0" />
+        <joint name="crichton_right_2_joint" value="1.5707" />
+        <joint name="crichton_right_3_joint" value="0" />
+        <joint name="crichton_right_4_joint" value="0" />
+        <joint name="crichton_right_5_joint" value="0" />
+        <joint name="crichton_right_6_joint" value="0" />
+        <joint name="crichton_right_7_joint" value="0" />
+    </group_state>
+    <group_state name="crichton_fullbody_forward_zero" group="crichton_fullbody">
+        <joint name="crichton_left_1_joint" value="0" />
+        <joint name="crichton_left_2_joint" value="-1.5707" />
+        <joint name="crichton_left_3_joint" value="0.015" />
+        <joint name="crichton_left_4_joint" value="0" />
+        <joint name="crichton_left_5_joint" value="0" />
+        <joint name="crichton_left_6_joint" value="0" />
+        <joint name="crichton_left_7_joint" value="0.015" />
+        <joint name="crichton_left_finger_12_joint" value="0" />
+        <joint name="crichton_left_finger_13_joint" value="0" />
+        <joint name="crichton_left_finger_21_joint" value="0" />
+        <joint name="crichton_left_finger_22_joint" value="0" />
+        <joint name="crichton_left_finger_23_joint" value="0" />
+        <joint name="crichton_left_knuckle_joint" value="0" />
+        <joint name="crichton_left_thumb_2_joint" value="0" />
+        <joint name="crichton_left_thumb_3_joint" value="0" />
+        <joint name="crichton_right_1_joint" value="0" />
+        <joint name="crichton_right_2_joint" value="1.5707" />
+        <joint name="crichton_right_3_joint" value="0" />
+        <joint name="crichton_right_4_joint" value="0" />
+        <joint name="crichton_right_5_joint" value="0" />
+        <joint name="crichton_right_6_joint" value="0" />
+        <joint name="crichton_right_7_joint" value="0" />
+        <joint name="crichton_right_finger_12_joint" value="0" />
+        <joint name="crichton_right_finger_13_joint" value="0" />
+        <joint name="crichton_right_finger_21_joint" value="0" />
+        <joint name="crichton_right_finger_22_joint" value="0" />
+        <joint name="crichton_right_finger_23_joint" value="0" />
+        <joint name="crichton_right_knuckle_joint" value="0" />
+        <joint name="crichton_right_thumb_2_joint" value="0" />
+        <joint name="crichton_right_thumb_3_joint" value="0" />
+    </group_state>
+    <group_state name="crichton_fullbody_vertical_zero" group="crichton_fullbody">
+        <joint name="crichton_left_1_joint" value="1.5707" />
+        <joint name="crichton_left_2_joint" value="-1.5707" />
+        <joint name="crichton_left_3_joint" value="0.015" />
+        <joint name="crichton_left_4_joint" value="0" />
+        <joint name="crichton_left_5_joint" value="0" />
+        <joint name="crichton_left_6_joint" value="0" />
+        <joint name="crichton_left_7_joint" value="0.015" />
+        <joint name="crichton_left_finger_12_joint" value="0" />
+        <joint name="crichton_left_finger_13_joint" value="0" />
+        <joint name="crichton_left_finger_21_joint" value="0" />
+        <joint name="crichton_left_finger_22_joint" value="0" />
+        <joint name="crichton_left_finger_23_joint" value="0" />
+        <joint name="crichton_left_knuckle_joint" value="0" />
+        <joint name="crichton_left_thumb_2_joint" value="0" />
+        <joint name="crichton_left_thumb_3_joint" value="0" />
+        <joint name="crichton_right_1_joint" value="-1.5707" />
+        <joint name="crichton_right_2_joint" value="1.5707" />
+        <joint name="crichton_right_3_joint" value="0" />
+        <joint name="crichton_right_4_joint" value="0" />
+        <joint name="crichton_right_5_joint" value="0" />
+        <joint name="crichton_right_6_joint" value="0" />
+        <joint name="crichton_right_7_joint" value="0" />
+        <joint name="crichton_right_finger_12_joint" value="0" />
+        <joint name="crichton_right_finger_13_joint" value="0" />
+        <joint name="crichton_right_finger_21_joint" value="0" />
+        <joint name="crichton_right_finger_22_joint" value="0" />
+        <joint name="crichton_right_finger_23_joint" value="0" />
+        <joint name="crichton_right_knuckle_joint" value="0" />
+        <joint name="crichton_right_thumb_2_joint" value="0" />
+        <joint name="crichton_right_thumb_3_joint" value="0" />
+    </group_state>
+    <group_state name="crichton_vertical_zero" group="crichton_dual_arm">
+        <joint name="crichton_left_1_joint" value="1.5707" />
+        <joint name="crichton_left_2_joint" value="-1.5707" />
+        <joint name="crichton_left_3_joint" value="0.015" />
+        <joint name="crichton_left_4_joint" value="0" />
+        <joint name="crichton_left_5_joint" value="0" />
+        <joint name="crichton_left_6_joint" value="0" />
+        <joint name="crichton_left_7_joint" value="0.015" />
+        <joint name="crichton_right_1_joint" value="-1.5707" />
+        <joint name="crichton_right_2_joint" value="1.5707" />
+        <joint name="crichton_right_3_joint" value="0" />
+        <joint name="crichton_right_4_joint" value="0" />
+        <joint name="crichton_right_5_joint" value="0" />
+        <joint name="crichton_right_6_joint" value="0" />
+        <joint name="crichton_right_7_joint" value="0" />
+    </group_state>
+    <group_state name="crichton_left_vertical_zero" group="crichton_left_arm">
+        <joint name="crichton_left_1_joint" value="1.5707" />
+        <joint name="crichton_left_2_joint" value="-1.5707" />
+        <joint name="crichton_left_3_joint" value="0.015" />
+        <joint name="crichton_left_4_joint" value="0" />
+        <joint name="crichton_left_5_joint" value="0" />
+        <joint name="crichton_left_6_joint" value="0" />
+        <joint name="crichton_left_7_joint" value="0.015" />
+    </group_state>
+    <group_state name="crichton_right_vertical_zero" group="crichton_right_arm">
+        <joint name="crichton_right_1_joint" value="-1.5707" />
+        <joint name="crichton_right_2_joint" value="1.5707" />
+        <joint name="crichton_right_3_joint" value="0" />
+        <joint name="crichton_right_4_joint" value="0" />
+        <joint name="crichton_right_5_joint" value="0" />
+        <joint name="crichton_right_6_joint" value="0" />
+        <joint name="crichton_right_7_joint" value="0" />
+    </group_state>
     <!--END EFFECTOR: Purpose: Represent information about an end effector.-->
     <end_effector name="crichton_left_eef" parent_link="crichton_left_7_link" group="crichton_left_hand" parent_group="crichton_left_arm" />
     <end_effector name="crichton_right_eef" parent_link="crichton_right_7_link" group="crichton_right_hand" parent_group="crichton_right_arm" />
@@ -100,8 +287,6 @@
     <disable_collisions link1="crichton_left_2_link" link2="crichton_left_4_link" reason="Never" />
     <disable_collisions link1="crichton_left_2_link" link2="crichton_left_6_link" reason="Never" />
     <disable_collisions link1="crichton_left_2_link" link2="crichton_left_finger_11_link" reason="Never" />
-    <disable_collisions link1="crichton_left_2_link" link2="crichton_left_finger_12_link" reason="Never" />
-    <disable_collisions link1="crichton_left_2_link" link2="crichton_left_finger_21_link" reason="Never" />
     <disable_collisions link1="crichton_left_2_link" link2="crichton_middle_support" reason="Default" />
     <disable_collisions link1="crichton_left_2_link" link2="crichton_right_0_link" reason="Never" />
     <disable_collisions link1="crichton_left_2_link" link2="crichton_right_1_link" reason="Never" />
@@ -159,9 +344,28 @@
     <disable_collisions link1="crichton_left_5_link" link2="crichton_right_2_link" reason="Never" />
     <disable_collisions link1="crichton_left_5_link" link2="crichton_vertical_support" reason="Never" />
     <disable_collisions link1="crichton_left_6_link" link2="crichton_left_7_link" reason="Adjacent" />
+    <disable_collisions link1="crichton_left_6_link" link2="crichton_left_finger_11_link" reason="Never" />
+    <disable_collisions link1="crichton_left_6_link" link2="crichton_left_finger_12_link" reason="Never" />
+    <disable_collisions link1="crichton_left_6_link" link2="crichton_left_finger_13_link" reason="Never" />
+    <disable_collisions link1="crichton_left_6_link" link2="crichton_left_finger_21_link" reason="Never" />
+    <disable_collisions link1="crichton_left_6_link" link2="crichton_left_finger_22_link" reason="Never" />
+    <disable_collisions link1="crichton_left_6_link" link2="crichton_left_finger_23_link" reason="Never" />
+    <disable_collisions link1="crichton_left_6_link" link2="crichton_left_palm_link" reason="Never" />
+    <disable_collisions link1="crichton_left_6_link" link2="crichton_left_thumb_1_link" reason="Never" />
+    <disable_collisions link1="crichton_left_6_link" link2="crichton_left_thumb_2_link" reason="Never" />
+    <disable_collisions link1="crichton_left_6_link" link2="crichton_left_thumb_3_link" reason="Never" />
     <disable_collisions link1="crichton_left_6_link" link2="crichton_right_2_link" reason="Never" />
     <disable_collisions link1="crichton_left_6_link" link2="crichton_vertical_support" reason="Never" />
+    <disable_collisions link1="crichton_left_7_link" link2="crichton_left_finger_11_link" reason="Never" />
+    <disable_collisions link1="crichton_left_7_link" link2="crichton_left_finger_12_link" reason="Never" />
+    <disable_collisions link1="crichton_left_7_link" link2="crichton_left_finger_13_link" reason="Never" />
+    <disable_collisions link1="crichton_left_7_link" link2="crichton_left_finger_21_link" reason="Never" />
+    <disable_collisions link1="crichton_left_7_link" link2="crichton_left_finger_22_link" reason="Never" />
+    <disable_collisions link1="crichton_left_7_link" link2="crichton_left_finger_23_link" reason="Never" />
     <disable_collisions link1="crichton_left_7_link" link2="crichton_left_palm_link" reason="Adjacent" />
+    <disable_collisions link1="crichton_left_7_link" link2="crichton_left_thumb_1_link" reason="Never" />
+    <disable_collisions link1="crichton_left_7_link" link2="crichton_left_thumb_2_link" reason="Never" />
+    <disable_collisions link1="crichton_left_7_link" link2="crichton_left_thumb_3_link" reason="Never" />
     <disable_collisions link1="crichton_left_7_link" link2="crichton_vertical_support" reason="Never" />
     <disable_collisions link1="crichton_left_finger_11_link" link2="crichton_left_finger_12_link" reason="Adjacent" />
     <disable_collisions link1="crichton_left_finger_11_link" link2="crichton_left_finger_13_link" reason="Never" />
@@ -170,10 +374,6 @@
     <disable_collisions link1="crichton_left_finger_11_link" link2="crichton_left_palm_link" reason="Adjacent" />
     <disable_collisions link1="crichton_left_finger_11_link" link2="crichton_left_thumb_1_link" reason="Never" />
     <disable_collisions link1="crichton_left_finger_11_link" link2="crichton_left_thumb_2_link" reason="Never" />
-    <disable_collisions link1="crichton_left_finger_11_link" link2="crichton_right_finger_12_link" reason="Never" />
-    <disable_collisions link1="crichton_left_finger_11_link" link2="crichton_right_finger_21_link" reason="Never" />
-    <disable_collisions link1="crichton_left_finger_11_link" link2="crichton_right_finger_22_link" reason="Never" />
-    <disable_collisions link1="crichton_left_finger_11_link" link2="crichton_right_thumb_3_link" reason="Never" />
     <disable_collisions link1="crichton_left_finger_11_link" link2="crichton_vertical_support" reason="Never" />
     <disable_collisions link1="crichton_left_finger_12_link" link2="crichton_left_finger_13_link" reason="Adjacent" />
     <disable_collisions link1="crichton_left_finger_12_link" link2="crichton_left_finger_21_link" reason="Default" />
@@ -181,14 +381,10 @@
     <disable_collisions link1="crichton_left_finger_12_link" link2="crichton_left_palm_link" reason="Never" />
     <disable_collisions link1="crichton_left_finger_12_link" link2="crichton_left_thumb_1_link" reason="Never" />
     <disable_collisions link1="crichton_left_finger_12_link" link2="crichton_left_thumb_2_link" reason="Never" />
-    <disable_collisions link1="crichton_left_finger_12_link" link2="crichton_right_finger_21_link" reason="Never" />
+    <disable_collisions link1="crichton_left_finger_12_link" link2="crichton_right_thumb_1_link" reason="Never" />
     <disable_collisions link1="crichton_left_finger_12_link" link2="crichton_vertical_support" reason="Never" />
     <disable_collisions link1="crichton_left_finger_13_link" link2="crichton_left_finger_23_link" reason="Default" />
     <disable_collisions link1="crichton_left_finger_13_link" link2="crichton_left_palm_link" reason="Never" />
-    <disable_collisions link1="crichton_left_finger_13_link" link2="crichton_right_finger_21_link" reason="Never" />
-    <disable_collisions link1="crichton_left_finger_13_link" link2="crichton_right_thumb_1_link" reason="Never" />
-    <disable_collisions link1="crichton_left_finger_13_link" link2="crichton_right_thumb_2_link" reason="Never" />
-    <disable_collisions link1="crichton_left_finger_13_link" link2="crichton_right_thumb_3_link" reason="Never" />
     <disable_collisions link1="crichton_left_finger_13_link" link2="crichton_vertical_support" reason="Never" />
     <disable_collisions link1="crichton_left_finger_21_link" link2="crichton_left_finger_22_link" reason="Adjacent" />
     <disable_collisions link1="crichton_left_finger_21_link" link2="crichton_left_finger_23_link" reason="Never" />
@@ -197,25 +393,15 @@
     <disable_collisions link1="crichton_left_finger_21_link" link2="crichton_left_thumb_2_link" reason="Never" />
     <disable_collisions link1="crichton_left_finger_21_link" link2="crichton_left_thumb_3_link" reason="Never" />
     <disable_collisions link1="crichton_left_finger_21_link" link2="crichton_right_finger_11_link" reason="Never" />
-    <disable_collisions link1="crichton_left_finger_21_link" link2="crichton_right_finger_12_link" reason="Never" />
-    <disable_collisions link1="crichton_left_finger_21_link" link2="crichton_right_finger_21_link" reason="Never" />
-    <disable_collisions link1="crichton_left_finger_21_link" link2="crichton_right_finger_23_link" reason="Never" />
-    <disable_collisions link1="crichton_left_finger_21_link" link2="crichton_right_thumb_2_link" reason="Never" />
+    <disable_collisions link1="crichton_left_finger_21_link" link2="crichton_right_thumb_1_link" reason="Never" />
     <disable_collisions link1="crichton_left_finger_21_link" link2="crichton_vertical_support" reason="Never" />
     <disable_collisions link1="crichton_left_finger_22_link" link2="crichton_left_finger_23_link" reason="Adjacent" />
     <disable_collisions link1="crichton_left_finger_22_link" link2="crichton_left_palm_link" reason="Never" />
     <disable_collisions link1="crichton_left_finger_22_link" link2="crichton_left_thumb_1_link" reason="Never" />
     <disable_collisions link1="crichton_left_finger_22_link" link2="crichton_left_thumb_3_link" reason="Never" />
-    <disable_collisions link1="crichton_left_finger_22_link" link2="crichton_right_finger_11_link" reason="Never" />
-    <disable_collisions link1="crichton_left_finger_22_link" link2="crichton_right_finger_13_link" reason="Never" />
-    <disable_collisions link1="crichton_left_finger_22_link" link2="crichton_right_finger_21_link" reason="Never" />
-    <disable_collisions link1="crichton_left_finger_22_link" link2="crichton_right_finger_23_link" reason="Never" />
+    <disable_collisions link1="crichton_left_finger_22_link" link2="crichton_right_thumb_1_link" reason="Never" />
     <disable_collisions link1="crichton_left_finger_22_link" link2="crichton_vertical_support" reason="Never" />
     <disable_collisions link1="crichton_left_finger_23_link" link2="crichton_left_palm_link" reason="Never" />
-    <disable_collisions link1="crichton_left_finger_23_link" link2="crichton_right_finger_21_link" reason="Never" />
-    <disable_collisions link1="crichton_left_finger_23_link" link2="crichton_right_finger_23_link" reason="Never" />
-    <disable_collisions link1="crichton_left_finger_23_link" link2="crichton_right_thumb_1_link" reason="Never" />
-    <disable_collisions link1="crichton_left_finger_23_link" link2="crichton_right_thumb_3_link" reason="Never" />
     <disable_collisions link1="crichton_left_finger_23_link" link2="crichton_vertical_support" reason="Never" />
     <disable_collisions link1="crichton_left_palm_link" link2="crichton_left_thumb_1_link" reason="Adjacent" />
     <disable_collisions link1="crichton_left_palm_link" link2="crichton_left_thumb_2_link" reason="Never" />
@@ -223,22 +409,16 @@
     <disable_collisions link1="crichton_left_palm_link" link2="crichton_vertical_support" reason="Never" />
     <disable_collisions link1="crichton_left_thumb_1_link" link2="crichton_left_thumb_2_link" reason="Adjacent" />
     <disable_collisions link1="crichton_left_thumb_1_link" link2="crichton_left_thumb_3_link" reason="Never" />
-    <disable_collisions link1="crichton_left_thumb_1_link" link2="crichton_right_finger_21_link" reason="Never" />
-    <disable_collisions link1="crichton_left_thumb_1_link" link2="crichton_right_finger_22_link" reason="Never" />
-    <disable_collisions link1="crichton_left_thumb_1_link" link2="crichton_right_thumb_1_link" reason="Never" />
+    <disable_collisions link1="crichton_left_thumb_1_link" link2="crichton_right_finger_11_link" reason="Never" />
     <disable_collisions link1="crichton_left_thumb_1_link" link2="crichton_right_thumb_3_link" reason="Never" />
     <disable_collisions link1="crichton_left_thumb_1_link" link2="crichton_vertical_support" reason="Never" />
     <disable_collisions link1="crichton_left_thumb_2_link" link2="crichton_left_thumb_3_link" reason="Adjacent" />
-    <disable_collisions link1="crichton_left_thumb_2_link" link2="crichton_right_finger_12_link" reason="Never" />
-    <disable_collisions link1="crichton_left_thumb_2_link" link2="crichton_right_finger_13_link" reason="Never" />
-    <disable_collisions link1="crichton_left_thumb_2_link" link2="crichton_right_finger_22_link" reason="Never" />
-    <disable_collisions link1="crichton_left_thumb_2_link" link2="crichton_right_thumb_1_link" reason="Never" />
+    <disable_collisions link1="crichton_left_thumb_2_link" link2="crichton_right_finger_11_link" reason="Never" />
     <disable_collisions link1="crichton_left_thumb_2_link" link2="crichton_vertical_support" reason="Never" />
-    <disable_collisions link1="crichton_left_thumb_3_link" link2="crichton_right_finger_21_link" reason="Never" />
-    <disable_collisions link1="crichton_left_thumb_3_link" link2="crichton_right_finger_22_link" reason="Never" />
-    <disable_collisions link1="crichton_left_thumb_3_link" link2="crichton_right_finger_23_link" reason="Never" />
+    <disable_collisions link1="crichton_left_thumb_3_link" link2="crichton_right_thumb_1_link" reason="Never" />
     <disable_collisions link1="crichton_left_thumb_3_link" link2="crichton_vertical_support" reason="Never" />
     <disable_collisions link1="crichton_middle_support" link2="crichton_right_0_link" reason="Adjacent" />
+    <disable_collisions link1="crichton_middle_support" link2="crichton_right_1_link" reason="User" />
     <disable_collisions link1="crichton_middle_support" link2="crichton_right_2_link" reason="Never" />
     <disable_collisions link1="crichton_middle_support" link2="crichton_right_4_link" reason="Never" />
     <disable_collisions link1="crichton_middle_support" link2="crichton_vertical_support" reason="Adjacent" />
@@ -252,8 +432,6 @@
     <disable_collisions link1="crichton_right_2_link" link2="crichton_right_3_link" reason="Adjacent" />
     <disable_collisions link1="crichton_right_2_link" link2="crichton_right_4_link" reason="Never" />
     <disable_collisions link1="crichton_right_2_link" link2="crichton_right_6_link" reason="Never" />
-    <disable_collisions link1="crichton_right_2_link" link2="crichton_right_finger_21_link" reason="Never" />
-    <disable_collisions link1="crichton_right_2_link" link2="crichton_right_palm_link" reason="Never" />
     <disable_collisions link1="crichton_right_2_link" link2="crichton_vertical_support" reason="Never" />
     <disable_collisions link1="crichton_right_3_link" link2="crichton_right_4_link" reason="Adjacent" />
     <disable_collisions link1="crichton_right_3_link" link2="crichton_right_6_link" reason="Never" />
@@ -262,7 +440,6 @@
     <disable_collisions link1="crichton_right_3_link" link2="crichton_right_finger_12_link" reason="Never" />
     <disable_collisions link1="crichton_right_3_link" link2="crichton_right_finger_21_link" reason="Never" />
     <disable_collisions link1="crichton_right_3_link" link2="crichton_right_finger_22_link" reason="Never" />
-    <disable_collisions link1="crichton_right_3_link" link2="crichton_right_finger_23_link" reason="Never" />
     <disable_collisions link1="crichton_right_3_link" link2="crichton_right_palm_link" reason="Never" />
     <disable_collisions link1="crichton_right_3_link" link2="crichton_right_thumb_1_link" reason="Never" />
     <disable_collisions link1="crichton_right_3_link" link2="crichton_right_thumb_2_link" reason="Never" />
@@ -295,8 +472,27 @@
     <disable_collisions link1="crichton_right_5_link" link2="crichton_right_thumb_3_link" reason="Never" />
     <disable_collisions link1="crichton_right_5_link" link2="crichton_vertical_support" reason="Never" />
     <disable_collisions link1="crichton_right_6_link" link2="crichton_right_7_link" reason="Adjacent" />
+    <disable_collisions link1="crichton_right_6_link" link2="crichton_right_finger_11_link" reason="Never" />
+    <disable_collisions link1="crichton_right_6_link" link2="crichton_right_finger_12_link" reason="Never" />
+    <disable_collisions link1="crichton_right_6_link" link2="crichton_right_finger_13_link" reason="Never" />
+    <disable_collisions link1="crichton_right_6_link" link2="crichton_right_finger_21_link" reason="Never" />
+    <disable_collisions link1="crichton_right_6_link" link2="crichton_right_finger_22_link" reason="Never" />
+    <disable_collisions link1="crichton_right_6_link" link2="crichton_right_finger_23_link" reason="Never" />
+    <disable_collisions link1="crichton_right_6_link" link2="crichton_right_palm_link" reason="Never" />
+    <disable_collisions link1="crichton_right_6_link" link2="crichton_right_thumb_1_link" reason="Never" />
+    <disable_collisions link1="crichton_right_6_link" link2="crichton_right_thumb_2_link" reason="Never" />
+    <disable_collisions link1="crichton_right_6_link" link2="crichton_right_thumb_3_link" reason="Never" />
     <disable_collisions link1="crichton_right_6_link" link2="crichton_vertical_support" reason="Never" />
+    <disable_collisions link1="crichton_right_7_link" link2="crichton_right_finger_11_link" reason="Never" />
+    <disable_collisions link1="crichton_right_7_link" link2="crichton_right_finger_12_link" reason="Never" />
+    <disable_collisions link1="crichton_right_7_link" link2="crichton_right_finger_13_link" reason="Never" />
+    <disable_collisions link1="crichton_right_7_link" link2="crichton_right_finger_21_link" reason="Never" />
+    <disable_collisions link1="crichton_right_7_link" link2="crichton_right_finger_22_link" reason="Never" />
+    <disable_collisions link1="crichton_right_7_link" link2="crichton_right_finger_23_link" reason="Never" />
     <disable_collisions link1="crichton_right_7_link" link2="crichton_right_palm_link" reason="Adjacent" />
+    <disable_collisions link1="crichton_right_7_link" link2="crichton_right_thumb_1_link" reason="Never" />
+    <disable_collisions link1="crichton_right_7_link" link2="crichton_right_thumb_2_link" reason="Never" />
+    <disable_collisions link1="crichton_right_7_link" link2="crichton_right_thumb_3_link" reason="Never" />
     <disable_collisions link1="crichton_right_7_link" link2="crichton_vertical_support" reason="Never" />
     <disable_collisions link1="crichton_right_finger_11_link" link2="crichton_right_finger_12_link" reason="Adjacent" />
     <disable_collisions link1="crichton_right_finger_11_link" link2="crichton_right_finger_13_link" reason="Never" />
@@ -327,16 +523,13 @@
     <disable_collisions link1="crichton_right_finger_22_link" link2="crichton_right_palm_link" reason="Never" />
     <disable_collisions link1="crichton_right_finger_22_link" link2="crichton_right_thumb_1_link" reason="Never" />
     <disable_collisions link1="crichton_right_finger_22_link" link2="crichton_right_thumb_3_link" reason="Never" />
-    <disable_collisions link1="crichton_right_finger_22_link" link2="crichton_vertical_support" reason="Never" />
     <disable_collisions link1="crichton_right_finger_23_link" link2="crichton_right_palm_link" reason="Never" />
     <disable_collisions link1="crichton_right_finger_23_link" link2="crichton_vertical_support" reason="Never" />
     <disable_collisions link1="crichton_right_palm_link" link2="crichton_right_thumb_1_link" reason="Adjacent" />
     <disable_collisions link1="crichton_right_palm_link" link2="crichton_right_thumb_2_link" reason="Never" />
     <disable_collisions link1="crichton_right_palm_link" link2="crichton_right_thumb_3_link" reason="Never" />
-    <disable_collisions link1="crichton_right_palm_link" link2="crichton_vertical_support" reason="Never" />
     <disable_collisions link1="crichton_right_thumb_1_link" link2="crichton_right_thumb_2_link" reason="Adjacent" />
     <disable_collisions link1="crichton_right_thumb_1_link" link2="crichton_right_thumb_3_link" reason="Never" />
-    <disable_collisions link1="crichton_right_thumb_1_link" link2="crichton_vertical_support" reason="Never" />
     <disable_collisions link1="crichton_right_thumb_2_link" link2="crichton_right_thumb_3_link" reason="Adjacent" />
     <disable_collisions link1="crichton_right_thumb_2_link" link2="crichton_vertical_support" reason="Never" />
     <disable_collisions link1="crichton_right_thumb_3_link" link2="crichton_vertical_support" reason="Never" />

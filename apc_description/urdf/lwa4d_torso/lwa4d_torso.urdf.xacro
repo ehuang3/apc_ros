@@ -1,59 +1,18 @@
 <?xml version="1.0"?>
-<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+<robot name="lwa4d_torso" xmlns:xacro="http://www.ros.org/wiki/xacro">
 
-	<xacro:macro name="schunk_lwa4d_torso" params="parent name *origin">
+    <!-- Include decriptions for LWA4D_TORSO -->
+    <xacro:include filename="$(find apc_description)/urdf/lwa4d_torso/lwa4d_torso.xacro" />
 
-		<link name="${name}_vertical_support">
-			<inertial>
-				<origin xyz="0.0 0.0 0.0" rpy="0 0 0"/>
-				<mass value="5.0"/>
-				<inertia ixx="1" ixy="0.0" ixz="0.0" iyy="1" iyz="0.0" izz="1" />
-			</inertial>
-			<visual>
-				<origin xyz="-0.45 -0.45 0.0" rpy="0 0 0"/>
-				<geometry>
-					<mesh filename="package://apc_description/meshes/lwa4d_torso/vertical_support.dae" scale="1 1 1" />
-				</geometry>
-			</visual>
-			<collision>
-				<origin xyz="-0.45 -0.45 0.0" rpy="0 0 0"/>
-				<geometry>
-					<mesh filename="package://apc_description/meshes/lwa4d_torso/vertical_support.dae" scale="1 1 1" />
-				</geometry>
-			</collision>
-		</link>
+    <!-- Math constants -->
+    <xacro:property name="M_PI" value="3.141592653" />
 
-		<joint name="${name}_base_joint" type="fixed">
-			<xacro:insert_block name="origin"/>
-			<parent link="${parent}" />
-			<child  link="${name}_vertical_support" />
-		</joint>
+    <!-- LWA4D_TORSO origin. -->
+    <link name="lwa4d_torso_origin" />
 
-		<link name="${name}_middle_support">
-			<inertial>
-				<origin xyz="0.0 0.0 0.0" rpy="0 0 0"/>
-				<mass value="5.0"/>
-				<inertia ixx="1" ixy="0.0" ixz="0.0" iyy="1" iyz="0.0" izz="1" />
-			</inertial>
-			<visual>
-				<geometry>
-					<mesh filename="package://apc_description/meshes/lwa4d_torso/middle_support.dae" scale="1 1 1" />
-				</geometry>
-			</visual>
-			<collision>
-				<geometry>
-					<mesh filename="package://apc_description/meshes/lwa4d_torso/middle_support.dae" scale="1 1 1" />
-				</geometry>
-			</collision>
-		</link>
-
-		<!-- TODO Turn into revolute joint -->
-		<joint name="${name}_torso_joint" type="fixed">
-			<origin xyz="0 0 1.23" rpy="0 0 0" />
-			<parent link="${name}_vertical_support" />
-			<child  link="${name}_middle_support" />
-		</joint>
-
-	</xacro:macro>
+    <!-- Assemble LWA4D_TORSO hand -->
+    <xacro:schunk_lwa4d_torso parent="lwa4d_torso_origin" name="lwa4d_torso" >
+        <origin xyz="0 0 0" rpy="0 0 0" />
+    </xacro:schunk_lwa4d_torso>
 
 </robot>
