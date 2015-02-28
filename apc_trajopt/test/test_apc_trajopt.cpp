@@ -1,3 +1,4 @@
+#include <iostream>
 #include <gtest/gtest.h>
 #include <openrave-core.h>
 #include <openrave/openrave.h>
@@ -22,12 +23,12 @@ using namespace OpenRAVE;
 using namespace util;
 using namespace boost::assign;
 
-#define DATA_DIR "/home/ehuang/src/libs/trajopt/data"
+#define DATA_DIR "/home/ehuang/catkin_ws/src/apc_ros/apc_trajopt/data"
 #define ROBOT_DIR "/home/ehuang/catkin_ws/src/apc_ros/apc_description"
 
 namespace {
 
-bool plotting=true, verbose=false;
+bool plotting=false, verbose=false;
 
 #if 0
 OR::Transform randomReachablePose(RobotAndDOF& rad, KinBody::LinkPtr link) {
@@ -58,9 +59,11 @@ public:
   static void SetUpTestCase() {
     RAVELOG_DEBUG("SetupTestCase\n");
     RaveInitialize(false, verbose ? Level_Debug : Level_Info);
+    RaveSetDebugLevel(5);
     env = RaveCreateEnvironment();
     env->StopSimulation();
-    env->Load(string(ROBOT_DIR) + "collada/crichton/crichton.dae") ;
+    string robot = string(ROBOT_DIR) + "/collada/crichton/crichton.dae";
+    env->Load(robot);
     env->Load(string(DATA_DIR) + "/table.xml");
     if (plotting) {
       viewer.reset(new OSGViewer(env));
@@ -81,19 +84,22 @@ public:
 EnvironmentBasePtr PlanningTest::env;
 OSGViewerPtr PlanningTest::viewer;
 
-TEST_F(PlanningTest, numerical_ik1) {
-  Json::Value root = readJsonFile(string(DATA_DIR) + "/numerical_ik1.json");
-  TrajOptProbPtr prob = ConstructProblem(root, env);
-  ASSERT_TRUE(!!prob);
+// TEST_F(PlanningTest, numerical_ik1) {
+//   // std::cin.get();
 
-  BasicTrustRegionSQP opt(prob);
-//  opt.addCallback(boost::bind(&PlotCosts, boost::ref(prob->getCosts()),*prob->GetRAD(), prob->GetVars(), _1));
-  opt.initialize(DblVec(prob->GetNumDOF(), 0));
-  double tStart = GetClock();
-  opt.optimize();
-  RAVELOG_INFO("planning time: %.3f\n", GetClock()-tStart);
+//   Json::Value root = readJsonFile(string(DATA_DIR) + "/numerical_ik1.json");
+//   TrajOptProbPtr prob = ConstructProblem(root, env);
+//   ASSERT_TRUE(!!prob);
 
-}
+//   BasicTrustRegionSQP opt(prob);
+// //  opt.addCallback(boost::bind(&PlotCosts, boost::ref(prob->getCosts()),*prob->GetRAD(), prob->GetVars(), _1));
+//   opt.initialize(DblVec(prob->GetNumDOF(), 0));
+//   double tStart = GetClock();
+//   opt.optimize();
+//   RAVELOG_INFO("planning time: %.3f\n", GetClock()-tStart);
+
+// }
+
 
 TEST_F(PlanningTest, arm_around_table) {
   RAVELOG_DEBUG("TEST\n");
@@ -113,7 +119,7 @@ TEST_F(PlanningTest, arm_around_table) {
   if (plotting) {
     plotter.Add(prob->getCosts());
     if (plotting) opt.addCallback(boost::bind(&TrajPlotter::OptimizerCallback, boost::ref(plotter), _1, _2));
-    plotter.AddLink(pr2->GetLink("r_gripper_tool_frame"));
+    plotter.AddLink(pr2->GetLink("crichton_right_grasp_link"));
   }
   opt.initialize(trajToDblVec(prob->GetInitTraj()));
   double tStart = GetClock();

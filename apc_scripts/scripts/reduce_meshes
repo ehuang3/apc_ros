@@ -1,0 +1,136 @@
+#!/usr/bin/env python
+#
+# Copyright (c) 2015, Georgia Tech Research Corporation
+# All rights reserved.
+#
+# Author(s): Eric Huang <ehuang@gatech.edu>
+# Georgia Tech Humanoid Robotics Lab
+# Under Direction of Prof. Andrea Thomaz <athomaz@cc.gatech.edu>
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions
+# are met:
+#
+#     * Redistributions of source code must retain the above
+#       copyright notice, this list of conditions and the following
+#       disclaimer.
+#     * Redistributions in binary form must reproduce the above
+#       copyright notice, this list of conditions and the following
+#       disclaimer in the documentation and/or other materials
+#       provided with the distribution.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+# ''AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+# FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+# COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+# INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+# (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+# SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+# HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+# STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
+# OF THE POSSIBILITY OF SUCH DAMAGE.
+
+import os
+import subprocess
+import shutil
+from xml.dom import minidom
+import rospy
+import rospkg
+
+def main():
+    # Get path to meshlab script.
+    script_abs = os.path.realpath(__file__)
+    head, tail = os.path.split(script_abs)
+    mlx_abs = os.path.join(head, 'reduce_meshes.mlx')
+    # Get path to models.
+    rospack = rospkg.RosPack()
+    path = rospack.get_path('apc_description')
+    # Walk the object model directory.
+    for root, subdirs, files in os.walk(path + '/' + 'objects'):
+        # Split the path into head and tail.
+        object_dir, tail = os.path.split(root)
+        # Open the recommended kinbody xml.
+        if tail == 'kinbody':
+            # Get path to recommended kinbody xml.
+            kinbody_xml = os.path.join(root, 'recommended.kinbody.xml')
+            # Assert the file exists.
+            assert os.path.isfile(kinbody_xml)
+            # Open xml file.
+            xml_doc = minidom.parse(kinbody_xml)
+            # Get kinbody name.
+            tags = xml_doc.getElementsByTagName('KinBody')
+            kinbody_name = tags[0].attributes['name'].value
+            # Get render path.
+            tags = xml_doc.getElementsByTagName('Render')
+            mesh_rel = tags[0].firstChild.nodeValue
+            # Print mesh path.
+            mesh_abs = os.path.normpath(os.path.join(root, mesh_rel))
+            # Create reduced mesh path.
+            reduced_mesh_abs = os.path.join(object_dir, 'reduced_meshes')
+            if not os.path.exists(reduced_mesh_abs):
+                os.mkdir(reduced_mesh_abs)
+            # Create reduced kinbody path.
+            reduced_kinbody_abs = os.path.join(object_dir, 'reduced_kinbody')
+            if not os.path.exists(reduced_kinbody_abs):
+                os.mkdir(reduced_kinbody_abs)
+            # One megabyte.
+            MB = 1024.0*1024.0
+            # Get the mesh size.
+            mesh_size = os.stat(mesh_abs).st_size
+            # Get the name of the original mesh.
+            _, mesh_name = os.path.split(mesh_abs)
+            # Get the mesh format.
+            mesh_fmt = mesh_name.split('.')[-1]
+            # Get output mesh.
+            mesh_out = os.path.join(reduced_mesh_abs, 'reduced_mesh' + '.0.' + mesh_fmt)
+            # Run meshlab script until mesh is < 1M.
+            mesh_in = mesh_abs
+            while mesh_size > MB:
+                # Loop until we find that we've already generated a mesh that is
+                # < 1 MB or until we find the next mesh we need to generate.
+                while os.path.exists(mesh_out):
+                    # Store the existing output mesh as the next input mesh.
+                    mesh_in = mesh_out
+                    # Check size up to latest variant of the reduced mesh.
+                    mesh_size = os.stat(mesh_out).st_size
+                    # Create the next mesh output path.
+                    mesh_head, mesh_tail = os.path.split(mesh_out)
+                    tokens = mesh_tail.split('.')
+                    i = int(tokens[1]) + 1
+                    mesh_out = os.path.join(reduced_mesh_abs, 'reduced_mesh' + '.' + str(i) + '.' + mesh_fmt)
+                # If the last generated mesh size is already < 1MB, break.
+                if mesh_size > MB:
+                    cmd = 'meshlabserver -i ' + mesh_in + ' -s ' + mlx_abs + ' -o ' + mesh_out + ' -l /tmp/log'
+                    print '========================================'
+                    print 'input:', mesh_in
+                    print 'output:', mesh_out
+                    subprocess.call(cmd, shell=True)
+                    # print cmd
+                    print 'before:', os.stat(mesh_abs).st_size / MB, "MB"
+                    print 'after: ', os.stat(mesh_out).st_size / MB, "MB"
+            # Copy the final reduced mesh into 'object_name.stl'
+            _, object_name = os.path.split(object_dir)
+            object_out = os.path.join(reduced_mesh_abs, object_name + '.stl')
+            shutil.copyfile(mesh_in, object_out)
+            # Replace rendering and data meshes with their reduced versions.
+            render_element = xml_doc.getElementsByTagName('Render')[0]
+            render_element.firstChild.replaceWholeText('../reduced_meshes/' + object_name + '.stl')
+            data_element = xml_doc.getElementsByTagName('Data')[0]
+            data_element.firstChild.replaceWholeText('../reduced_meshes/' + object_name + '.stl')
+            # Make many copies of the object's kinbody xml into the reduced
+            # kinbody folder. This allows us to load mutliple of the same object
+            # into openrave.
+            for i in range(10):
+                # Get the KinBody element.
+                kinbody_element = xml_doc.getElementsByTagName('KinBody')[0]
+                # Append a number to the name.
+                kinbody_element.attributes['name'].value = object_name + '_' + str(i)
+                # Create path to new kinbody xml file.
+                xml_out = os.path.join(reduced_kinbody_abs, 'kinbody.' + str(i) + '.xml')
+                # Write the new xml to disk.
+                xml_doc.writexml(open(xml_out, 'w'))
+
+if __name__ == "__main__":
+    main()

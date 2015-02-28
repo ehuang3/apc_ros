@@ -4,7 +4,7 @@
   <arg name="db" default="true" />
 
   <!-- By default, we are not in debug mode -->
-  <arg name="debug" default="false" />
+  <arg name="debug" default="true" />
 
   <!-- Load the URDF, SRDF and other .yaml configuration files on the param server -->
   <include file="$(find apc_moveit_config)/launch/planning_context.launch">
@@ -20,7 +20,7 @@
   </node>
   
   <!-- Given the published joint states, publish tf for the robot links -->
-  <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" respawn="true" output="screen" />
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" respawn="true" output="log" />
 
   <!-- Run the trajectory servers but do not let them execute! -->
   <include file="$(find apc_launch)/launch/crichton_trajectory_server.launch">
