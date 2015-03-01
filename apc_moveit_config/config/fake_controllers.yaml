@@ -37,6 +37,7 @@ controller_list:
       - crichton_right_thumb_3_joint
   - name: fake_crichton_fullbody_controller
     joints:
+      - crichton_torso_joint
       - crichton_left_1_joint
       - crichton_left_2_joint
       - crichton_left_3_joint
@@ -67,6 +68,7 @@ controller_list:
       - crichton_right_thumb_3_joint
   - name: fake_crichton_dual_arm_controller
     joints:
+      - crichton_torso_joint
       - crichton_left_1_joint
       - crichton_left_2_joint
       - crichton_left_3_joint

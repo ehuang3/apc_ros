@@ -48,10 +48,13 @@
 		</link>
 
 		<!-- TODO Turn into revolute joint -->
-		<joint name="${name}_torso_joint" type="fixed">
+		<joint name="${name}_torso_joint" type="revolute">
 			<origin xyz="0 0 1.23" rpy="0 0 0" />
 			<parent link="${name}_vertical_support" />
 			<child  link="${name}_middle_support" />
+			<axis xyz="0 0 -1" />
+			<dynamics damping="5" />
+			<limit effort="20.1" velocity="2.0" lower="-1.8" upper="1.8" />
 		</joint>
 
 	</xacro:macro>

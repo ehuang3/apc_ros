@@ -98,12 +98,14 @@
         <joint name="crichton_right_tip_joint" />
     </group>
     <group name="crichton_fullbody">
+        <joint name="crichton_torso_joint" />
         <group name="crichton_left_hand" />
         <group name="crichton_right_hand" />
         <group name="crichton_left_arm" />
         <group name="crichton_right_arm" />
     </group>
     <group name="crichton_dual_arm">
+        <joint name="crichton_torso_joint" />
         <group name="crichton_left_arm" />
         <group name="crichton_right_arm" />
     </group>
@@ -123,6 +125,7 @@
         <joint name="crichton_right_5_joint" value="0" />
         <joint name="crichton_right_6_joint" value="0" />
         <joint name="crichton_right_7_joint" value="0" />
+        <joint name="crichton_torso_joint" value="0" />
     </group_state>
     <group_state name="crichton_left_hand_zero" group="crichton_left_hand">
         <joint name="crichton_left_finger_12_joint" value="0" />

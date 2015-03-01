@@ -56,7 +56,7 @@ import argparse
 apc_objects = ['champion_copper_plus_spark_plug', 'mark_twain_huckleberry_finn', 'cheezit_big_original']
 env = None
 debug = True
-interactive = True
+interactive = False
 
 def init_openrave():
     """Initialize OpenRAVE and load models"""
@@ -75,27 +75,12 @@ def init_openrave():
     # Load robot.
     env.Load(path + "/collada/crichton/crichton.dae")
 
-    # Load shelf.
-    # env.Load(path + "/meshes/kiva_pod/pod_lowres.xml")
-
-    # Load objects.
-    # object_dirs = next(os.walk(path + '/objects/'))[1]
-    # for object in apc_objects:
-    #     print "Loading object", object
-    #     env.Load(path + '/objects/' + object + '/reduced_kinbody/recommended.kinbody.xml')
 
 def init_trajopt():
     """Initialize trajectory optimization"""
-    trajoptpy.SetInteractive(interactive) # pause every iteration, until you press 'p'. Press escape to disable further plotting
+    # Pause every iteration, until you press 'p'. Press escape to disable further plotting.
+    trajoptpy.SetInteractive(interactive)
 
-
-# def profile_load(env):
-#     path = '/home/ehuang/catkin_ws/src/apc_ros/apc_description/objects/champion_copper_plus_spark_plug/reduced_kinbody'
-#     cProfile.runctx('env.Load(path + "/1900K.kinbody.xml")', globals(), locals())
-#     cProfile.runctx('env.Load(path + "/992K.kinbody.xml")', globals(), locals())
-#     cProfile.runctx('env.Load(path + "/495K.kinbody.xml")', globals(), locals())
-#     cProfile.runctx('env.Load(path + "/248K.kinbody.xml")', globals(), locals())
-#     # cProfile.runctx('env.Load(path + "/1900K.kinbody.xml")', globals(), locals())
 
 def load_object(object_name, i):
     """Load 'i'-th instance of 'object_name' into openrave environment."""
@@ -105,12 +90,12 @@ def load_object(object_name, i):
     rospack = rospkg.RosPack()
     path = rospack.get_path('apc_description')
     # Join together the object path to load.
-    obj_path = os.path.join(path, object_name)
+    obj_path = os.path.join(path, 'objects')
+    obj_path = os.path.join(obj_path, object_name)
     obj_path = os.path.join(obj_path, 'reduced_kinbody')
     obj_path = os.path.join(obj_path, 'kinbody.' + str(i) + '.xml')
     # Load object.
     env.Load(obj_path)
-
 
 def load_and_set_objects(request):
     """ Load new objects and set them to the correct transform."""
@@ -130,16 +115,16 @@ def load_and_set_objects(request):
         if not col_obj.id.split('.')[-1] == 'stl':
             rospy.logwarn('Recieved non-stl object %s', col_obj.id)
         # Object base name, i.e. 'cheezit_big_original'.
-        col_obj_base = col_obj.id.partition('.')
+        col_obj_base = col_obj.id.partition('.')[0]
         # Convert collision object name to xml name.
         i = 0
         col_obj_name = col_obj_base + '_' + str(i)
         # Look for the next unloaded or dirty object.
-        while col_obj_name in dict.keys() and dirty[col_obj_name] == 0:
+        while col_obj_name in dirty.keys() and dirty[col_obj_name] == 0:
             i = i + 1
             col_obj_name = col_obj_base + '_' + str(i)
         # If the collision object has not been loaded yet, load it.
-        if col_obj_name not in dict.keys():
+        if col_obj_name not in dirty.keys():
             load_object(col_obj_base, i)
         # Construct transform from scene world data.
         pose = col_obj.mesh_poses[0]
@@ -148,45 +133,22 @@ def load_and_set_objects(request):
         v = np.array([pose.position.x, pose.position.y, pose.position.z])
         T[:3, 3] = v
         # Copy pose into openrave KinBody.
-        env.GetBody(col_obj_name).SetTransform(T)
+        env.GetKinBody(col_obj_name).SetTransform(T)
         # Mark the openrave object in the dirty map as 'clean'.
         dirty[col_obj_name] = 0
 
     # For each object that is still dirty...
-    for col_obj_name, dirt in dirty:
-        # Remove from the openrave environment.
-        if dirt == 1:
-            env.RemoveBody(col_obj_name)
+    if dirty:
+        for col_obj_name in dirty.keys():
+            # Remove from the openrave environment.
+            if dirty[col_obj_name] == 1:
+                env.RemoveBody(col_obj_name)
 
 
-def motion_planning_service(request):
-    """Perform motion planning using trajectory optimization"""
+def set_robot(request):
+    """Set robot 'crichton' to correct joint angles"""
     # Use the global copy of openrave environment.
     global env
-    # Load and set objects to correct location.
-    load_and_set_objects(request)
-    # Set objects to correct locations.
-    with env:
-        for body in env.GetBodies():
-            match = False
-            for co in request.scene.world.collision_objects:
-                # if the names match sans file endings
-                if body.GetName() == co.id.partition('.')[0]:
-                    assert len(co.mesh_poses) == 1
-                    # copy pose into openrave body
-                    pose = co.mesh_poses[0]
-                    q = np.array([pose.orientation.x, pose.orientation.y, pose.orientation.z, pose.orientation.w])
-                    T = tf.transformations.quaternion_matrix(q)
-                    v = np.array([pose.position.x, pose.position.y, pose.position.z])
-                    T[:3, 3] = v
-                    body.SetTransform(T)
-                    # record match
-                    match = True
-                    if debug:
-                        print "Setting", body.GetName(), 'to:'
-                        print body.GetTransform()
-            if match == False:
-                print "No match found for", body.GetName()
 
     # Set robot to correct joint angles and positions.
     joint_state = request.start_state.joint_state
@@ -199,12 +161,28 @@ def motion_planning_service(request):
             for joint in robot.GetJoints():
                 for i in range(len(joint_state.name)):
                     if joint.GetName() == joint_state.name[i]:
-                        if debug:
-                            print "Setting joint", joint.GetName(), "to", joint_state.name[i], ":", joint_state.position[i]
+                        rospy.logdebug("Setting joint %s to %s:%f",
+                                       joint.GetName(), joint_state.name[i], joint_state.position[i])
                         dofs[joint.GetDOFIndex()] = joint_state.position[i]
             robot.SetDOFValues(dofs)
-    if debug:
-        print "Robot starting DOF values\n", robot.GetDOFValues()
+    # Debug output joint angles.
+    rospy.logdebug("Robot starting DOF values\n%s", str(robot.GetDOFValues()))
+
+
+def motion_planning_service(request):
+    """Perform motion planning using trajectory optimization"""
+    # Use the global copy of openrave environment.
+    global env
+
+    # Load and set objects to correct location.
+    load_and_set_objects(request)
+
+    # Get the robot.
+    with env:
+        robot = env.GetRobot('crichton')
+
+    # Set robot to correct joint angles and positions.
+    set_robot(request)
 
     # Construct goal state.
     joint_target = np.zeros(robot.GetDOF())
