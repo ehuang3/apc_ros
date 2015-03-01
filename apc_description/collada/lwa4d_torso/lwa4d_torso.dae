@@ -4,8 +4,8 @@
 		<contributor>
 			<authoring_tool>URDF Collada Writer</authoring_tool>
 		</contributor>
-		<created>2015-02-19T16:21:59.000000</created>
-		<modified>2015-02-19T16:21:59.000000</modified>
+		<created>2015-02-28T20:05:06.000000</created>
+		<modified>2015-02-28T20:05:06.000000</modified>
 		<unit/>
 		<up_axis>Z_UP</up_axis>
 	</asset>
@@ -35,7 +35,7 @@
 							<rotate>1 0 0 0</rotate>
 							<translate>0 0 1.23</translate>
 							<rotate>1 0 0 0</rotate>
-							<rotate sid="node_lwa4d_torso_torso_joint_axis0">0 0 0 0</rotate>
+							<rotate sid="node_lwa4d_torso_torso_joint_axis0">0 0 -1 0</rotate>
 							<translate>0 0 0</translate>
 							<rotate>1 0 0 0</rotate>
 							<instance_geometry url="#gkmodel0_lwa4d_torso_middle_support_geom0">
@@ -198,10 +198,10 @@
 				</joint>
 				<joint name="lwa4d_torso_torso_joint" sid="lwa4d_torso_torso_joint">
 					<revolute sid="axis0">
-						<axis>0 0 0</axis>
+						<axis>0 0 -1</axis>
 						<limits>
-							<min>0</min>
-							<max>0</max>
+							<min>-103.1324031235482</min>
+							<max>103.1324031235482</max>
 						</limits>
 					</revolute>
 				</joint>
@@ -243,7 +243,14 @@
 				</instance_articulated_system>
 				<technique_common>
 					<axis_info axis="robot0_kinematics/axis_info_inst0"/>
-					<axis_info axis="robot0_kinematics/axis_info_inst1"/>
+					<axis_info axis="robot0_kinematics/axis_info_inst1">
+						<speed>
+							<float>2</float>
+						</speed>
+						<acceleration>
+							<float>20.1</float>
+						</acceleration>
+					</axis_info>
 				</technique_common>
 			</motion>
 		</articulated_system>
@@ -285,17 +292,17 @@
 					</axis_info>
 					<axis_info sid="axis_info_inst1" axis="kmodel0/lwa4d_torso_torso_joint/axis0">
 						<active>
-							<bool>false</bool>
+							<bool>true</bool>
 						</active>
 						<locked>
 							<bool>false</bool>
 						</locked>
 						<limits>
 							<min>
-								<float>0</float>
+								<float>-103.1324031235482</float>
 							</min>
 							<max>
-								<float>0</float>
+								<float>103.1324031235482</float>
 							</max>
 						</limits>
 					</axis_info>
