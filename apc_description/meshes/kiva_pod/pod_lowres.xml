@@ -1,0 +1,8 @@
+<KinBody name="pod_lowres">
+  <Body type="static" name="pod_lowres">
+    <Geom type="trimesh">
+      <Render>pod_lowres.stl</Render>
+      <Data>pod_lowres.stl</Data>
+    </Geom>
+  </Body>
+</KinBody>
