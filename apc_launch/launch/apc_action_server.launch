@@ -1,0 +1,17 @@
+<launch>
+    <arg name="allow_execution" default="false"/>
+    <arg name="action_topic"    default="/crichton/trajectory_bridge"/>
+    <arg name="debug" default="false" />
+    <arg unless="$(arg debug)" name="launch_prefix" value="" />
+    <arg     if="$(arg debug)" name="launch_prefix" value="gdb -i=mi --args" />
+    <!-- <arg     if="$(arg debug)" name="launch_prefix" value="valgrind " /> -->
+
+    <node name="apc_action_server" pkg="apc_control" type="apc_action_server" respawn="false"
+	      output="screen" launch-prefix="$(arg launch_prefix)">
+        <param name="allow_execution" value="$(arg allow_execution)" />
+        <param name="action_topic"    value="$(arg action_topic)" />
+        <param name="max_vel"         value="0.4" />
+        <param name="max_accel"       value="0.1" />
+        <rosparam command="load" file="$(find apc_config)/config/crichton_groups.yaml" />
+    </node>
+</launch>

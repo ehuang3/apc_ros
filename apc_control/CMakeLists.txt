@@ -113,8 +113,8 @@ include_directories(${AMINO_INCLUDE_DIR}  ${ACH_INCLUDE_DIR} ${SNS_INCLUDE_DIR} 
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-  # INCLUDE_DIRS include
-  # LIBRARIES apc_control
+  INCLUDE_DIRS include
+  LIBRARIES apc_control
   CATKIN_DEPENDS actionlib actionlib_msgs control_msgs roscpp rospy std_msgs apc_msgs apc_path
   DEPENDS system_lib
 )
@@ -127,13 +127,14 @@ catkin_package(
 ## Your package locations should be listed before other locations
 # include_directories(include)
 include_directories(
-  ${catkin_INCLUDE_DIRS}
+    include
+    ${catkin_INCLUDE_DIRS}
 )
 
 ## Declare a cpp library
-# add_library(apc_control
-#   src/${PROJECT_NAME}/apc_control.cpp
-# )
+add_library(apc_control
+  src/${PROJECT_NAME}/motor_group.cpp
+)
 
 ## Declare a cpp executable
 add_executable(apc_arm_trajectory_node     src/apc_arm_trajectory_node.cc)
@@ -141,10 +142,12 @@ add_executable(apc_gripper_trajectory_node src/apc_gripper_trajectory_node.cc)
 add_executable(apc_arm_state_publisher     src/apc_arm_state_publisher.cc)
 add_executable(apc_gripper_state_publisher src/apc_gripper_state_publisher.cc)
 add_executable(apc_trajectory_bridge       src/apc_trajectory_bridge.cc)
+add_executable(apc_action_server           src/apc_action_server.cpp)
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
 add_dependencies(apc_trajectory_bridge apc_msgs_generate_messages_cpp)
+add_dependencies(apc_action_server     apc_msgs_generate_messages_cpp)
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(apc_arm_trajectory_node
@@ -161,6 +164,10 @@ target_link_libraries(apc_gripper_state_publisher
 )
 target_link_libraries(apc_trajectory_bridge
   ${catkin_LIBRARIES}
+)
+target_link_libraries(apc_action_server
+  ${catkin_LIBRARIES}
+  apc_control
 )
 
 #############

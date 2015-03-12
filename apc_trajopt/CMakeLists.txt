@@ -15,7 +15,7 @@ find_package(catkin REQUIRED COMPONENTS
     )
 
 ## System dependencies are found with CMake's conventions
-find_package(trajopt REQUIRED)
+find_package(trajopt)
 
 
 ## Uncomment this if the package has a setup.py. This macro ensures
@@ -104,9 +104,9 @@ include_directories(
 )
 
 ## Declare a cpp library
-add_library(apc_trajopt
-    src/${PROJECT_NAME}/bindings.cpp
-)
+# add_library(apc_trajopt
+#     src/${PROJECT_NAME}/bindings.cpp
+# )
 
 ## Declare a cpp executable
 # add_executable(apc_trajopt_node src/apc_trajopt_node.cpp)
@@ -161,20 +161,20 @@ add_library(apc_trajopt
 #############
 
 ## Add gtest based cpp test target and link libraries
-catkin_add_gtest(${PROJECT_NAME}-test test/test_apc_trajopt.cpp)
-if(TARGET ${PROJECT_NAME}-test)
-    target_link_libraries(${PROJECT_NAME}-test 
-        ${PROJECT_NAME} 
-        ${GTEST_LIBRARIES} 
-        ${catkin_LIBRARIES} 
-        ${TRAJOPT_LIBRARIES}
-    )
-endif()
+# catkin_add_gtest(${PROJECT_NAME}-test test/test_apc_trajopt.cpp)
+# if(TARGET ${PROJECT_NAME}-test)
+#     target_link_libraries(${PROJECT_NAME}-test 
+#         ${PROJECT_NAME} 
+#         ${GTEST_LIBRARIES} 
+#         ${catkin_LIBRARIES} 
+#         ${TRAJOPT_LIBRARIES}
+#     )
+# endif()
 
 set (CMAKE_CXX_LINK_EXECUTABLE "${CMAKE_CXX_LINK_EXECUTABLE} -ldl")
 
-catkin_add_gtest(planning_test test/test_planning.cpp)
-target_link_libraries(planning_test ${PROJECT_NAME} ${catkin_LIBRARIES} ${TRAJOPT_LIBRARIES} ${GTEST_LIBRARIES})
+# catkin_add_gtest(planning_test test/test_planning.cpp)
+# target_link_libraries(planning_test ${PROJECT_NAME} ${catkin_LIBRARIES} ${TRAJOPT_LIBRARIES} ${GTEST_LIBRARIES})
 
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
