@@ -87,7 +87,7 @@ catkin_package(
     INCLUDE_DIRS include
     LIBRARIES apc_trajopt
     CATKIN_DEPENDS apc_msgs control_msgs roscpp rospy
-    DEPENDS system_lib sco trajopt
+    DEPENDS system_lib #sco trajopt
 )
 
 ###########
