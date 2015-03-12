@@ -83,12 +83,12 @@ find_package(trajopt)
 ## LIBRARIES: libraries you create in this project that dependent projects also need
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
-catkin_package(
-    INCLUDE_DIRS include
-    LIBRARIES apc_trajopt
-    CATKIN_DEPENDS apc_msgs control_msgs roscpp rospy
-    DEPENDS system_lib #sco trajopt
-)
+# catkin_package(
+#     INCLUDE_DIRS include
+#     LIBRARIES apc_trajopt
+#     CATKIN_DEPENDS apc_msgs control_msgs roscpp rospy
+#     DEPENDS system_lib sco trajopt
+# )
 
 ###########
 ## Build ##
