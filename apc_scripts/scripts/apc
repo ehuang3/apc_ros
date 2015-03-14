@@ -1,11 +1,11 @@
 #!/bin/sh
 #
-# Copyright (c) 2013, Georgia Tech Research Corporation
+# Copyright (c) 2015, Georgia Tech Research Corporation
 # All rights reserved.
 #
-# Author(s): Neil T. Dantam <ntd@gatech.edu>
-# Georgia Tech Humanoid Robotics Lab
-# Under Direction of Prof. Mike Stilman <mstilman@cc.gatech.edu>
+# Author(s): Eric Huang <ehuang@gatech.edu>
+# Georgia Tech Socially Intelligent Machines Lab
+# Under Direction of Prof. Andrea Thomaz <athomaz@cc.gatech.edu>
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -89,8 +89,8 @@ apc_start() {
     $SNS run -d -r lwa-right -- \
         can402 -f $CAN_R -R 1 -C 0 -n 3 -n 4 -n 5 -n 6 -n 7 -n 8 -n 9 -c ref-right -s state-right
 
-#     $SNS run -d -r torso -- \
-#         can402 -f can2 -R 1 -C 0 -n a  -c ref-torso -s state-torso
+    $SNS run -d -r torso -- \
+        can402 -f can2 -R 1 -C 0 -n a  -c ref-torso -s state-torso
 
 #     $SNS run -d -r ft-left -- \
         # cftd -f $CAN_L -n 27 -c ft-left -b ft-bias-left -W 1e6 -F 500
@@ -124,7 +124,7 @@ apc_expunge() {
 apc_stop() {
     $SNS kill lwa-left
     $SNS kill lwa-right
-    # $SNS kill torso
+    $SNS kill torso
     # $SNS kill ft-left
     # $SNS kill ft-right
     $SNS kill sdh-left
@@ -148,6 +148,27 @@ apc_steal() {
 	/var/tmp/sns/sdh-right
 }
 
+apc_connect() {
+    $SNS run -d -r state-torso -- \
+        achd pull $1 state-torso
+    $SNS run -d -r state-left -- \
+        achd pull $1 state-left
+    $SNS run -d -r state-right -- \
+        achd pull $1 state-right
+    $SNS run -d -r sdhstate-left -- \
+        achd pull $1 sdhstate-left
+    $SNS run -d -r sdhstate-right -- \
+        achd pull $1 sdhstate-right
+}
+
+apc_disconnect() {
+    $SNS kill state-torso
+    $SNS kill state-left
+    $SNS kill state-right
+    $SNS kill sdhstate-left
+    $SNS kill sdhstate-right
+}
+
 case "$1" in
     start)
         apc_start
@@ -167,6 +188,13 @@ case "$1" in
         ;;
     expunge)
         apc_expunge
+        ;;
+    connect)
+        shift
+        apc_connect $@
+        ;;
+    disconnect)
+        apc_disconnect
         ;;
     *)
         echo "Invalid command"

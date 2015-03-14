@@ -1,40 +1,100 @@
 <launch>
 
+    <!-- Crichton description -->
+    <param name="robot_description" command="$(find xacro)/xacro.py '$(find apc_description)/urdf/crichton/crichton.urdf.xacro'"/>
+
     <!-- State accumulator -->
     <node name="crichton_hw_state" pkg="joint_state_publisher" type="joint_state_publisher">
         <param name="/use_gui" value="false"/>
         <rosparam param="/source_list">
-            [/crichton/left_arm/joint_states,/crichton/right_arm/joint_states,/crichton/left_hand/joint_states,/crichton/right_hand/joint_states]
+            [
+            /crichton/torso/joint_states,
+            /crichton/left_arm/joint_states,
+            /crichton/right_arm/joint_states,
+            /crichton/left_hand/joint_states,
+            /crichton/right_hand/joint_states
+            ]
         </rosparam>
     </node>
 
     <!-- Crichton states -->
-    <node name="crichton_left_arm_hw_state" pkg="apc_control" type="apc_arm_state_publisher" respawn="false"
+    <node name="crichton_torso_hw_state" pkg="apc_control" type="apc_state_publisher" respawn="false"
+	      output="screen">
+        <param name="topic"   value="/crichton/torso/joint_states" />
+        <param name="channel" value="state-torso" />
+        <rosparam param="map">
+            { 
+            crichton_torso_joint : 0
+            }
+        </rosparam>
+    </node>
+
+    <node name="crichton_left_arm_hw_state" pkg="apc_control" type="apc_state_publisher" respawn="false"
 	      output="screen">
         <param name="topic"   value="/crichton/left_arm/joint_states" />
-        <param name="side"    value="left" />
         <param name="channel" value="state-left" />
+        <rosparam param="map">
+            {
+            crichton_left_1_joint: 0,
+            crichton_left_2_joint: 1,
+            crichton_left_3_joint: 2,
+            crichton_left_4_joint: 3,
+            crichton_left_5_joint: 4,
+            crichton_left_6_joint: 5,
+            crichton_left_7_joint: 6
+            }
+        </rosparam>
     </node>
 
-    <node name="crichton_right_arm_hw_state" pkg="apc_control" type="apc_arm_state_publisher" respawn="false"
+    <node name="crichton_right_arm_hw_state" pkg="apc_control" type="apc_state_publisher" respawn="false"
 	      output="screen">
         <param name="topic" value="/crichton/right_arm/joint_states" />
-        <param name="side"    value="right" />
         <param name="channel" value="state-right" />
+        <rosparam param="map">
+            {
+            crichton_right_1_joint: 0,
+            crichton_right_2_joint: 1,
+            crichton_right_3_joint: 2,
+            crichton_right_4_joint: 3,
+            crichton_right_5_joint: 4,
+            crichton_right_6_joint: 5,
+            crichton_right_7_joint: 6
+            }
+        </rosparam>
     </node>
 
-    <node name="crichton_left_hand_hw_state" pkg="apc_control" type="apc_gripper_state_publisher" respawn="false"
+    <node name="crichton_left_hand_hw_state" pkg="apc_control" type="apc_state_publisher" respawn="false"
 	      output="screen">
         <param name="topic" value="/crichton/left_hand/joint_states" />
-        <param name="side"    value="left" />
         <param name="channel" value="sdhstate-left" />
+        <rosparam param="map">
+            {
+            crichton_left_knuckle_joint: 0,
+            crichton_left_finger_22_joint: 1,
+            crichton_left_finger_23_joint: 2,
+            crichton_left_thumb_2_joint: 3,
+            crichton_left_thumb_3_joint: 4,
+            crichton_left_finger_12_joint: 5,
+            crichton_left_finger_13_joint: 6
+            }
+        </rosparam>
     </node>
 
-    <node name="crichton_right_hand_hw_state" pkg="apc_control" type="apc_gripper_state_publisher" respawn="false"
+    <node name="crichton_right_hand_hw_state" pkg="apc_control" type="apc_state_publisher" respawn="false"
 	      output="screen">
         <param name="topic" value="/crichton/right_hand/joint_states" />
-        <param name="side"    value="right" />
         <param name="channel" value="sdhstate-right" />
+        <rosparam param="map">
+            {
+            crichton_right_knuckle_joint: 0,
+            crichton_right_finger_22_joint: 1,
+            crichton_right_finger_23_joint: 2,
+            crichton_right_thumb_2_joint: 3,
+            crichton_right_thumb_3_joint: 4,
+            crichton_right_finger_12_joint: 5,
+            crichton_right_finger_13_joint: 6
+            }
+        </rosparam>
     </node>
 
 </launch>

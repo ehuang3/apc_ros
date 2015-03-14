@@ -13,7 +13,7 @@
 
   <!-- If needed, broadcast static tf for robot root -->
 
-  <!-- We have a robot connected, so publish joint states -->
+  <!-- We have a robot connected, so publish real joint states -->
   <include file="$(find apc_launch)/launch/crichton_hw_state.launch" />
 
   <!-- Given the published joint states, publish tf for the robot links -->

@@ -143,6 +143,7 @@ add_executable(apc_arm_state_publisher     src/apc_arm_state_publisher.cc)
 add_executable(apc_gripper_state_publisher src/apc_gripper_state_publisher.cc)
 add_executable(apc_trajectory_bridge       src/apc_trajectory_bridge.cc)
 add_executable(apc_action_server           src/apc_action_server.cpp)
+add_executable(apc_state_publisher         src/apc_state_publisher.cpp)
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
@@ -168,6 +169,9 @@ target_link_libraries(apc_trajectory_bridge
 target_link_libraries(apc_action_server
   ${catkin_LIBRARIES}
   apc_control
+)
+target_link_libraries(apc_state_publisher
+  ${catkin_LIBRARIES}
 )
 
 #############
