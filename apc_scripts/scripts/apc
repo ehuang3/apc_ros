@@ -90,7 +90,7 @@ apc_start() {
         can402 -f $CAN_R -R 1 -C 0 -n 3 -n 4 -n 5 -n 6 -n 7 -n 8 -n 9 -c ref-right -s state-right
 
     $SNS run -d -r torso -- \
-        can402 -f can2 -R 1 -C 0 -n a  -c ref-torso -s state-torso
+        can402 -f $CAN_T -R 1 -C 0 -n a  -c ref-torso -s state-torso
 
 #     $SNS run -d -r ft-left -- \
         # cftd -f $CAN_L -n 27 -c ft-left -b ft-bias-left -W 1e6 -F 500

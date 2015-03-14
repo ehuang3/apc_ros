@@ -86,8 +86,8 @@ namespace apc_control
             // Append error.
             this->error_string += err.error_string;
 
-            // Meaningless.
-            // this->error_code |= err.error_code;
+            // HACK No way to concatenate error codes atm.
+            this->error_code = err.error_code;
 
             return *this;
         }

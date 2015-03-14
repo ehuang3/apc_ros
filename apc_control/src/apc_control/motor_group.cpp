@@ -645,7 +645,7 @@ namespace apc_control
             return ret;
 
         // Assert we are not moving.
-        if (!isMoving())
+        if (isMoving())
         {
             ret.error_code = MotorGroupError::INVALID_JOINTS;
             ret.error_string = std::string("Failed to satisfy non-moving pre-condition for ") + _params.name_group;
