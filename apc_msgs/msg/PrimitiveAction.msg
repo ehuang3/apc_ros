@@ -25,6 +25,12 @@ string group_name
 # the name that the attached object to move
 string object_name
 
+# the name of the link the object is attached to
+string link_name
+
+# the attached object poses in the link frame
+geometry_msgs/Pose[] object_poses
+
 # the name that the support surface (e.g. table) has in the collision world
 # can be left empty if no name is available
 string support_surface_name

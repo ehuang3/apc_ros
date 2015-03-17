@@ -1,0 +1,97 @@
+#!/usr/bin/env python
+#
+# Copyright (c) 2015, Georgia Tech Research Corporation
+# All rights reserved.
+#
+# Author(s): Eric Huang <ehuang@gatech.edu>
+# Georgia Tech Humanoid Robotics Lab
+# Under Direction of Prof. Andrea Thomaz <athomaz@cc.gatech.edu>
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions
+# are met:
+#
+#     * Redistributions of source code must retain the above
+#       copyright notice, this list of conditions and the following
+#       disclaimer.
+#     * Redistributions in binary form must reproduce the above
+#       copyright notice, this list of conditions and the following
+#       disclaimer in the documentation and/or other materials
+#       provided with the distribution.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+# ''AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+# FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+# COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+# INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+# (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+# SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+# HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+# STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
+# OF THE POSSIBILITY OF SUCH DAMAGE.
+
+import roslib
+import rospy
+import math
+import tf
+import tf.transformations
+import geometry_msgs.msg
+import numpy
+
+if __name__ == '__main__':
+    rospy.init_node('camera_transform_publisher')
+
+    numpy.set_printoptions(suppress=True)
+
+    listener = tf.TransformListener()
+
+    # rospy.wait_for_service('spawn')
+    # spawner = rospy.ServiceProxy('spawn', turtlesim.srv.Spawn)
+    # spawner(4, 2, 0, 'turtle2')
+    # turtle_vel = rospy.Publisher('turtle2/cmd_vel', geometry_msgs.msg.Twist,queue_size=1)
+
+    rate = rospy.Rate(10.0)
+    while not rospy.is_shutdown():
+        try:
+            (trans,rot) = listener.lookupTransform('/camera_depth_optical_frame', '/camera_link', rospy.Time(0))
+        except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
+            continue
+
+        t_D0_C = numpy.array(trans)
+        q_D0_C = numpy.array(rot)
+        R_D0_C = tf.transformations.quaternion_matrix(q_D0_C)
+        T_D0_C = R_D0_C
+        T_D0_C[:3, 3] = t_D0_C
+
+        print "T_D0_C\n", T_D0_C
+
+        T = numpy.array([ [0.0373284,   0.290763,   0.956067,   0.109844 ],
+                          [0.998929,   -0.0370362, -0.0277383,  0.0232314],
+                          [0.0273439,   0.956078,  -0.291834,   0.152649 ],
+                          [0,           0,          0,          1] ])
+        R = numpy.array([ [0.0373284,   0.290763,   0.956067 ],
+                          [0.998929,   -0.0370362, -0.0277383],
+                          [0.0273439,   0.956078,  -0.291834 ] ])
+        T_C_fix = numpy.eye(4)
+        T_C_fix[0,0] = -1
+        T_C_fix[1,1] = -1
+        T_C_y = numpy.eye(4)
+        T_C_y[0,0] = -1
+        T_C_y[2,2] = -1
+
+        print "T\n", T
+
+        T_L0_C = T.dot(T_D0_C).dot(T_C_fix).dot(T_C_y)
+
+        print "T_L0_C\n", T_L0_C
+
+        euler = tf.transformations.euler_from_matrix(T_L0_C, 'rzyx')
+
+        t_L0_C = T_L0_C[:3, 3]
+
+        print "zyx", euler[0], euler[1], euler[2]
+        print "t", t_L0_C[0], t_L0_C[1], t_L0_C[2]
+
+        rate.sleep()

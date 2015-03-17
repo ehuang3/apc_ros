@@ -55,7 +55,7 @@ import argparse
 
 apc_objects = ['champion_copper_plus_spark_plug', 'mark_twain_huckleberry_finn', 'cheezit_big_original']
 env = None
-debug = True
+debug = False
 interactive = False
 
 def init_openrave():
@@ -268,15 +268,18 @@ def motion_planning_service(request):
     # Create motion plan response.
     response = apc_msgs.srv.GetMotionPlanResponse()
 
+    # Is the trajectory collision free.
+    response.valid = traj_is_safe(result.GetTraj(), robot)
+
     # Fill response.
     trajectory = result.GetTraj()
+    action = apc_msgs.msg.PrimitiveAction()
     for i in range(len(trajectory)):
-        action = apc_msgs.msg.PrimitiveAction()
         action.joint_trajectory.joint_names = [joint.GetName() for joint in robot.GetJoints()]
         point = trajectory_msgs.msg.JointTrajectoryPoint()
         point.positions = trajectory[i]
         action.joint_trajectory.points.append(point)
-        response.plan.actions.append(action)
+    response.plan.actions.append(action)
 
     return response
 

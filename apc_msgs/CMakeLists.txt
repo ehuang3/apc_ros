@@ -63,6 +63,8 @@ add_message_files(
   PositionConstraint.msg
   OrientationConstraint.msg
   VisibilityConstraint.msg
+  StoredObject.msg
+  StoredScene.msg
 )
 
 ## Generate services in the 'srv' folder
