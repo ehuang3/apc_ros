@@ -1,3 +1,6 @@
 [submodule "apc_path"]
 	path = apc_path
 	url = git@github.com:ehuang3/trajectories.git
+[submodule "camera_calib"]
+	path = camera_calib
+	url = git@github.gatech.edu:ehuang3/camera_calib.git
