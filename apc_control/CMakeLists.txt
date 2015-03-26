@@ -137,35 +137,14 @@ add_library(apc_control
 )
 
 ## Declare a cpp executable
-add_executable(apc_arm_trajectory_node     src/apc_arm_trajectory_node.cc)
-add_executable(apc_gripper_trajectory_node src/apc_gripper_trajectory_node.cc)
-add_executable(apc_arm_state_publisher     src/apc_arm_state_publisher.cc)
-add_executable(apc_gripper_state_publisher src/apc_gripper_state_publisher.cc)
-add_executable(apc_trajectory_bridge       src/apc_trajectory_bridge.cc)
 add_executable(apc_action_server           src/apc_action_server.cpp)
 add_executable(apc_state_publisher         src/apc_state_publisher.cpp)
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
-add_dependencies(apc_trajectory_bridge apc_msgs_generate_messages_cpp)
 add_dependencies(apc_action_server     apc_msgs_generate_messages_cpp)
 
 ## Specify libraries to link a library or executable target against
-target_link_libraries(apc_arm_trajectory_node
-  ${catkin_LIBRARIES}
-)
-target_link_libraries(apc_gripper_trajectory_node
-  ${catkin_LIBRARIES}
-)
-target_link_libraries(apc_arm_state_publisher
-  ${catkin_LIBRARIES}
-)
-target_link_libraries(apc_gripper_state_publisher
-  ${catkin_LIBRARIES}
-)
-target_link_libraries(apc_trajectory_bridge
-  ${catkin_LIBRARIES}
-)
 target_link_libraries(apc_action_server
   ${catkin_LIBRARIES}
   apc_control
@@ -189,17 +168,12 @@ target_link_libraries(apc_state_publisher
 # )
 
 ## Mark executables and/or libraries for installation
-install(
-    TARGETS 
-    apc_arm_trajectory_node   
-    apc_gripper_trajectory_node#  apc_control
-    apc_arm_state_publisher   
-    apc_gripper_state_publisher#  apc_control
-    apc_trajectory_bridge
-    ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-    LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-    RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-)
+# install(
+#     TARGETS 
+#     ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+#     LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+#     RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+# )
 
 ## Mark cpp header files for installation
 # install(DIRECTORY include/${PROJECT_NAME}/
