@@ -1,1 +1,5 @@
 apc_moveit_config/launch/moveit.rviz
+apc_description/AmazonPickingChallengeParts/
+apc_description/objects/
+apc_moveit_config/default_warehouse_mongo_db/
+*.scene
