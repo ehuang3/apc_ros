@@ -1,0 +1,8 @@
+<KinBody name="munchkin_white_hot_duck_bath_toy">
+  <Body type="static" name="munchkin_white_hot_duck_bath_toy">
+    <Geom type="trimesh">
+      <Render>../meshes/tsdf_complete.stl</Render>
+      <Data>../meshes/tsdf_complete.stl</Data>
+    </Geom>
+  </Body>
+</KinBody>

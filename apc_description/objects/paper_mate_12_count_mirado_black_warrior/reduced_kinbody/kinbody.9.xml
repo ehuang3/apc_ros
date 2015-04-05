@@ -1,0 +1,8 @@
+<?xml version="1.0" ?><KinBody name="paper_mate_12_count_mirado_black_warrior_9">
+  <Body name="paper_mate_12_count_mirado_black_warrior" type="static">
+    <Geom type="trimesh">
+      <Render>../reduced_meshes/paper_mate_12_count_mirado_black_warrior.stl</Render>
+      <Data>../reduced_meshes/paper_mate_12_count_mirado_black_warrior.stl</Data>
+    </Geom>
+  </Body>
+</KinBody>

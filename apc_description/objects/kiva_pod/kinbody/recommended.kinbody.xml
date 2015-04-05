@@ -1,0 +1,8 @@
+<KinBody name="kiva_pod">
+  <Body type="static" name="pod_lowres">
+    <Geom type="trimesh">
+      <Render>../meshes/kiva_pod.stl</Render>
+      <Data>../meshes/kiva_pod.stl</Data>
+    </Geom>
+  </Body>
+</KinBody>

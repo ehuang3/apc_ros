@@ -1,0 +1,8 @@
+<KinBody name="cheezit_big_original">
+  <Body type="static" name="cheezit_big_original">
+    <Geom type="trimesh">
+      <Render>../meshes/depth_integrated.stl</Render>
+      <Data>../meshes/depth_integrated.stl</Data>
+    </Geom>
+  </Body>
+</KinBody>

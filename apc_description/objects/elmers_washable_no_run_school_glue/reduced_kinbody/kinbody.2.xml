@@ -1,0 +1,8 @@
+<?xml version="1.0" ?><KinBody name="elmers_washable_no_run_school_glue_2">
+  <Body name="elmers_washable_no_run_school_glue" type="static">
+    <Geom type="trimesh">
+      <Render>../reduced_meshes/elmers_washable_no_run_school_glue.stl</Render>
+      <Data>../reduced_meshes/elmers_washable_no_run_school_glue.stl</Data>
+    </Geom>
+  </Body>
+</KinBody>

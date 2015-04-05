@@ -1,0 +1,8 @@
+<?xml version="1.0" ?><KinBody name="genuine_joe_plastic_stir_sticks_0">
+  <Body name="genuine_joe_plastic_stir_sticks" type="static">
+    <Geom type="trimesh">
+      <Render>../reduced_meshes/genuine_joe_plastic_stir_sticks.stl</Render>
+      <Data>../reduced_meshes/genuine_joe_plastic_stir_sticks.stl</Data>
+    </Geom>
+  </Body>
+</KinBody>

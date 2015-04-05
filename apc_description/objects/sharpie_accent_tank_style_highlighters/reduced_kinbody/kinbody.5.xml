@@ -1,0 +1,8 @@
+<?xml version="1.0" ?><KinBody name="sharpie_accent_tank_style_highlighters_5">
+  <Body name="sharpie_accent_tank_style_highlighters" type="static">
+    <Geom type="trimesh">
+      <Render>../reduced_meshes/sharpie_accent_tank_style_highlighters.stl</Render>
+      <Data>../reduced_meshes/sharpie_accent_tank_style_highlighters.stl</Data>
+    </Geom>
+  </Body>
+</KinBody>

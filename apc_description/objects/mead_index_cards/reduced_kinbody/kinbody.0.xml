@@ -1,0 +1,8 @@
+<?xml version="1.0" ?><KinBody name="mead_index_cards_0">
+  <Body name="mead_index_cards" type="static">
+    <Geom type="trimesh">
+      <Render>../reduced_meshes/mead_index_cards.stl</Render>
+      <Data>../reduced_meshes/mead_index_cards.stl</Data>
+    </Geom>
+  </Body>
+</KinBody>

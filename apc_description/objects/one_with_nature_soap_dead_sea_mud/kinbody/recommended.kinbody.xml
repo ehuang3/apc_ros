@@ -1,0 +1,8 @@
+<KinBody name="one_with_nature_soap_dead_sea_mud">
+  <Body type="static" name="one_with_nature_soap_dead_sea_mud">
+    <Geom type="trimesh">
+      <Render>../meshes/depth_integrated.stl</Render>
+      <Data>../meshes/depth_integrated.stl</Data>
+    </Geom>
+  </Body>
+</KinBody>

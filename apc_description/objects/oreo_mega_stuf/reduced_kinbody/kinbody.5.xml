@@ -1,0 +1,8 @@
+<?xml version="1.0" ?><KinBody name="oreo_mega_stuf_5">
+  <Body name="oreo_mega_stuf" type="static">
+    <Geom type="trimesh">
+      <Render>../reduced_meshes/oreo_mega_stuf.stl</Render>
+      <Data>../reduced_meshes/oreo_mega_stuf.stl</Data>
+    </Geom>
+  </Body>
+</KinBody>

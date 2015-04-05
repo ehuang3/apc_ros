@@ -1,0 +1,61 @@
+<KinBody name="lab_shelf_1">
+
+  <Body type="static" name="shelf_down">
+    <Geom type="trimesh">
+      <Render>../meshes/shelf_down.stl</Render>
+      <Data>../meshes/shelf_down.stl</Data>
+    </Geom>
+  </Body>
+
+  <Body type="static" name="shelf_back">
+    <Geom type="trimesh">
+      <Render>../meshes/shelf_back.stl</Render>
+      <Data>../meshes/shelf_back.stl</Data>
+    </Geom>
+  </Body>
+
+
+  <Body type="static" name="shelf_left">
+    <Geom type="trimesh">
+      <Render>../meshes/shelf_left.stl</Render>
+      <Data>../meshes/shelf_left.stl</Data>
+    </Geom>
+  </Body>
+
+  <Body type="static" name="shelf_right">
+    <Geom type="trimesh">
+      <Render>../meshes/shelf_right.stl</Render>
+      <Data>../meshes/shelf_right.stl</Data>
+    </Geom>
+  </Body>
+
+  <Body type="static" name="shelf_up">
+    <Geom type="trimesh">
+      <Render>../meshes/shelf_up.stl</Render>
+      <Data>../meshes/shelf_up.stl</Data>
+    </Geom>
+  </Body>
+
+  <Body type="static" name="shelf_plate1">
+    <Geom type="trimesh">
+      <Render>../meshes/shelf_plate1.stl</Render>
+      <Data>../meshes/shelf_plate1.stl</Data>
+    </Geom>
+  </Body>
+
+  <Body type="static" name="shelf_plate2">
+    <Geom type="trimesh">
+      <Render>../meshes/shelf_plate2.stl</Render>
+      <Data>../meshes/shelf_plate2.stl</Data>
+    </Geom>
+  </Body>
+
+  <Body type="static" name="shelf_plate3">
+    <Geom type="trimesh">
+      <Render>../meshes/shelf_plate3.stl</Render>
+      <Data>../meshes/shelf_plate3.stl</Data>
+    </Geom>
+  </Body>
+
+
+</KinBody>

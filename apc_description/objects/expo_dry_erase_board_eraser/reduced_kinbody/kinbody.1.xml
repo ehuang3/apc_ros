@@ -1,0 +1,8 @@
+<?xml version="1.0" ?><KinBody name="expo_dry_erase_board_eraser_1">
+  <Body name="expo_dry_erase_board_eraser" type="static">
+    <Geom type="trimesh">
+      <Render>../reduced_meshes/expo_dry_erase_board_eraser.stl</Render>
+      <Data>../reduced_meshes/expo_dry_erase_board_eraser.stl</Data>
+    </Geom>
+  </Body>
+</KinBody>

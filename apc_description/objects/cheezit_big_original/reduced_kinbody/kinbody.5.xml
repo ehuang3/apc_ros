@@ -1,0 +1,8 @@
+<?xml version="1.0" ?><KinBody name="cheezit_big_original_5">
+  <Body name="cheezit_big_original" type="static">
+    <Geom type="trimesh">
+      <Render>../reduced_meshes/cheezit_big_original.stl</Render>
+      <Data>../reduced_meshes/cheezit_big_original.stl</Data>
+    </Geom>
+  </Body>
+</KinBody>

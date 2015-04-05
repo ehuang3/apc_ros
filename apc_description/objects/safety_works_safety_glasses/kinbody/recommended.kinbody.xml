@@ -1,0 +1,8 @@
+<KinBody name="safety_works_safety_glasses">
+  <Body type="static" name="safety_works_safety_glasses">
+    <Geom type="trimesh">
+      <Render>../meshes/tsdf_complete.stl</Render>
+      <Data>../meshes/tsdf_complete.stl</Data>
+    </Geom>
+  </Body>
+</KinBody>

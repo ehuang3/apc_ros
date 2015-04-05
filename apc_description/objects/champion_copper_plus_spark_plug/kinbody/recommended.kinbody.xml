@@ -1,0 +1,8 @@
+<KinBody name="champion_copper_plus_spark_plug">
+  <Body type="static" name="champion_copper_plus_spark_plug">
+    <Geom type="trimesh">
+      <Render>../meshes/depth_integrated.stl</Render>
+      <Data>../meshes/depth_integrated.stl</Data>
+    </Geom>
+  </Body>
+</KinBody>

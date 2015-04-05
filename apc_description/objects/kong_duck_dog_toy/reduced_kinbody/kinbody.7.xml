@@ -1,0 +1,8 @@
+<?xml version="1.0" ?><KinBody name="kong_duck_dog_toy_7">
+  <Body name="kong_duck_dog_toy" type="static">
+    <Geom type="trimesh">
+      <Render>../reduced_meshes/kong_duck_dog_toy.stl</Render>
+      <Data>../reduced_meshes/kong_duck_dog_toy.stl</Data>
+    </Geom>
+  </Body>
+</KinBody>

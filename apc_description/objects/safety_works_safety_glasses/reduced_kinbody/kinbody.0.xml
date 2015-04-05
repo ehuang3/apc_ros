@@ -1,0 +1,8 @@
+<?xml version="1.0" ?><KinBody name="safety_works_safety_glasses_0">
+  <Body name="safety_works_safety_glasses" type="static">
+    <Geom type="trimesh">
+      <Render>../reduced_meshes/safety_works_safety_glasses.stl</Render>
+      <Data>../reduced_meshes/safety_works_safety_glasses.stl</Data>
+    </Geom>
+  </Body>
+</KinBody>

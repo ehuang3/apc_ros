@@ -1,0 +1,8 @@
+<?xml version="1.0" ?><KinBody name="feline_greenies_dental_treats_2">
+  <Body name="feline_greenies_dental_treats" type="static">
+    <Geom type="trimesh">
+      <Render>../reduced_meshes/feline_greenies_dental_treats.stl</Render>
+      <Data>../reduced_meshes/feline_greenies_dental_treats.stl</Data>
+    </Geom>
+  </Body>
+</KinBody>

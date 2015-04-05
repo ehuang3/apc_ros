@@ -1,0 +1,8 @@
+<KinBody name="oreo_mega_stuf">
+  <Body type="static" name="oreo_mega_stuf">
+    <Geom type="trimesh">
+      <Render>../meshes/poisson.stl</Render>
+      <Data>../meshes/poisson.stl</Data>
+    </Geom>
+  </Body>
+</KinBody>

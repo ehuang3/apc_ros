@@ -1,0 +1,8 @@
+<?xml version="1.0" ?><KinBody name="champion_copper_plus_spark_plug_8">
+  <Body name="champion_copper_plus_spark_plug" type="static">
+    <Geom type="trimesh">
+      <Render>../reduced_meshes/champion_copper_plus_spark_plug.stl</Render>
+      <Data>../reduced_meshes/champion_copper_plus_spark_plug.stl</Data>
+    </Geom>
+  </Body>
+</KinBody>

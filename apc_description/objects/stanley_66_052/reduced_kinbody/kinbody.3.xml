@@ -1,0 +1,8 @@
+<?xml version="1.0" ?><KinBody name="stanley_66_052_3">
+  <Body name="stanley_66_052" type="static">
+    <Geom type="trimesh">
+      <Render>../reduced_meshes/stanley_66_052.stl</Render>
+      <Data>../reduced_meshes/stanley_66_052.stl</Data>
+    </Geom>
+  </Body>
+</KinBody>

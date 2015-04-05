@@ -1,0 +1,8 @@
+<KinBody name="rollodex_mesh_collection_jumbo_pencil_cup">
+  <Body type="static" name="rollodex_mesh_collection_jumbo_pencil_cup">
+    <Geom type="trimesh">
+      <Render>../meshes/visual_hull.stl</Render>
+      <Data>../meshes/visual_hull.stl</Data>
+    </Geom>
+  </Body>
+</KinBody>

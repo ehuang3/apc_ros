@@ -1,0 +1,8 @@
+<?xml version="1.0" ?><KinBody name="one_with_nature_soap_dead_sea_mud_6">
+  <Body name="one_with_nature_soap_dead_sea_mud" type="static">
+    <Geom type="trimesh">
+      <Render>../reduced_meshes/one_with_nature_soap_dead_sea_mud.stl</Render>
+      <Data>../reduced_meshes/one_with_nature_soap_dead_sea_mud.stl</Data>
+    </Geom>
+  </Body>
+</KinBody>

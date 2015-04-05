@@ -1,0 +1,8 @@
+<?xml version="1.0" ?><KinBody name="kygen_squeakin_eggs_plush_puppies_5">
+  <Body name="kygen_squeakin_eggs_plush_puppies" type="static">
+    <Geom type="trimesh">
+      <Render>../reduced_meshes/kygen_squeakin_eggs_plush_puppies.stl</Render>
+      <Data>../reduced_meshes/kygen_squeakin_eggs_plush_puppies.stl</Data>
+    </Geom>
+  </Body>
+</KinBody>

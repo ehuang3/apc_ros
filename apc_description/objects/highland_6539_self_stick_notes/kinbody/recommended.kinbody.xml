@@ -1,0 +1,8 @@
+<KinBody name="highland_6539_self_stick_notes">
+  <Body type="static" name="highland_6539_self_stick_notes">
+    <Geom type="trimesh">
+      <Render>../meshes/visual_hull.stl</Render>
+      <Data>../meshes/visual_hull.stl</Data>
+    </Geom>
+  </Body>
+</KinBody>

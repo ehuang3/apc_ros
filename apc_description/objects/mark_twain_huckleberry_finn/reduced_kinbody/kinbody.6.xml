@@ -1,0 +1,8 @@
+<?xml version="1.0" ?><KinBody name="mark_twain_huckleberry_finn_6">
+  <Body name="mark_twain_huckleberry_finn" type="static">
+    <Geom type="trimesh">
+      <Render>../reduced_meshes/mark_twain_huckleberry_finn.stl</Render>
+      <Data>../reduced_meshes/mark_twain_huckleberry_finn.stl</Data>
+    </Geom>
+  </Body>
+</KinBody>

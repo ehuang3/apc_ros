@@ -1,0 +1,8 @@
+<?xml version="1.0" ?><KinBody name="crayola_64_ct_8">
+  <Body name="crayola_64_ct" type="static">
+    <Geom type="trimesh">
+      <Render>../reduced_meshes/crayola_64_ct.stl</Render>
+      <Data>../reduced_meshes/crayola_64_ct.stl</Data>
+    </Geom>
+  </Body>
+</KinBody>

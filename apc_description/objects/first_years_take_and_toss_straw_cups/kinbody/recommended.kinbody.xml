@@ -1,0 +1,8 @@
+<KinBody name="first_years_take_and_toss_straw_cups">
+  <Body type="static" name="first_years_take_and_toss_straw_cups">
+    <Geom type="trimesh">
+      <Render>../meshes/depth_integrated.stl</Render>
+      <Data>../meshes/depth_integrated.stl</Data>
+    </Geom>
+  </Body>
+</KinBody>

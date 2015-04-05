@@ -1,0 +1,8 @@
+<KinBody name="paper_mate_12_count_mirado_black_warrior">
+  <Body type="static" name="paper_mate_12_count_mirado_black_warrior">
+    <Geom type="trimesh">
+      <Render>../meshes/poisson.stl</Render>
+      <Data>../meshes/poisson.stl</Data>
+    </Geom>
+  </Body>
+</KinBody>

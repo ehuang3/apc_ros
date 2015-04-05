@@ -1,0 +1,8 @@
+<?xml version="1.0" ?><KinBody name="dove_beauty_bar_8">
+  <Body name="dove_beauty_bar" type="static">
+    <Geom type="trimesh">
+      <Render>../reduced_meshes/dove_beauty_bar.stl</Render>
+      <Data>../reduced_meshes/dove_beauty_bar.stl</Data>
+    </Geom>
+  </Body>
+</KinBody>

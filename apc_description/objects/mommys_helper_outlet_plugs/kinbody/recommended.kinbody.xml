@@ -1,0 +1,8 @@
+<KinBody name="mommys_helper_outlet_plugs">
+  <Body type="static" name="mommys_helper_outlet_plugs">
+    <Geom type="trimesh">
+      <Render>../meshes/depth_integrated.stl</Render>
+      <Data>../meshes/depth_integrated.stl</Data>
+    </Geom>
+  </Body>
+</KinBody>

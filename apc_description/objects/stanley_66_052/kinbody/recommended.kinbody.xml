@@ -1,0 +1,8 @@
+<KinBody name="stanley_66_052">
+  <Body type="static" name="stanley_66_052">
+    <Geom type="trimesh">
+      <Render>../meshes/tsdf_complete.stl</Render>
+      <Data>../meshes/tsdf_complete.stl</Data>
+    </Geom>
+  </Body>
+</KinBody>

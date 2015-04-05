@@ -1,0 +1,8 @@
+<KinBody name="mead_index_cards">
+  <Body type="static" name="mead_index_cards">
+    <Geom type="trimesh">
+      <Render>../meshes/tsdf_complete.stl</Render>
+      <Data>../meshes/tsdf_complete.stl</Data>
+    </Geom>
+  </Body>
+</KinBody>

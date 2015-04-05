@@ -1,0 +1,8 @@
+<KinBody name="genuine_joe_plastic_stir_sticks">
+  <Body type="static" name="genuine_joe_plastic_stir_sticks">
+    <Geom type="trimesh">
+      <Render>../meshes/tsdf_complete.stl</Render>
+      <Data>../meshes/tsdf_complete.stl</Data>
+    </Geom>
+  </Body>
+</KinBody>
