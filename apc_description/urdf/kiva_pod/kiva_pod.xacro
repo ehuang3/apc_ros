@@ -1,0 +1,128 @@
+<?xml version="1.0"?>
+<robot name="kiva_pod" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+    <xacro:macro name="kiva_bin" params="parent name width height *origin">
+
+        <link name="${name}">
+            <inertial>
+                <origin rpy="0 0 0" xyz="0.0 0.0 0.0"/>
+                <mass value="5.0"/>
+                <inertia ixx="1" ixy="0.0" ixz="0.0" iyy="1" iyz="0.0" izz="1"/>
+            </inertial>
+            <visual>
+                <origin rpy="0 0 0" xyz="${-bin_depth/2.0} 0 0"/>
+                <geometry>
+                    <box size="${bin_depth} ${width} ${height}"/>
+                </geometry>
+                <material name="${name}_material">
+                    <color rgba="0 ${2.0 * height} ${2.0 * width} 0.5"/>
+                </material>
+            </visual>
+            <collision>
+                <origin rpy="0 0 0" xyz="${-bin_depth/2.0} 0 0"/>
+                <geometry>
+                    <box size="${bin_depth} ${width} ${height}"/>
+                </geometry>
+            </collision>
+        </link>
+
+        <joint name="${name}_joint" type="fixed">
+            <xacro:insert_block name="origin"/>
+            <parent link="${parent}"/>
+            <child  link="${name}"/>
+        </joint>
+
+    </xacro:macro>
+
+	<xacro:macro name="kiva_pod" params="name">
+
+        <link name="${name}_origin">
+            <visual>
+                <origin rpy="0 0 0" xyz="0 0 0"/>
+                <geometry>
+                    <mesh filename="package://apc_description/meshes/kiva_pod/kiva_pod.stl" scale="1 1 1"/>
+                </geometry>
+            </visual>
+            <collision>
+                <origin rpy="0 0 0" xyz="0 0 0"/>
+                <geometry>
+                    <mesh filename="package://apc_description/meshes/kiva_pod/kiva_pod.stl" scale="1 1 1"/>
+                </geometry>
+            </collision>
+        </link>
+
+        <xacro:kiva_bin parent="${name}_origin" name="bin_A" width="${bin_width_side}" height="${bin_height_large}">
+            <origin rpy="0 0 0" xyz="${ bin_depth}
+                                     ${-bin_width_middle / 2.0 - bin_width_side / 2.0}
+                                     ${ bin_base_height + 1.5*bin_height_large + 2*bin_height_small}"/>
+        </xacro:kiva_bin>
+
+        <xacro:kiva_bin parent="${name}_origin" name="bin_B" width="${bin_width_middle}" height="${bin_height_large}">
+            <origin rpy="0 0 0" xyz="${ bin_depth}
+                                     ${ 0}
+                                     ${ bin_base_height + 1.5*bin_height_large + 2*bin_height_small}"/>
+        </xacro:kiva_bin>
+
+        <xacro:kiva_bin parent="${name}_origin" name="bin_C" width="${bin_width_side}" height="${bin_height_large}">
+            <origin rpy="0 0 0" xyz="${ bin_depth}
+                                     ${ bin_width_middle / 2.0 + bin_width_side / 2.0}
+                                     ${ bin_base_height + 1.5*bin_height_large + 2*bin_height_small}"/>
+        </xacro:kiva_bin>
+
+        <xacro:kiva_bin parent="${name}_origin" name="bin_D" width="${bin_width_side}" height="${bin_height_small}">
+            <origin rpy="0 0 0" xyz="${ bin_depth}
+                                     ${-bin_width_middle / 2.0 - bin_width_side / 2.0}
+                                     ${ bin_base_height + 1.0*bin_height_large + 1.5*bin_height_small}"/>
+        </xacro:kiva_bin>
+
+        <xacro:kiva_bin parent="${name}_origin" name="bin_E" width="${bin_width_middle}" height="${bin_height_small}">
+            <origin rpy="0 0 0" xyz="${ bin_depth}
+                                     ${ 0}
+                                     ${ bin_base_height + 1.0*bin_height_large + 1.5*bin_height_small}"/>
+        </xacro:kiva_bin>
+
+        <xacro:kiva_bin parent="${name}_origin" name="bin_F" width="${bin_width_side}" height="${bin_height_small}">
+            <origin rpy="0 0 0" xyz="${ bin_depth}
+                                     ${ bin_width_middle / 2.0 + bin_width_side / 2.0}
+                                     ${ bin_base_height + 1.0*bin_height_large + 1.5*bin_height_small}"/>
+        </xacro:kiva_bin>
+
+        <xacro:kiva_bin parent="${name}_origin" name="bin_G" width="${bin_width_side}" height="${bin_height_small}">
+            <origin rpy="0 0 0" xyz="${ bin_depth}
+                                     ${-bin_width_middle / 2.0 - bin_width_side / 2.0}
+                                     ${ bin_base_height + 1.0*bin_height_large + 0.5*bin_height_small}"/>
+        </xacro:kiva_bin>
+
+        <xacro:kiva_bin parent="${name}_origin" name="bin_H" width="${bin_width_middle}" height="${bin_height_small}">
+            <origin rpy="0 0 0" xyz="${ bin_depth}
+                                     ${ 0}
+                                     ${ bin_base_height + 1.0*bin_height_large + 0.5*bin_height_small}"/>
+        </xacro:kiva_bin>
+
+        <xacro:kiva_bin parent="${name}_origin" name="bin_I" width="${bin_width_side}" height="${bin_height_small}">
+            <origin rpy="0 0 0" xyz="${ bin_depth}
+                                     ${ bin_width_middle / 2.0 + bin_width_side / 2.0}
+                                     ${ bin_base_height + 1.0*bin_height_large + 0.5*bin_height_small}"/>
+        </xacro:kiva_bin>
+
+        <xacro:kiva_bin parent="${name}_origin" name="bin_J" width="${bin_width_side}" height="${bin_height_large}">
+            <origin rpy="0 0 0" xyz="${ bin_depth}
+                                     ${-bin_width_middle / 2.0 - bin_width_side / 2.0}
+                                     ${ bin_base_height + 0.5*bin_height_large}"/>
+        </xacro:kiva_bin>
+
+        <xacro:kiva_bin parent="${name}_origin" name="bin_K" width="${bin_width_middle}" height="${bin_height_large}">
+            <origin rpy="0 0 0" xyz="${ bin_depth}
+                                     ${ 0}
+                                     ${ bin_base_height + 0.5*bin_height_large}"/>
+        </xacro:kiva_bin>
+
+        <xacro:kiva_bin parent="${name}_origin" name="bin_L" width="${bin_width_side}" height="${bin_height_large}">
+            <origin rpy="0 0 0" xyz="${ bin_depth}
+                                     ${ bin_width_middle / 2.0 + bin_width_side / 2.0}
+                                     ${ bin_base_height + 0.5*bin_height_large}"/>
+        </xacro:kiva_bin>
+
+	</xacro:macro>
+
+</robot>

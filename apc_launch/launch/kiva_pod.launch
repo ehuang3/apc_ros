@@ -1,0 +1,19 @@
+<launch>
+
+    <!-- By default we do not overwrite the URDF. Change the following to true to change the default behavior -->
+    <arg name="load_robot_description" default="true"/>
+
+    <param if="$(arg load_robot_description)" name="shelf_description"
+           command="$(find xacro)/xacro.py '$(find apc_description)/urdf/kiva_pod/kiva_pod.urdf.xacro'"/>
+
+    <!-- <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher"> -->
+    <!--     <param name="/use_gui" value="false"/>  -->
+    <!-- </node> -->
+
+    <node name="shelf_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" respawn="true" output="screen">
+        <remap from="robot_description" to="shelf_description"/>
+    </node>
+
+</launch>
+
+

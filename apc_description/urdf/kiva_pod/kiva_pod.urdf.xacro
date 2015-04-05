@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<robot name="kiva_pod" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+    <!-- Include decriptions for LWA4D_TORSO -->
+    <xacro:include filename="$(find apc_description)/urdf/kiva_pod/kiva_pod.xacro" />
+
+    <!-- Math constants -->
+    <xacro:property name="M_PI" value="3.141592653" />
+
+    <!-- KIVA pod properties. -->
+    <xacro:property name="bin_base_height"  value="0.805" />
+    <xacro:property name="bin_depth"        value="0.434" />
+    <xacro:property name="bin_width_side"   value="0.274" />
+    <xacro:property name="bin_width_middle" value="0.305" />
+    <xacro:property name="bin_height_small" value="0.227" />
+    <xacro:property name="bin_height_large" value="0.266" />
+
+    <!-- Assemble KIVA pod. -->
+    <xacro:kiva_pod name="kiva_pod" />
+
+</robot>
