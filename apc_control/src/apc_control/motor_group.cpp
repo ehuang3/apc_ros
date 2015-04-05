@@ -237,7 +237,7 @@ namespace apc_control
             return;
         }
 
-        if (!_params.allow_execution)
+        if (!(_params.allow_execution && _params.enabled))
             return;
 
         if (_state.dirty_state)
@@ -303,6 +303,7 @@ namespace apc_control
         READ_PARAM(_max_accel, max_accel);
         READ_PARAM(_map,       map);
         READ_PARAM(_dt,        dt);
+        READ_PARAM(_enabled,   enabled);
 
 #undef READ_PARAM
 
@@ -537,7 +538,7 @@ namespace apc_control
     {
         // If we are not executing, always return false as we do not know if we
         // are at goal.
-        if (!_params.allow_execution)
+        if (!(_params.allow_execution && _params.enabled))
             return false;
 
         // If motors are not actively controlled, vacuously return true.
@@ -569,7 +570,7 @@ namespace apc_control
 
     bool MotorGroup::isMoving()
     {
-        if (!_params.allow_execution)
+        if (!(_params.allow_execution && _params.enabled))
             return false;
         if (_state.dirty_state)
             if (readState(0))
@@ -586,7 +587,7 @@ namespace apc_control
         MotorGroupError ret;
 
         // Skip if not executing.
-        if (!_params.allow_execution)
+        if (!(_params.allow_execution && _params.enabled))
             return ret;
 
         // Read in state.
@@ -639,6 +640,14 @@ namespace apc_control
         // If we are not really exectuting, ignore hardware side pre-conditions.
         if (!_params.allow_execution)
             return ret;
+
+        // If the motors are disabled, we do not execute.
+        if (!_params.enabled)
+        {
+            ret.error_code = MotorGroupError::INVALID_JOINTS;
+            ret.error_string = std::string("Failed to command disabled group ") + _params.name_group;
+            return ret;
+        }
 
         // Read in state with timeout.
         if (ret = readState(true))
@@ -778,7 +787,13 @@ namespace apc_control
         ach_status_t status = ACH_OK;
 
         // Send reference command message, if enabled.
-        if (_params.allow_execution)
+        if (_params.allow_execution && !_params.enabled)
+        {
+            ROS_ERROR("Aborting request to send command to disabled motor");
+            r.error_code = MotorGroupError::INVALID_GOAL;
+            r.error_string = std::string("Attempted to send command to disabled motor group: ") + _params.name_group;
+        }
+        else if (_params.allow_execution && _params.enabled)
             status = ach_put( &_params.chan_ref, cmd, sns_msg_motor_ref_size(cmd) );
         else
         {

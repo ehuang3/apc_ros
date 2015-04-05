@@ -22,6 +22,7 @@ torso_max_vel:   0.3
 torso_max_accel: 0.1
 torso_dt: 0.01                  # s
 torso_timeout: 100              # ms
+torso_enabled: true
 torso_map:
   {
   crichton_torso_joint: 0
@@ -35,6 +36,7 @@ left_arm_max_vel:   0.4
 left_arm_max_accel: 0.1
 left_arm_dt: 0.01               # s
 left_arm_timeout: 100           # ms
+left_arm_enabled: true
 left_arm_map:
   {
   crichton_left_1_joint: 0,
@@ -54,6 +56,7 @@ right_arm_max_vel:   0.4
 right_arm_max_accel: 0.1
 right_arm_dt: 0.01              # s
 right_arm_timeout: 100          # ms
+right_arm_enabled: false
 right_arm_map:
   {
   crichton_right_1_joint: 0,
@@ -73,6 +76,7 @@ left_hand_max_vel:   0.4
 left_hand_max_accel: 0.1
 left_hand_dt: 0.01              # s
 left_hand_timeout: 100          # ms
+left_hand_enabled: true
 left_hand_map:
   {
   crichton_left_knuckle_joint: 0,
@@ -92,6 +96,7 @@ right_hand_max_vel:   0.4
 right_hand_max_accel: 0.1
 right_hand_dt: 0.01             # s
 right_hand_timeout: 100         # ms
+right_hand_enabled: false
 right_hand_map:
   {
   crichton_right_knuckle_joint: 0,

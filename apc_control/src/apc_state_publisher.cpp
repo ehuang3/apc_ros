@@ -25,7 +25,7 @@ ros::Publisher state_publisher;
 int main(int argc, char** argv)
 {
     // ros init
-    ros::init(argc, argv, "arm_state_publisher");
+    ros::init(argc, argv, "apc_state_publisher");
     ros::NodeHandle n("~");
 
     // Topic for JointStates

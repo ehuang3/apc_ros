@@ -5,7 +5,7 @@
  *  All rights reserved.
  *
  *  Author(s): Eric Huang <ehuang@gatech.edu>
- *  Georgia Tech Humanoid Robotics Lab
+ *  Georgia Tech Socially Intelligent Machines Lab
  *  Under Direction of Prof. Andrea Thomaz <athomaz@cc.gatech.edu>
  *
  *
@@ -194,7 +194,8 @@ namespace apc_control
             double max_accel;                    // Maximum joint acceleration along the path.
             struct timespec timeout;             // Timeout to wait when reading motor states.
             double dt;                           // Time between control loop iterations.
-            bool allow_execution;                // If true, execute commands on real hardware.
+            bool allow_execution;                // If true, execute commands on real hardware. vBoth must be true.
+            bool enabled;                        // If true, execute commands on real hardware. ^Both must be true.
         };
 
         // Motor group state.
