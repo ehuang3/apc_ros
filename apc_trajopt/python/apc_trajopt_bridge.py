@@ -299,7 +299,7 @@ def motion_planning_service(request):
         point.positions = trajectory[i]
         action.joint_trajectory.points.append(point)
     response.action = action
-    print response
+    # print response
 
     return response
 

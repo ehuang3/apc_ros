@@ -653,12 +653,21 @@ namespace apc_control
         if (ret = readState(true))
             return ret;
 
-        // Assert we are not moving.
+        // Wait for at most 0.1 seconds for us to stop moving.
         if (isMoving())
         {
-            ret.error_code = MotorGroupError::INVALID_JOINTS;
-            ret.error_string = std::string("Failed to satisfy non-moving pre-condition for ") + _params.name_group;
-            return ret;
+            double t = 0.0;
+            while (isMoving())
+            {
+                usleep( (useconds_t) 10 * 1e3 ); // Based on can402 control loop frequency
+                t += 0.010;
+                if (t > 0.1)
+                {
+                    ret.error_code = MotorGroupError::INVALID_JOINTS;
+                    ret.error_string = std::string("Failed to satisfy non-moving pre-condition for ") + _params.name_group;
+                    return ret;
+                }
+            }
         }
 
         // Get the start configuration.
