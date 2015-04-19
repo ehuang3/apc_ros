@@ -79,7 +79,7 @@ MotorGroupError execute_trajectory(const Action& action,
 {
     MotorGroupError ret;
 
-    ROS_INFO("Preparing trajectory: %s", action.group_name.c_str());
+    ROS_INFO("Preparing trajectory: %s", action.group_id.c_str());
 
     // Get the number of degrees of freedom requested in this action.
     const int n_dof = action.joint_trajectory.joint_names.size();
@@ -150,7 +150,7 @@ MotorGroupError execute_trajectory(const Action& action,
         usleep( (useconds_t) 10 * 1e3 ); // Based on can402 control loop frequency
     }
 
-    ROS_INFO("Executing trajectory: %s", action.group_name.c_str());
+    ROS_INFO("Executing trajectory: %s", action.group_id.c_str());
 
     // Get duration of trajectory.
     const double duration = T.getDuration();
@@ -242,7 +242,7 @@ void execute(const GoalConstPtr& goal,
             Feedback fb;
             fb.progress = (i+1) / (double) goal->plan.actions.size();
             std::stringstream s;
-            s << "Finished executing: (" << i << ") " << action.group_name;
+            s << "Finished executing: (" << i << ") " << action.group_id;
             fb.progress_string = s.str();
             ROS_INFO("%s (%.2f)", fb.progress_string.c_str(), fb.progress);
             action_server->publishFeedback(fb);

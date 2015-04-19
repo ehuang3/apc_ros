@@ -1,0 +1,26 @@
+# Motion plan request
+
+# Starting robot state.
+moveit_msgs/RobotState robot_state
+
+# Starting world state.
+WorldState world_state
+
+# The primitive action to create a dense joint trajectory for.
+PrimitiveAction action
+
+# If this flag is true, only check that the input action is collision
+# free.
+bool only_check_collisions
+
+---
+# Motion plan response
+
+# Is the trajectory valid.
+bool valid
+
+# Is the plan collision free.
+bool collision_free
+
+# The dense joint trajectory is returned stored in this action.
+PrimitiveAction action

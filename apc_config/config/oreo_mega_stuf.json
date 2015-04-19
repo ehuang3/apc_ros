@@ -1,0 +1,50 @@
+{
+  "bin_contents":
+  {
+    "bin_A":
+    [
+      "oreo_mega_stuf"
+    ],
+    "bin_B":
+    [
+    ],
+    "bin_C":
+    [
+    ],
+    "bin_D":
+    [
+    ],
+    "bin_E":
+    [
+    ],
+    "bin_F":
+    [
+    ],
+    "bin_G":
+    [
+    ],
+    "bin_H":
+    [
+    ],
+    "bin_I":
+    [
+    ],
+    "bin_J":
+    [
+    ],
+    "bin_K":
+    [
+    ],
+    "bin_L":
+    [
+    ]
+  },
+
+  "work_order":
+  [
+    {
+      "bin": "bin_A",
+      "item": "oreo_mega_stuf"
+    }
+  ]
+}

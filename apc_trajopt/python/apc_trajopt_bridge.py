@@ -53,7 +53,6 @@ from IPython.core.debugger import Tracer
 
 import argparse
 
-apc_objects = ['champion_copper_plus_spark_plug', 'mark_twain_huckleberry_finn', 'cheezit_big_original']
 env = None
 debug = False
 interactive = False
@@ -82,18 +81,23 @@ def init_trajopt():
     trajoptpy.SetInteractive(interactive)
 
 
-def load_object(object_name, i):
+def load_object(object_id, object_key):
     """Load 'i'-th instance of 'object_name' into openrave environment."""
     # Get the global openrave environment.
     global env
     # Get path to models
     rospack = rospkg.RosPack()
     path = rospack.get_path('apc_description')
+    # Compute the object key "index". HACK
+    if object_id == object_key:
+        i = '0'
+    else:
+        i = object_key.split('_')[-1]
     # Join together the object path to load.
     obj_path = os.path.join(path, 'objects')
-    obj_path = os.path.join(obj_path, object_name)
+    obj_path = os.path.join(obj_path, object_id)
     obj_path = os.path.join(obj_path, 'reduced_kinbody')
-    obj_path = os.path.join(obj_path, 'kinbody.' + str(i) + '.xml')
+    obj_path = os.path.join(obj_path, 'kinbody.' + i + '.xml')
     # Load object.
     env.Load(obj_path)
 
@@ -109,40 +113,42 @@ def load_and_set_objects(request):
         if not env.GetRobot(body.GetName()):
             dirty[body.GetName()] = 1
 
-    # For each object in the scene world...
-    for col_obj in request.scene.world.collision_objects:
-        # Check that the file ending is 'stl'.
-        if not col_obj.id.split('.')[-1] == 'stl':
-            rospy.logwarn('Recieved non-stl object %s', col_obj.id)
-        # Object base name, i.e. 'cheezit_big_original'.
-        col_obj_base = col_obj.id.partition('.')[0]
-        # Convert collision object name to xml name.
-        i = 0
-        col_obj_name = col_obj_base + '_' + str(i)
-        # Look for the next unloaded or dirty object.
-        while col_obj_name in dirty.keys() and dirty[col_obj_name] == 0:
-            i = i + 1
-            col_obj_name = col_obj_base + '_' + str(i)
+    # For each object in the world state...
+    for obj in request.world_state.objects:
+        # Get the ID and key.
+        obj_id = obj.object_id
+        obj_key = obj.object_key
         # If the collision object has not been loaded yet, load it.
-        if col_obj_name not in dirty.keys():
-            load_object(col_obj_base, i)
+        if obj_key not in dirty.keys():
+            load_object(obj_id, obj_key)
         # Construct transform from scene world data.
-        pose = col_obj.mesh_poses[0]
+        pose = obj.object_pose
         q = np.array([pose.orientation.x, pose.orientation.y, pose.orientation.z, pose.orientation.w])
         T = tf.transformations.quaternion_matrix(q)
         v = np.array([pose.position.x, pose.position.y, pose.position.z])
         T[:3, 3] = v
+
+        # Stupid hack to rotate the convex decomp mesh because osg
+        # can't load the collada file correctly.
+        if obj_key == "kiva_pod":
+            T_hack = np.array( [ [ 1, 0, 0, 0 ],
+                                 [ 0, 0, -1, 0 ],
+                                 [ 0, 1, 0, 0 ],
+                                 [ 0, 0, 0, 1 ] ] , dtype=np.float64)
+            T = T.dot(T_hack)
+
+        rospy.loginfo("Setting %s to\n%s", obj_key, T)
         # Copy pose into openrave KinBody.
-        env.GetKinBody(col_obj_name).SetTransform(T)
+        env.GetKinBody(obj_key).SetTransform(T)
         # Mark the openrave object in the dirty map as 'clean'.
-        dirty[col_obj_name] = 0
+        dirty[obj_key] = 0
 
     # For each object that is still dirty...
     if dirty:
-        for col_obj_name in dirty.keys():
+        for obj_key in dirty.keys():
             # Remove from the openrave environment.
-            if dirty[col_obj_name] == 1:
-                env.RemoveBody(col_obj_name)
+            if dirty[obj_key] == 1:
+                env.RemoveBody(obj_key)
 
 
 def set_robot(request):
@@ -151,7 +157,7 @@ def set_robot(request):
     global env
 
     # Set robot to correct joint angles and positions.
-    joint_state = request.start_state.joint_state
+    joint_state = request.robot_state.joint_state
     with env:
         robot = env.GetRobot('crichton')
         dofs = np.zeros(robot.GetDOF())
@@ -184,20 +190,29 @@ def motion_planning_service(request):
     # Set robot to correct joint angles and positions.
     set_robot(request)
 
+    # Tracer()()
+
     # Construct goal state.
     joint_target = np.zeros(robot.GetDOF())
     with env:
         robot = env.GetRobot('crichton')
-        goal = request.goal_state.joint_state
+        # Get goal joint names and joint angles.
+        group_joint_names = request.action.joint_trajectory.joint_names
+        goal_joint_angles = request.action.joint_trajectory.points[-1].positions
         if robot == None:
             print 'No robot found for "crichton"'
         else:
+            # For each joint..
             for joint in robot.GetJoints():
-                for i in range(len(goal.name)):
-                    if joint.GetName() == goal.name[i]:
-                        if debug:
-                            print "Setting joint target", joint.GetName(), "to", goal.name[i], ":", goal.position[i]
-                        joint_target[joint.GetDOFIndex()] = goal.position[i]
+                # Set the joint to the starting value.
+                joint_target[joint.GetDOFIndex()] = joint.GetValues()[0]
+                # If the joint is in the goal set, set it to the goal
+                # value instead.
+                for i in range(len(group_joint_names)):
+                    if joint.GetName() == group_joint_names[i]:
+                        # if debug:
+                        #     print "Setting joint target", joint.GetName(), "to", goal.name[i], ":", goal.position[i]
+                        joint_target[joint.GetDOFIndex()] = goal_joint_angles[i]
     joint_target = joint_target.tolist()
     if debug:
         print "Robot goal DOF values\n", joint_target
@@ -205,7 +220,7 @@ def motion_planning_service(request):
     # Tracer()()
 
     # Create json problem definition.
-    request = {
+    trajopt_request = {
         "basic_info" : {
             "n_steps" : 20,
             "manip" : "active", # see below for valid values
@@ -249,7 +264,7 @@ def motion_planning_service(request):
             "endpoint" : joint_target
         }
     }
-    s = json.dumps(request) # convert dictionary into json-formatted string
+    s = json.dumps(trajopt_request) # convert dictionary into json-formatted string
     prob = trajoptpy.ConstructProblem(s, env) # create object that stores optimization problem
     t_start = time.time()
 
@@ -266,20 +281,25 @@ def motion_planning_service(request):
     # assert traj_is_safe(result.GetTraj(), robot)
 
     # Create motion plan response.
-    response = apc_msgs.srv.GetMotionPlanResponse()
+    response = apc_msgs.srv.ComputeDenseMotionResponse()
 
     # Is the trajectory collision free.
     response.valid = traj_is_safe(result.GetTraj(), robot)
 
+    # Is the trajectory collision free.
+    response.collision_free = traj_is_safe(result.GetTraj(), robot)
+
     # Fill response.
     trajectory = result.GetTraj()
-    action = apc_msgs.msg.PrimitiveAction()
+    action = request.action
+    action.joint_trajectory.points = []
     for i in range(len(trajectory)):
         action.joint_trajectory.joint_names = [joint.GetName() for joint in robot.GetJoints()]
         point = trajectory_msgs.msg.JointTrajectoryPoint()
         point.positions = trajectory[i]
         action.joint_trajectory.points.append(point)
-    response.plan.actions.append(action)
+    response.action = action
+    print response
 
     return response
 
@@ -299,7 +319,7 @@ def main():
     # Create service and loop.
     print "Starting up ROS..."
     service_topic = rospy.get_param('~topic', 'motion_planning_service')
-    service = rospy.Service(service_topic, apc_msgs.srv.GetMotionPlan, motion_planning_service)
+    service = rospy.Service(service_topic, apc_msgs.srv.ComputeDenseMotion, motion_planning_service)
     rospy.spin()
 
 

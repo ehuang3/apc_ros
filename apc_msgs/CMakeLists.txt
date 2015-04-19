@@ -56,15 +56,14 @@ add_message_files(
   PrimitivePlan.msg
   TactileSensor.msg
   TactileMatrix.msg
-  # PrimitivePlanRequest.msg
-  # PrimitivePlanResponse.msg
   Constraints.msg
   JointConstraint.msg
   PositionConstraint.msg
   OrientationConstraint.msg
   VisibilityConstraint.msg
-  StoredObject.msg
-  StoredScene.msg
+  FrameState.msg
+  ObjectState.msg
+  WorldState.msg
 )
 
 ## Generate services in the 'srv' folder
@@ -73,6 +72,7 @@ add_service_files(
   srv
   FILES
   GetMotionPlan.srv
+  ComputeDenseMotion.srv
 )
 
 ## Generate actions in the 'action' folder

@@ -1,4 +1,4 @@
-<?xml version="1.0" ?><KinBody name="kiva_pod_0">
+<?xml version="1.0" ?><KinBody name="kiva_pod">
   <Body name="pod_lowres" type="static">
     <Geom type="trimesh">
       <Render>../vhacd_meshes/kiva_pod.dae</Render>
