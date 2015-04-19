@@ -1,0 +1,9 @@
+model_sample: .01
+scene_sample: .01
+descriptor_rad: .1
+rf_rad: .015
+cg_size: .08
+cg_thresh: -20
+corr_dist: 60.0
+voxel_leaf: 0.01
+
