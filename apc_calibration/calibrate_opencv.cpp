@@ -24,8 +24,10 @@ using namespace std;
 
 Mat rgb_data;
 Mat ir_data;
+bool data_incoming;
 void RGBCallback(const sensor_msgs::ImageConstPtr& msg)
 {
+    std::cerr << "RGB works" << std::endl;
     cv_bridge::CvImagePtr cv_ptr;
     try
     {
@@ -38,6 +40,7 @@ void RGBCallback(const sensor_msgs::ImageConstPtr& msg)
       ROS_ERROR("cv_bridge exception: %s", e.what());
       return;
     }
+    data_incoming=true;
 }
 
 void IRCallback(const sensor_msgs::ImageConstPtr& msg)
@@ -118,7 +121,7 @@ public:
             goodInput = false;
         }
 
-        inputType=CAMERA;
+        inputType=IMAGE_LIST;
 
         flag = 0;
         if(calibFixPrincipalPoint) flag |= CV_CALIB_FIX_PRINCIPAL_POINT;
@@ -191,14 +194,14 @@ int main(int argc, char* argv[])
     // Initialize ROS
     ros::init (argc, argv, "apc_calibration");
     ros::NodeHandle nh=ros::NodeHandle("apc_opencv_calibration");
-    ros::Subscriber rgb=nh.subscribe("/kinect2/rgb/Image", 1, &RGBCallback);
-    ros::Subscriber ir=nh.subscribe("/kinect2/rgb/Image", 1, &IRCallback);
+    ros::Subscriber rgb=nh.subscribe("/kinect2/rgb/image", 1, &RGBCallback);
+    ros::Subscriber ir=nh.subscribe("/kinect2/ir/image", 1, &IRCallback);
 
     ros::Rate r(10);
     // Spin
     int i=0;
     Settings s;
-    const string inputSettingsFile = argc > 1 ? argv[1] : "default.xml";
+    const string inputSettingsFile = argc > 1 ? argv[1] : "/home/hubo/catkin_ws/src/apc_ros/apc_calibration/default.xml";
     FileStorage fs(inputSettingsFile, FileStorage::READ); // Read the settings
     if (!fs.isOpened())
     {
@@ -214,34 +217,29 @@ int main(int argc, char* argv[])
         return -1;
     }
 
+
+    std::cerr << "ros start" << std::endl;
     vector<vector<Point2f> > imagePoints;
+    vector<vector<Point2f> > imagePointsir;
     Mat cameraMatrix, distCoeffs;
     Size imageSize;
     int mode = s.inputType == Settings::IMAGE_LIST ? CAPTURING : DETECTION;
     clock_t prevTimestamp = 0;
     const Scalar RED(0,0,255), GREEN(0,255,0);
     const char ESC_KEY = 27;
-    std::cerr << "ros start" << std::endl;
     while(ros::ok)
     {
+        std::cerr << "Spincool" << mode << std::endl;
         ros::spinOnce();
-        std::cerr << "Spin" << std::endl;
-        r.sleep();
-        vector<vector<Point2f> > imagePoints;
-        Mat cameraMatrix, distCoeffs;
-        Size imageSize;
-        int mode = s.inputType == Settings::IMAGE_LIST ? CAPTURING : DETECTION;
-        clock_t prevTimestamp = 0;
-        const Scalar RED(0,0,255), GREEN(0,255,0);
-        const char ESC_KEY = 27;
-
+        if(data_incoming==true){
             Mat view;
+            Mat viewir;
             bool blinkOutput = false;
 
             view = s.nextImage();
 
             //-----  If no more image, or got enough, then stop calibration and show result -------------
-            if( mode == CAPTURING )
+            if( mode == CAPTURING && imagePoints.size()>=150 )
             {
                 if( runCalibrationAndSave(s, imageSize,  cameraMatrix, distCoeffs, imagePoints))
                     mode = CALIBRATED;
@@ -295,7 +293,7 @@ int main(int argc, char* argv[])
                 {
                     imagePoints.push_back(pointBuf);
                     prevTimestamp = clock();
-                    blinkOutput = s.inputCapture.isOpened();
+                    blinkOutput = data_incoming;//s.inputCapture.isOpened();
                 }
 
                 // Draw the corners.
@@ -331,7 +329,7 @@ int main(int argc, char* argv[])
 
             //------------------------------ Show image and check for input commands -------------------
             imshow("Image View", view);
-            char key = (char)waitKey(s.inputCapture.isOpened() ? 50 : s.delay);
+            char key = (char)waitKey(data_incoming ? 50 : s.delay);
 
             if( key  == ESC_KEY )
                 break;
@@ -339,13 +337,16 @@ int main(int argc, char* argv[])
             if( key == 'u' && mode == CALIBRATED )
                 s.showUndistorsed = !s.showUndistorsed;
 
-            if( s.inputCapture.isOpened() && key == 'g' )
+            if( data_incoming && key == 'g' )
             {
                 mode = CAPTURING;
                 imagePoints.clear();
             }
-        }
 
+
+        }
+        r.sleep();
+    }
         // -----------------------Show the undistorted image for the image list ------------------------
         if( s.inputType == Settings::IMAGE_LIST && s.showUndistorsed )
         {
@@ -369,6 +370,7 @@ int main(int argc, char* argv[])
 
 
         return 0;
+
 }
 static double computeReprojectionErrors( const vector<vector<Point3f> >& objectPoints,
                                          const vector<vector<Point2f> >& imagePoints,
@@ -446,6 +448,7 @@ static bool runCalibration( Settings& s, Size& imageSize, Mat& cameraMatrix, Mat
 
     totalAvgErr = computeReprojectionErrors(objectPoints, imagePoints,
                                             rvecs, tvecs, cameraMatrix, distCoeffs, reprojErrs);
+    std::cerr << totalAvgErr << std::endl;
 
     return ok;
 }
