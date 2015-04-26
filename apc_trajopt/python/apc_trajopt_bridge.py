@@ -55,7 +55,7 @@ import argparse
 
 env = None
 debug = False
-interactive = False
+interactive = True
 
 def init_openrave():
     """Initialize OpenRAVE and load models"""
