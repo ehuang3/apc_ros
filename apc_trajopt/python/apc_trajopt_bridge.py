@@ -174,6 +174,17 @@ def set_robot(request):
     # Debug output joint angles.
     rospy.logdebug("Robot starting DOF values\n%s", str(robot.GetDOFValues()))
 
+    print "grasp", request.action.grasp
+
+    # Attach collision object if the action is a grasp.
+    if request.action.grasp:
+        with env:
+            robot = env.GetRobot('crichton')
+            item  = env.GetKinBody(request.action.object_key)
+            link  = robot.GetLink(request.action.attached_link_id)
+            robot.Grab(item, link)
+            # Tracer()()
+
 
 def motion_planning_service(request):
     """Perform motion planning using trajectory optimization"""

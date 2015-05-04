@@ -40,6 +40,9 @@ string object_key
 # The name of the link the object is attached to.
 string attached_link_id
 
+# Whether the object is grasped or not.
+bool grasp
+
 # The trajectory of the manipulated object relative to link frame.
 geometry_msgs/PoseArray object_trajectory
 
