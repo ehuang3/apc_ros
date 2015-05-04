@@ -48,6 +48,7 @@ import numpy as np
 import openravepy
 import trajoptpy
 from trajoptpy.check_traj import traj_is_safe
+import trajoptpy.math_utils as mu
 
 from IPython.core.debugger import Tracer
 
@@ -55,9 +56,9 @@ import argparse
 
 env = None
 debug = False
-interactive = False
+interactive = True
 
-def init_openrave():
+def initOpenRAVE():
     """Initialize OpenRAVE and load models"""
 
     # Create an openrave environment and store into the global variable.
@@ -75,13 +76,13 @@ def init_openrave():
     env.Load(path + "/collada/crichton/crichton.dae")
 
 
-def init_trajopt():
+def initTRAJOPT():
     """Initialize trajectory optimization"""
     # Pause every iteration, until you press 'p'. Press escape to disable further plotting.
     trajoptpy.SetInteractive(interactive)
 
 
-def load_object(object_id, object_key):
+def loadItemToOpenRAVE(object_id, object_key):
     """Load 'i'-th instance of 'object_name' into openrave environment."""
     # Get the global openrave environment.
     global env
@@ -101,7 +102,8 @@ def load_object(object_id, object_key):
     # Load object.
     env.Load(obj_path)
 
-def load_and_set_objects(request):
+
+def loadAndSetItemsToOpenRAVE(request):
     """ Load new objects and set them to the correct transform."""
     # Get the global openrave environment.
     global env
@@ -120,7 +122,7 @@ def load_and_set_objects(request):
         obj_key = obj.object_key
         # If the collision object has not been loaded yet, load it.
         if obj_key not in dirty.keys():
-            load_object(obj_id, obj_key)
+            loadItemToOpenRAVE(obj_id, obj_key)
         # Construct transform from scene world data.
         pose = obj.object_pose
         q = np.array([pose.orientation.x, pose.orientation.y, pose.orientation.z, pose.orientation.w])
@@ -151,7 +153,18 @@ def load_and_set_objects(request):
                 env.RemoveBody(obj_key)
 
 
-def set_robot(request):
+def printKinBodiesInCollision():
+    """
+    Print out all colliding kinbodies in the environment.
+
+    """
+    global env
+    for object in env.GetBodies():
+        if env.CheckCollision(object):
+            print object.GetName(), "in collision"
+
+
+def setRobotState(request):
     """Set robot 'crichton' to correct joint angles"""
     # Use the global copy of openrave environment.
     global env
@@ -173,43 +186,118 @@ def set_robot(request):
             robot.SetDOFValues(dofs)
     # Debug output joint angles.
     rospy.logdebug("Robot starting DOF values\n%s", str(robot.GetDOFValues()))
-
     print "grasp", request.action.grasp
 
-    # Attach collision object if the action is a grasp.
-    if request.action.grasp:
-        with env:
-            robot = env.GetRobot('crichton')
-            item  = env.GetKinBody(request.action.object_key)
-            link  = robot.GetLink(request.action.attached_link_id)
-            robot.Grab(item, link)
-            # Tracer()()
+    # setTargetItemCollisionProperties(request.action)
 
 
-def motion_planning_service(request):
-    """Perform motion planning using trajectory optimization"""
-    # Use the global copy of openrave environment.
+def setTargetItemCollisionProperties(action, problem):
+    """
+    This function sets collision checking for the target item to
+    enabled or disabled depending on whether the action is a pre-
+    grasp trajectory, a grasp, or a post-grasp trajectory.
+
+    """
     global env
+    # 1. Set the grabbed state and openrave collision properties.
+    moving = not (action.joint_trajectory.points[0].positions == action.joint_trajectory.points[-1].positions)
+    grasping = action.grasp
+    # If the action is moving the joints and not grasping (i.e. a pre-grasp
+    # trajectory) or if the action is not moving and grasping (i.e. a grasp),
+    # we'll disable collisions. That means if the action is moving and grasping
+    # (i.e. a post-grasp trajectory), collisions are enabled for the item.
+    disable_collisions = (moving and not grasping) or (not moving and grasping)
+    # Of course, we should only disable collisions if the action has an object
+    # it is interacting with.
+    disable_collisions = action.object_key and disable_collisions
 
-    # Load and set objects to correct location.
-    load_and_set_objects(request)
+    # FIXME Remove this section
+    # # If we need to disable collisions, do that for the item in the openrave
+    # # context. We will still need to disable collisions in the bullet collision
+    # # checker that trajopt uses later. This is for the collision checking we do
+    # # post-optimization.
+    # if disable_collisions:
+    #     item = env.GetKinBody(action.object_key)
+    #     for link in item.GetLinks():
+    #         # link.Enable(not disable_collisions)
+    #         link.Enable(True)
+    # # If we don't need to, make sure to enable all links and bodies in the
+    # # environment for collision checking.
+    # else:
+    #     for kinbody in env.GetBodies():
+    #         for link in kinbody.GetLinks():
+    #             link.Enable(True)
 
-    # Get the robot.
-    with env:
+    # If grasping, grab the item with the robot in openrave. This allows us to
+    # plan with the grabbed object.
+    if grasping:
+        item = env.GetKinBody(action.object_key)
         robot = env.GetRobot('crichton')
+        link  = robot.GetLink(action.attached_link_id)
+        robot.Grab(item, link)
+        for kinbody in robot.GetGrabbed():
+            for link in kinbody.GetLinks():
+                link.Enable(not disable_collisions)
+    # If not grasping, release all previously grabbed objects ;).
+    else:
+        robot = env.GetRobot('crichton')
+        robot.ReleaseAllGrabbed()
+    # 2. Set the collision properties for the bullet collision checkers used in
+    # trajopt's optimization algorithm. If the action is a pre-grasp trajectory,
+    # we do not disable collisions because we want the grasp to remain open
+    # until the last second when the fingers close around the object. If the
+    # action is a grasp or a post-grasp trajectory, we want to disable collision
+    # pairs between the end-effector and the grabbed item. If the action is a
+    # non-prehensile movement, TODO.
+    disable_collisions = action.object_key and grasping
+    # If so, disable collisions between the item links and all links in the
+    # robot.
+    if disable_collisions:
+        robot = env.GetRobot('crichton')
+        item = env.GetKinBody(action.object_key)
+        collision_checkers = problem.GetCollisionCheckers()
+        for cc in collision_checkers:
+            for item_link in item.GetLinks():
+                print "Disabling collisions between", item_link.GetName(), "and crichton"
+                for robot_link in robot.GetLinks():
+                    # print "Disabling collisions between ", item_link.GetName(), "and", robot_link.GetName()
+                    cc.ExcludeCollisionPair(item_link, robot_link)
+                    cc.ExcludeCollisionPair(robot_link, item_link)
+                for grabbed in robot.GetGrabbed():
+                    for grab_link in grabbed.GetLinks():
+                        cc.ExcludeCollisionPair(item_link, grab_link)
+                        cc.ExcludeCollisionPair(grab_link, item_link)
+                for item_link2 in item.GetLinks():
+                    cc.ExcludeCollisionPair(item_link, item_link2)
+                    cc.ExcludeCollisionPair(item_link2, item_link)
+    # If we are not disabling collisions, enable collisions between all item
+    # links and all links in the robot. FIXME This is not necessary as trajopt
+    # collision checkers are recreated for each service call.
+    # else:
+    #     robot = env.GetRobot('crichton')
+    #     item = env.GetKinBody(action.object_key)
+    #     collision_checkers = problem.GetCollisionCheckers()
+    #     for cc in collision_checkers:
+    #         for item in env.GetBodies():
+    #             # Skip over kinbodies that are also robots.
+    #             if env.GetRobot(item.GetName()):
+    #                 continue
+    #             for item_link in item.GetLinks():
+    #                 for robot_link in robot.GetLinks():
+    #                     cc.IncludeCollisionPair(item_link, robot_link)
 
-    # Set robot to correct joint angles and positions.
-    set_robot(request)
 
-    # Tracer()()
-
+def buildTrajoptRequest(srv_request):
+    global env
+    # Get the robot.
+    robot = env.GetRobot('crichton')
     # Construct goal state.
     joint_target = np.zeros(robot.GetDOF())
     with env:
         robot = env.GetRobot('crichton')
         # Get goal joint names and joint angles.
-        group_joint_names = request.action.joint_trajectory.joint_names
-        goal_joint_angles = request.action.joint_trajectory.points[-1].positions
+        group_joint_names = srv_request.action.joint_trajectory.joint_names
+        goal_joint_angles = srv_request.action.joint_trajectory.points[-1].positions
         if robot == None:
             print 'No robot found for "crichton"'
         else:
@@ -228,9 +316,18 @@ def motion_planning_service(request):
     if debug:
         print "Robot goal DOF values\n", joint_target
 
-    # Tracer()()
+    # Compute the required distance penalty. For pre-grasp trajectories, the
+    # distance penalty should be small and positive, to encourage the fingers to
+    # avoid the object until the grasp.
+    distance_penalty = 0.0
+    moving = not (srv_request.action.joint_trajectory.points[0].positions ==
+                  srv_request.action.joint_trajectory.points[-1].positions)
+    grasping = srv_request.action.grasp
+    pregrasp = moving and not grasping
+    if pregrasp:
+        distance_penalty = 0.02 # 1 cm
 
-    # Create json problem definition.
+    # Fill out trajopt request.
     trajopt_request = {
         "basic_info" : {
             "n_steps" : 20,
@@ -250,18 +347,18 @@ def motion_planning_service(request):
                     # penalty coefficients. list of length one is automatically expanded to a list of length n_timesteps
                     "coeffs" : [1],
                     # robot-obstacle distance that penalty kicks in. expands to length n_timesteps
-                    "dist_pen" : [0.025]
+                    "dist_pen" : [distance_penalty]
                 },
             },
-            # {
-            #     "name" : "cont_coll",
-            #     "type" : "collision",
-            #     "params" : {"coeffs" : [coll_coeff],"dist_pen" : [dist_pen], "continuous":True}
-            # },
             {
                 "name": "disc_coll",
                 "type" : "collision",
-                "params" : {"coeffs" : [1],"dist_pen" : [0.025], "continuous":False}
+                "params" : 
+                {
+                    "continuous":False,
+                    "coeffs" : [1],
+                    "dist_pen" : [distance_penalty]
+                }
             }
         ],
         "constraints" : [
@@ -275,14 +372,106 @@ def motion_planning_service(request):
             "endpoint" : joint_target
         }
     }
+    return trajopt_request
+
+
+def checkInterpCollisionFree(action, problem, result, dn=10):
+    """
+    Verify that the interpolated trajectory generated by trajopt is collision
+    free. Argument 'dn' controls how fine the step sizes between points is.
+
+    """
+    global env
+    # An action is a pre-grasp trajectory if we are moving towards a grasp.
+    moving = not (action.joint_trajectory.points[0].positions == action.joint_trajectory.points[-1].positions)
+    grasping = action.grasp
+    pregrasp = moving and not grasping and action.object_key
+    # If the action is a pre-grasp, then we do not check the last segment for
+    # collisions.
+    pregrasp_off = 0
+    if pregrasp:
+        pregrasp_off = 1
+    # Check for collisions.
+    robot = env.GetRobot("crichton")
+    T = result.GetTraj()
+    num_pts = T.shape[0]
+    num_dof = T.shape[1]
+    for i in range(num_pts - 1 - pregrasp_off):
+        T_i = T[i:i+1,:]
+        T_i = mu.interp2d(np.linspace(0,1,dn), np.linspace(0,1,len(T_i)), T_i)
+        for (_,dofs) in enumerate(T_i):
+            robot.SetActiveDOFValues(dofs)
+            for robot_link in robot.GetLinks():
+                collision = env.CheckCollision(robot_link)
+                if collision:
+                    print robot_link.GetName(), "in collision at", i
+                    return False
+    return True
+
+
+def checkBulletCollisionFree(action, problem, result):
+    """
+    Verify that the trajectory generated by trajopt is collision free.
+    FIXME Fails at last timestep on grasps.
+
+    """
+    global env
+    robot = env.GetRobot("crichton")
+    collision_checkers = problem.GetCollisionCheckers()
+    for cc in collision_checkers:
+        collisions = cc.BodyVsAll(robot)
+        if len(collisions) > 0:
+            return False
+    return True
+
+
+def printBulletCollisions(problem):
+    """
+    Print bullet collisions. These are the collisions of trajopt's internal
+    optimization machinery.
+
+    """
+    collision_checkers = problem.GetCollisionCheckers()
+    for cc in collision_checkers:
+        collisions = cc.AllVsAll()
+        for c in collisions:
+            print c.GetCollisionInfo()
+
+
+def motion_planning_service(request):
+
+    """Perform motion planning using trajectory optimization"""
+    # Use the global copy of openrave environment.
+    global env
+
+    # Load and set objects to correct location.
+    loadAndSetItemsToOpenRAVE(request)
+
+    # Get the robot.
+    with env:
+        robot = env.GetRobot('crichton')
+
+    # Set robot to correct joint angles and positions.
+    setRobotState(request)
+    printKinBodiesInCollision()
+
+    # Create json problem definition.
+    trajopt_request = buildTrajoptRequest(request)
     s = json.dumps(trajopt_request) # convert dictionary into json-formatted string
     prob = trajoptpy.ConstructProblem(s, env) # create object that stores optimization problem
     t_start = time.time()
 
+    # Tracer()()
+
+    # Set collision matrix information and grabbed bodies.
+    setTargetItemCollisionProperties(request.action, prob)
+    # HACK Reload objects and positions in case an object is "ungrabbed"
+    loadAndSetItemsToOpenRAVE(request)
+
     result = trajoptpy.OptimizeProblem(prob) # do optimization
     t_elapsed = time.time() - t_start
-    print result
-    print "optimization took %.3f seconds"%t_elapsed
+    # print result
+    # print "optimization took %.3f seconds"%t_elapsed
 
     robot = env.GetRobot('crichton')
     prob.SetRobotActiveDOFs() # set robot DOFs to DOFs in optimization problem
@@ -291,14 +480,24 @@ def motion_planning_service(request):
     # Do not assert collision free trajectories for now...
     # assert traj_is_safe(result.GetTraj(), robot)
 
+    print "=========================OPENRAVE COLLISIONS============================"
+    # printKinBodiesInCollision()
+    print "=========================BULLET COLLISIONS=============================="
+    # printBulletCollisions(prob)
+    print "=========================END============================================"
+
     # Create motion plan response.
     response = apc_msgs.srv.ComputeDenseMotionResponse()
 
     # Is the trajectory collision free.
-    response.valid = traj_is_safe(result.GetTraj(), robot)
+    # response.valid = traj_is_safe(result.GetTraj(), robot)
+    # response.valid = True
+    response.valid = checkInterpCollisionFree(request.action, prob, result)
 
     # Is the trajectory collision free.
-    response.collision_free = traj_is_safe(result.GetTraj(), robot)
+    # response.collision_free = traj_is_safe(result.GetTraj(), robot)
+    # response.collision_free = True
+    response.collision_free = checkInterpCollisionFree(request.action, prob, result)
 
     # Fill response.
     trajectory = result.GetTraj()
@@ -321,11 +520,11 @@ def main():
 
     # Initialize OpenRAVE.
     print "Starting up OpenRAVE..."
-    init_openrave()
+    initOpenRAVE()
 
     # Initialize TRAJOPT.
     print "Starting up TRAJOPT..."
-    init_trajopt()
+    initTRAJOPT()
 
     # Create service and loop.
     print "Starting up ROS..."
