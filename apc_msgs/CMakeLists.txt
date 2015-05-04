@@ -64,6 +64,7 @@ add_message_files(
   FrameState.msg
   ObjectState.msg
   WorldState.msg
+  DPMObject.msg
 )
 
 ## Generate services in the 'srv' folder
@@ -73,6 +74,7 @@ add_service_files(
   FILES
   GetMotionPlan.srv
   ComputeDenseMotion.srv
+  RunDPM.srv
 )
 
 ## Generate actions in the 'action' folder
