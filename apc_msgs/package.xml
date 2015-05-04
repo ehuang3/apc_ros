@@ -45,12 +45,16 @@
   <build_depend>moveit_msgs</build_depend>
   <build_depend>std_msgs</build_depend>
   <build_depend>trajectory_msgs</build_depend>
+  <build_depend>sensor_msgs</build_depend>
+
   <!-- <build_depend>schunk_sdh</build_depend> -->
   <run_depend>control_msgs</run_depend>
   <run_depend>geometry_msgs</run_depend>
   <run_depend>moveit_msgs</run_depend>
   <run_depend>std_msgs</run_depend>
   <run_depend>trajectory_msgs</run_depend>
+  <run_depend>sensor_msgs</run_depend>
+
   <!-- <run_depend>schunk_sdh</run_depend> -->
 
 
