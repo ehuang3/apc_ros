@@ -23,8 +23,6 @@ git submodule update --init
 
 sudo apt-get install libpcl-all ros-indigo-moveit-full
 
-
-
 ### ROS packages
 
 cd catkin_ws
@@ -37,8 +35,20 @@ git pull
 cd ..
 git clone git@github.gatech.edu:ehuang3/geometric_shapes.git
 git clone git@github.com:ehuang3/robot_calibration.git
+git clone git@github.com:ros/urdfdom.git
+cd urdfdom
+wget https://raw.github.com/ros-gbp/urdfdom-release/debian/ROS_DISTRO/UBUNTU_DISTRO/urdfdom/package.xml
+cd urdf_parser_py
+sudo python setup.py install
+cd ../..
 
 Then catkin_make
+
+roslaunch apc_moveit_config setup_assistant.launch
+click "load files" in the bottom right
+go to configure
+add the .setup thing at the bottom of configure
+generate, then you are done
 
 ### Ceres
 
