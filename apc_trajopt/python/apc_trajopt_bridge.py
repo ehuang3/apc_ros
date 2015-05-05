@@ -57,6 +57,7 @@ import argparse
 env = None
 debug = False
 interactive = True
+# interactive = False
 
 def initOpenRAVE():
     """Initialize OpenRAVE and load models"""
@@ -191,7 +192,21 @@ def setRobotState(request):
     # setTargetItemCollisionProperties(request.action)
 
 
+def printAllowableCollisions(cc, kinbody, env):
+    """
+    Print out the allowed collision pairs between kinbody and the rest
+    of the environment for a given collision checker.
+
+    """
+    for source_link in kinbody.GetLinks():
+        for target_body in env.GetBodies():
+            for target_link in target_body.GetLinks():
+                if cc.CanCollide(source_link, target_link):
+                    print source_link.GetName(), "can collide with", target_link.GetName()
+
+
 def setTargetItemCollisionProperties(action, problem):
+
     """
     This function sets collision checking for the target item to
     enabled or disabled depending on whether the action is a pre-
@@ -270,6 +285,29 @@ def setTargetItemCollisionProperties(action, problem):
                 for item_link2 in item.GetLinks():
                     cc.ExcludeCollisionPair(item_link, item_link2)
                     cc.ExcludeCollisionPair(item_link2, item_link)
+            # DEBUG
+    if action.object_key:
+        item = env.GetKinBody(action.object_key)
+        collision_checkers = problem.GetCollisionCheckers()
+        for cc in collision_checkers:
+            printAllowableCollisions(cc, item, env)
+    # If we are grabbing something and moving, enable collisions
+    # between the item and the rest of the items. May want to change
+    # this to shelf.
+    enable_item_collisions = moving and grasping
+    if enable_item_collisions:
+        item = env.GetKinBody(action.object_key)
+        collision_checkers = problem.GetCollisionCheckers()
+        for cc in collision_checkers:
+            kiva_pod = env.GetKinBody('kiva_pod')
+            for item_link in item.GetLinks():
+                for kiva_link in kiva_pod.GetLinks():
+                    cc.IncludeCollisionPair(item_link, kiva_link)
+                    cc.IncludeCollisionPair(kiva_link, item_link)
+            # other_items = [x for x in env.GetKinBodies()]
+
+
+
     # If we are not disabling collisions, enable collisions between all item
     # links and all links in the robot. FIXME This is not necessary as trajopt
     # collision checkers are recreated for each service call.

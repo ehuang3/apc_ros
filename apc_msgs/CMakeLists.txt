@@ -77,6 +77,8 @@ add_service_files(
   ComputeDenseMotion.srv
   RunDPM.srv
   RunICP.srv
+  GetImage.srv
+  GetPointCloud.srv
 )
 
 ## Generate actions in the 'action' folder
