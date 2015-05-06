@@ -66,6 +66,11 @@ add_message_files(
   ObjectState.msg
   WorldState.msg
   DPMObject.msg
+
+  # Vision
+  BinInfo.msg
+  BinState.msg
+  Object.msg
 )
 
 ## Generate services in the 'srv' folder
@@ -75,8 +80,11 @@ add_service_files(
   FILES
   GetMotionPlan.srv
   ComputeDenseMotion.srv
+
+  # Vision
   RunDPM.srv
   RunICP.srv
+  RunVision.srv
   GetImage.srv
   GetPointCloud.srv
 )

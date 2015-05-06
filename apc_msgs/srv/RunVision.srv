@@ -1,0 +1,5 @@
+# Vision
+
+apc_msgs/BinInfo[12] bins # 12 bins, baby
+---
+apc_msgs/BinState[12] bin_contents
