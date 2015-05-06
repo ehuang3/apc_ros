@@ -1,7 +1,7 @@
 # Vision
 # Camera Serial examples:
-# 1966... whacky kinect serial number
-# 'primesense'
+#   Chrichton chest kinect: "503233542542"
+#   Primesense: "primesense"
 
 std_msgs/String camera_id
 apc_msgs/BinInfo[12] bins # 12 bins, baby
