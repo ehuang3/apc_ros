@@ -49,10 +49,13 @@ import openravepy
 import trajoptpy
 from trajoptpy.check_traj import traj_is_safe
 import trajoptpy.math_utils as mu
-
 from IPython.core.debugger import Tracer
-
 import argparse
+
+# TODO
+import apc_trajopt
+
+
 
 env = None
 debug = False
