@@ -43,7 +43,7 @@ if __name__ == '__main__':
     if not rospy.has_param("/kinect2/serial_number"):
         # rospy.set_param("/kinect2/serial_number", '196605135147')
         rospy.logwarn("Could not find kinect serial on /kinect2/serial_number, guessing a random one: 196605135147")
-        kinect_serial = '196605135147'
+        kinect_serial = '503233542542'
     else:
         kinect_serial = rospy.get_param("/kinect2/serial_number")
 
