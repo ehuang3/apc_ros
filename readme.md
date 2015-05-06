@@ -21,7 +21,11 @@ git clone git@github.gatech.edu:ehuang3/apc_ros.git
 cd apc_ros
 git submodule update --init
 
-sudo apt-get install libpcl-all ros-indigo-moveit-full
+sudo add-apt-repository ppa:v-launchpad-jochen-sprickerhof-de/pcl
+sudo apt-get update
+sudo apt-get install libpcl-all
+
+sudo apt-get install ros-indigo-moveit-full
 
 ### ROS packages
 
