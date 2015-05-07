@@ -6,6 +6,7 @@ def path_to_file(_file):
 def path_to_root():
     fpath = os.path.dirname(os.path.realpath(__file__))
     return os.path.realpath(os.path.join(fpath, '..', '..', '..', '..'))
+    
 
 # Test
 if __name__ == '__main__':
