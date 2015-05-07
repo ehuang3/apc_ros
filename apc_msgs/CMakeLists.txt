@@ -88,6 +88,7 @@ add_service_files(
   RunVision.srv
   GetImage.srv
   GetPointCloud.srv
+  GetCloudFrustum.srv
 )
 
 ## Generate actions in the 'action' folder

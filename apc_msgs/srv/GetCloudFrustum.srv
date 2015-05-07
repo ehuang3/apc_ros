@@ -1,0 +1,8 @@
+sensor_msgs/PointCloud2 cloud  # The post-isolation cloud
+sensor_msgs/Image image
+geometry_msgs/Point bottom_left
+geometry_msgs/Point top_right
+
+---
+
+sensor_msgs/PointCloud2 sub_cloud
