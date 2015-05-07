@@ -33,22 +33,37 @@
 # OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import numpy as np
-from openravepy import *
-from trajoptpy import *
+import openravepy
+import trajoptpy
+import trajoptpy.math_utils as mu
 from .action import *
 
 
-def print_item_collision_pairs(item, cc, env):
+def print_item_collision_checker_pairs(item, cc, env):
     """
     Print out the allowed collision pairs between kinbody and the
     rest of the environment for a given collision checker.
 
     """
     for item_link in item.GetLinks():
+        item_link_name = item_link.GetName()
         for target_body in env.GetBodies():
             for target_link in target_body.GetLinks():
                 if cc.CanCollide(item_link, target_link):
-                    print item_link.GetName(), "can collide with", target_link.GetName()
+                    print item_link_name, ":", target_body.GetName()
+                    break
+
+
+def print_item_collision_pairs(item, problem, env):
+    """
+    Print out the allowed collision pairs between kinbody and the
+    rest of the environment for a given collision checker.
+
+    """
+    collision_checkers = problem.GetCollisionCheckers()
+    # for cc in collision_checkers:
+    #     print_item_collision_checker_pairs(item, cc, env)
+    print_item_collision_checker_pairs(item, collision_checkers[0], env)
 
 
 def set_target_item_collision_properties(action, problem, env):
@@ -75,12 +90,34 @@ def set_target_item_collision_properties(action, problem, env):
         collision_checkers = problem.GetCollisionCheckers()
         for cc in collision_checkers:
             for item_link in item.GetLinks():
-                print "Disabling collisions between", item_link.GetName(), "and crichton"
+                # print "Disabling collisions between", item_link.GetName(), "and crichton"
                 for robot_link in robot.GetLinks():
                     cc.ExcludeCollisionPair(item_link, robot_link)
                     cc.ExcludeCollisionPair(robot_link, item_link)
-    # If the action is a postgrasp, enable collisions between object and shelf.
-    # TODO
+                for item_link2 in item.GetLinks():
+                    cc.ExcludeCollisionPair(item_link2, item_link)
+                    cc.ExcludeCollisionPair(item_link, item_link2)
+
+
+def reset_target_item_collision_properties(action, problem, env):
+    """
+    This function resets collision checking for the target item.
+
+    """
+    # Otherwise, enable collisions between the item and the robot and itself.
+    if is_action_grasp(action) or is_action_postgrasp(action):
+        robot = env.GetRobot('crichton')
+        item = env.GetKinBody(action.object_key)
+        collision_checkers = problem.GetCollisionCheckers()
+        for cc in collision_checkers:
+            for item_link in item.GetLinks():
+                # print "Disabling collisions between", item_link.GetName(), "and crichton"
+                for robot_link in robot.GetLinks():
+                    cc.IncludeCollisionPair(item_link, robot_link)
+                    cc.IncludeCollisionPair(robot_link, item_link)
+                for item_link2 in item.GetLinks():
+                    cc.IncludeCollisionPair(item_link2, item_link)
+                    cc.IncludeCollisionPair(item_link, item_link2)
 
 
 def check_for_collisions_interp(action, problem, result, env, dn=10):

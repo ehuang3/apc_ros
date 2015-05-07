@@ -32,10 +32,12 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
 # OF THE POSSIBILITY OF SUCH DAMAGE.
 
+import os
 import numpy as np
 import rospy
 import rospkg
-from openravepy import *
+import tf.transformations
+import openravepy
 
 
 def init_openrave():
@@ -105,7 +107,7 @@ def load_and_set_items_to_openrave(request, env):
                                  [ 0, 0, 0, 1 ] ] , dtype=np.float64)
             T = T.dot(T_hack)
 
-        rospy.loginfo("Setting %s to\n%s", obj_key, T)
+        # rospy.loginfo("Setting %s to\n%s", obj_key, T)
         # Copy pose into openrave KinBody.
         env.GetKinBody(obj_key).SetTransform(T)
         # Mark the openrave object in the dirty map as 'clean'.
@@ -138,4 +140,4 @@ def set_robot_state_to_openrave(request, env):
             robot.SetDOFValues(dofs)
     # Debug output joint angles.
     rospy.logdebug("Robot starting DOF values\n%s", str(robot.GetDOFValues()))
-    print "grasp", request.action.grasp
+    # print "grasp", request.action.grasp

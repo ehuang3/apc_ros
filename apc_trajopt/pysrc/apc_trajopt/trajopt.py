@@ -33,9 +33,9 @@
 # OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import numpy as np
-from rospy import *
-from rospkg import *
-from openravepy import *
+import rospy
+import openravepy
+import trajoptpy
 from .action import *
 
 
@@ -75,9 +75,9 @@ def build_trajopt_request(srv_request, env):
     # distance penalty should be small and positive, to encourage the fingers to
     # avoid the object until the grasp.
     distance_penalty = 0.0
-    if is_action_transit(action):
+    if is_action_transit(srv_request.action):
         distance_penalty = 0.05 # 1 cm
-    if is_action_pregrasp(action):
+    if is_action_pregrasp(srv_request.action):
         distance_penalty = 0.02 # 1 cm
 
     # Fill out trajopt request.

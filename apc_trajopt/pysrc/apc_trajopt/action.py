@@ -32,7 +32,7 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
 # OF THE POSSIBILITY OF SUCH DAMAGE.
 import rospy
-from apc_msgs.msg import *
+from apc_msgs.msg import PrimitiveAction
 from .apc_assert import ApcError, apc_assert
 
 def __action_type__(action):
@@ -88,6 +88,14 @@ def is_action_nonprehensile(action):
 
 def is_action_grasping(action):
     return __action_type__(action) == 'grasp' or __action_type__(action) == 'postgrasp'
+
+def print_action_summary(action):
+    # action = PrimitiveAction()
+    print "action name   :", action.action_name
+    print "action group  :", action.group_id
+    print "action frame  :", action.frame_id
+    print "action object :", action.object_id
+    print "action type   :", __action_type__(action)
 
 if __name__=='__main__':
     action = apc_msgs.msg.PrimitiveAction()
