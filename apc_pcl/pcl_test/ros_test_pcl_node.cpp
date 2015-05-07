@@ -74,8 +74,11 @@ int main (int argc, char** argv)
         i++;
         r.sleep();
     }
+    Point2f p1(300,300);
+    circle(image, p1, 30, Scalar( 0, 255, 255 ), 1, 8, 0);
     namedWindow("Display Image", WINDOW_AUTOSIZE );
     imshow("Display Image", image);
+
     waitKey(0);
     return 0;
 }
