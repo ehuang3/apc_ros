@@ -141,11 +141,14 @@ public:
         atImageList = 0;
 
     }
-    Mat nextImage()
+    Mat nextImage(bool ir)
     {
         Mat result;
         ros::spinOnce();
-        result=rgb_data;
+        if(ir==true)
+            result=ir_data;
+        else
+            result=rgb_data;
         return result;
     }
 public:
@@ -219,11 +222,11 @@ int main(int argc, char* argv[])
 
 
     std::cerr << "ros start" << std::endl;
-    vector<vector<Point2f> > imagePoints;
-    vector<vector<Point2f> > imagePointsir;
+    vector<vector<Point2f> > imagePoints_rgb;
+    vector<vector<Point2f> > imagePoints_ir;
     Mat cameraMatrix, distCoeffs;
     Size imageSize;
-    int mode = s.inputType == Settings::IMAGE_LIST ? CAPTURING : DETECTION;
+    int mode = CAPTURING;
     clock_t prevTimestamp = 0;
     const Scalar RED(0,0,255), GREEN(0,255,0);
     const char ESC_KEY = 27;
@@ -232,50 +235,34 @@ int main(int argc, char* argv[])
         std::cerr << "Spincool" << mode << std::endl;
         ros::spinOnce();
         if(data_incoming==true){
-            Mat view;
-            Mat viewir;
+            Mat view_rgb;
+            Mat view_ir;
             bool blinkOutput = false;
 
-            view = s.nextImage();
+            view_rgb = s.nextImage(false);
+            view_ir=s.nextImage(true);
 
             //-----  If no more image, or got enough, then stop calibration and show result -------------
-            if( mode == CAPTURING && imagePoints.size()>=150 )
+            if( mode == CAPTURING && imagePoints_rgb.size()>=50 )
             {
-                if( runCalibrationAndSave(s, imageSize,  cameraMatrix, distCoeffs, imagePoints))
+                if( runStereoCalibrationAndSaves, imageSize,  cameraMatrix, distCoeffs, imagePoints_rgb))
                     mode = CALIBRATED;
                 else
                     mode = DETECTION;
             }
-            if(view.empty())          // If no more images then run calibration, save and stop loop.
-            {
-                if( imagePoints.size() > 0 )
-                    runCalibrationAndSave(s, imageSize,  cameraMatrix, distCoeffs, imagePoints);
-                break;
-            }
 
 
-            imageSize = view.size();  // Format input image.
-            if( s.flipVertical )    flip( view, view, 0 );
-
-            vector<Point2f> pointBuf;
+            imageSize = view_rgb.size();  // Format input image.
+            imageSize_ir = view_ir.size();
+            vector<Point2f> pointBuf_rgb;
+            vector<Point2f> pointBuf_ir;
 
             bool found;
-            switch( s.calibrationPattern ) // Find feature points on the input format
-            {
-            case Settings::CHESSBOARD:
-                found = findChessboardCorners( view, s.boardSize, pointBuf,
+            bool found_ir;
+                found = findChessboardCorners( view_rgb, s.boardSize, pointBuf_rgb,
                                                CV_CALIB_CB_ADAPTIVE_THRESH | CV_CALIB_CB_FAST_CHECK | CV_CALIB_CB_NORMALIZE_IMAGE);
-                break;
-            case Settings::CIRCLES_GRID:
-                found = findCirclesGrid( view, s.boardSize, pointBuf );
-                break;
-            case Settings::ASYMMETRIC_CIRCLES_GRID:
-                found = findCirclesGrid( view, s.boardSize, pointBuf, CALIB_CB_ASYMMETRIC_GRID );
-                break;
-            default:
-                found = false;
-                break;
-            }
+                found_ir=findChessboardCorners( view_ir, s.boardSize, pointBuf_ir,
+                                                CV_CALIB_CB_ADAPTIVE_THRESH | CV_CALIB_CB_FAST_CHECK | CV_CALIB_CB_NORMALIZE_IMAGE);
 
             if ( found)                // If done with success,
             {
@@ -283,21 +270,36 @@ int main(int argc, char* argv[])
                 if( s.calibrationPattern == Settings::CHESSBOARD)
                 {
                     Mat viewGray;
-                    cvtColor(view, viewGray, COLOR_BGR2GRAY);
-                    cornerSubPix( viewGray, pointBuf, Size(11,11),
+                    cvtColor(view_rgb, viewGray, COLOR_BGR2GRAY);
+                    cornerSubPix( viewGray, pointBuf_rgb, Size(11,11),
                                   Size(-1,-1), TermCriteria( CV_TERMCRIT_EPS+CV_TERMCRIT_ITER, 30, 0.1 ));
                 }
-
+                if ( found_ir)                // If done with success,
+                {
+                    // improve the found corners' coordinate accuracy for chessboard
+                    if( s.calibrationPattern == Settings::CHESSBOARD)
+                    {
+                        Mat viewGray;
+                        cvtColor(view_ir, viewGray, COLOR_BGR2GRAY);
+                        cornerSubPix( viewGray, pointBuf_ir, Size(11,11),
+                                      Size(-1,-1), TermCriteria( CV_TERMCRIT_EPS+CV_TERMCRIT_ITER, 30, 0.1 ));
+                    }
+                }
+            }
+            if(found && found_ir)
+            {
                 if( mode == CAPTURING &&  // For camera only take new samples after delay time
                         (!s.inputCapture.isOpened() || clock() - prevTimestamp > s.delay*1e-3*CLOCKS_PER_SEC) )
                 {
-                    imagePoints.push_back(pointBuf);
+                    imagePoints_rgb.push_back(pointBuf_rgb);
+                    imagePoints_ir.push_back(pointBuf_ir);
                     prevTimestamp = clock();
                     blinkOutput = data_incoming;//s.inputCapture.isOpened();
                 }
 
                 // Draw the corners.
-                drawChessboardCorners( view, s.boardSize, Mat(pointBuf), found );
+                drawChessboardCorners( view_rgb, s.boardSize, Mat(pointBuf_rgb), found );
+                drawChessboardCorners( view_ir, s.boardSize, Mat(pointBuf_ir), found_ir );
             }
 
             //----------------------------- Output Text ------------------------------------------------
@@ -305,30 +307,30 @@ int main(int argc, char* argv[])
                                                mode == CALIBRATED ? "Calibrated" : "Press 'g' to start";
             int baseLine = 0;
             Size textSize = getTextSize(msg, 1, 1, 1, &baseLine);
-            Point textOrigin(view.cols - 2*textSize.width - 10, view.rows - 2*baseLine - 10);
+            Point textOrigin(view_rgb.cols - 2*textSize.width - 10, view_rgb.rows - 2*baseLine - 10);
 
             if( mode == CAPTURING )
             {
                 if(s.showUndistorsed)
-                    msg = format( "%d/%d Undist", (int)imagePoints.size(), s.nrFrames );
+                    msg = format( "%d/%d Undist", (int)imagePoints_rgb.size(), s.nrFrames );
                 else
-                    msg = format( "%d/%d", (int)imagePoints.size(), s.nrFrames );
+                    msg = format( "%d/%d", (int)imagePoints_rgb.size(), s.nrFrames );
             }
 
-            putText( view, msg, textOrigin, 1, 1, mode == CALIBRATED ?  GREEN : RED);
+            putText( view_rgb, msg, textOrigin, 1, 1, mode == CALIBRATED ?  GREEN : RED);
 
             if( blinkOutput )
-                bitwise_not(view, view);
+                bitwise_not(view_rgb, view_rgb);
 
             //------------------------- Video capture  output  undistorted ------------------------------
             if( mode == CALIBRATED && s.showUndistorsed )
             {
-                Mat temp = view.clone();
-                undistort(temp, view, cameraMatrix, distCoeffs);
+                Mat temp = view_rgb.clone();
+                undistort(temp, view_rgb, cameraMatrix, distCoeffs);
             }
 
             //------------------------------ Show image and check for input commands -------------------
-            imshow("Image View", view);
+            imshow("Image View", view_rgb);
             char key = (char)waitKey(data_incoming ? 50 : s.delay);
 
             if( key  == ESC_KEY )
@@ -340,7 +342,7 @@ int main(int argc, char* argv[])
             if( data_incoming && key == 'g' )
             {
                 mode = CAPTURING;
-                imagePoints.clear();
+                imagePoints_rgb.clear();
             }
 
 
@@ -547,4 +549,24 @@ bool runCalibrationAndSave(Settings& s, Size imageSize, Mat&  cameraMatrix, Mat&
         saveCameraParams( s, imageSize, cameraMatrix, distCoeffs, rvecs ,tvecs, reprojErrs,
                           imagePoints, totalAvgErr);
     return ok;
+}
+
+bool runStereoCalibrationAndSave(Settings& s, Size imageSize_rgb, Mat&  cameraMatrix_rgb,
+                                 Mat& distCoeffs_rgb,vector<vector<Point2f> > imagePoints_rgb,Size imageSize_ir, Mat&  cameraMatrix_ir,
+                                 Mat& distCoeffs_ir,vector<vector<Point2f> > imagePoints_ir)
+{
+    vector<Mat> rvecs, tvecs,Evecs,Fvecs;
+    cameraMatrix = Mat::eye(3, 3, CV_64F);
+    if( s.flag & CV_CALIB_FIX_ASPECT_RATIO )
+        cameraMatrix.at<double>(0,0) = 1.0;
+
+    distCoeffs = Mat::zeros(8, 1, CV_64F);
+
+    vector<vector<Point3f> > objectPoints(1);
+    calcBoardCornerPositions(s.boardSize, s.squareSize, objectPoints[0], s.calibrationPattern);
+
+    objectPoints.resize(imagePoints.size(),objectPoints[0]);
+    double err=stereoCalibrate( objectPoints, imagePoints_rgb, imagePoints2_ir,
+                     cameraMatrix_rgb, distCoeffs_rgb, cameraMatrix_ir,
+                    distCoeffs_ir,imageSize_rgb, rvecs, tvecs, Evecs, Fvecs);
 }
