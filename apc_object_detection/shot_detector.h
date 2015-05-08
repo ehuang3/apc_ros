@@ -16,14 +16,13 @@
 #include <iostream>
 #include <pcl/features/pfhrgb.h>
 #include <pcl/features/pfh.h>
-#include <pcl/filters/voxel_grid.h>
 
 
-typedef pcl::PointXYZRGB PointType;
+typedef pcl::PointXYZ PointType;
 typedef pcl::Normal NormalType;
 typedef pcl::ReferenceFrame RFType;
-typedef pcl::SHOT1344 DescriptorType;
-typedef pcl::PFHRGBSignature250 FeatureType;
+typedef pcl::SHOT352 DescriptorType;
+//typedef pcl::PFHRGBSignature250 DescriptorType;
 struct CloudStyle
 {
     double r;
@@ -58,6 +57,7 @@ float hv_rad_clutter_ (0.03f);
 float hv_regularizer_ (3.0f);
 float hv_rad_normals_ (0.05);
 bool hv_detect_clutter_ (true);
+
 class shot_detector
 {
 public:
@@ -76,14 +76,16 @@ private:
     pcl::PointCloud<PointType>::Ptr scene_keypoints;
     pcl::PointCloud<NormalType>::Ptr model_normals;
     pcl::PointCloud<NormalType>::Ptr scene_normals;
-    //pcl::PointCloud<FeatureType>::Ptr model_descriptors;
-    //pcl::PointCloud<FeatureType>::Ptr scene_descriptors;
+    //pcl::PointCloud<DescriptorType>::Ptr model_descriptors;
+    //pcl::PointCloud<DescriptorType>::Ptr scene_descriptors;
     pcl::PointCloud<DescriptorType>::Ptr model_descriptors;
     pcl::PointCloud<DescriptorType>::Ptr scene_descriptors;
     pcl::PointCloud<PointType>::Ptr model_good_kp;
     pcl::PointCloud<PointType>::Ptr scene_good_kp ;
     pcl::PointCloud<PointType>::Ptr objects ;
 
+
+    void loadModel(pcl::PointCloud<PointType> model,std::string model_name);
 
     //Processing functions
     void findCorrespondences (typename pcl::PointCloud<DescriptorType>::Ptr source,
@@ -94,19 +96,15 @@ private:
     void calcNormals(pcl::PointCloud<PointType>::Ptr cloud,pcl::PointCloud<NormalType>::Ptr normals);
     void calcSHOTDescriptors(pcl::PointCloud<PointType>::Ptr cloud,pcl::PointCloud<PointType>::Ptr keypoints
                              ,pcl::PointCloud<NormalType>::Ptr normals,pcl::PointCloud<DescriptorType>::Ptr descriptors);
-    void calcPFHRGBDescriptors(pcl::PointCloud<PointType>::Ptr cloud,pcl::PointCloud<PointType>::Ptr keypoints
-                               ,pcl::PointCloud<NormalType>::Ptr normals,pcl::PointCloud<FeatureType>::Ptr descriptors);
+    /*void calcPFHRGBDescriptors(pcl::PointCloud<PointType>::Ptr cloud,pcl::PointCloud<PointType>::Ptr keypoints
+                               ,pcl::PointCloud<NormalType>::Ptr normals,pcl::PointCloud<DescriptorType>::Ptr descriptors);*/
 
     void downsample(pcl::PointCloud<PointType>::Ptr cloud,pcl::PointCloud<PointType>::Ptr keypoints, float sample_size);
-    void compare(pcl::PointCloud<FeatureType>::Ptr model_descriptions,
-                 pcl::PointCloud<FeatureType>::Ptr scene_descriptions);
+    void compare(pcl::PointCloud<DescriptorType>::Ptr model_descriptions,
+                 pcl::PointCloud<DescriptorType>::Ptr scene_descriptions);
     void houghGrouping();
     void output();
     void outwithver();
-
-    void voxelFilter(pcl::PointCloud<PointType>::Ptr cloud,pcl::PointCloud<PointType>::Ptr filtered_cloud, float sample_size);
-
-    void planarExtraction(pcl::PointCloud<PointType>::Ptr cloud, pcl::PointCloud<PointType>::Ptr clustered_objects);
     // Detection thresholds
     float model_ss_;
     float scene_ss_;
@@ -120,10 +118,9 @@ private:
     //PointCloud classes for calculating various features
     pcl::NormalEstimationOMP<PointType, NormalType> norm_est;
     pcl::UniformSampling<PointType> uniform_sampling;
-    pcl::SHOTColorEstimationOMP<PointType, NormalType, DescriptorType> descr_est;
-    pcl::PFHRGBEstimation<PointType, NormalType, FeatureType> pfhrgbEstimation;
+    pcl::SHOTEstimationOMP<PointType, NormalType, DescriptorType> descr_est;
+    //pcl::PFHRGBEstimation<PointType, NormalType, DescriptorType> pfhrgbEstimation;
     pcl::GeometricConsistencyGrouping<PointType, PointType> gc_clusterer;
-    pcl::VoxelGrid<PointType> voxel_filter;
 
     //PointCloud data
     pcl::CorrespondencesPtr model_scene_corrs;

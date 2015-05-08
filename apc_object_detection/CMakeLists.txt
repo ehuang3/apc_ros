@@ -14,9 +14,9 @@ find_package(
     rospy
     std_msgs
     rostime)
-# find_package(PCL 1.7 REQUIRED COMPONENTS common io search)
-# find_package(VTK REQUIRED)
-# include(${VTK_USE_FILE})
+ find_package(PCL 1.7 REQUIRED COMPONENTS )
+ find_package(VTK REQUIRED)
+ include(${VTK_USE_FILE})
 
 
 set(catkin_LIBRARIES 
@@ -122,7 +122,7 @@ ${PCL_INCLUDE_DIRS}
 # link_directories(${PCL_LIBRARY_DIRS})
 # add_definitions(${PCL_DEFINITIONS})
 ## Declare a cpp executable
-# add_executable(detect_objects_pcl shot_detector.cpp)
+ add_executable(detect_objects_pcl shot_detector.cpp)
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
@@ -130,7 +130,7 @@ ${PCL_INCLUDE_DIRS}
 
 ## Specify libraries to link a library or executable target against
 
-# target_link_libraries(detect_objects_pcl  ${PCL_LIBRARIES} -lpcl_features -lpcl_visualization -lpcl_keypoints -lpcl_recognition -lpcl_registration -lpcl_filters -lpcl_sample_consensus -lpcl_segmentation -lpcl_surface ${PCL_COMMON_LIBRARIES} ${PCL_FEATURES_LIBRARIES} ${PCL_IO_LIBRARIES} ${PCL_KDTREE_LIBRARY} ${PCL_SEARCH_LIBRARY} ${catkin_LIBRARIES} ${VTK_LIBRARIES})
+ target_link_libraries(detect_objects_pcl  ${PCL_LIBRARIES} -lpcl_features -lpcl_visualization -lpcl_keypoints -lpcl_recognition -lpcl_registration -lpcl_filters -lpcl_sample_consensus -lpcl_segmentation -lpcl_surface ${PCL_COMMON_LIBRARIES} ${PCL_FEATURES_LIBRARIES} ${PCL_IO_LIBRARIES} ${PCL_KDTREE_LIBRARY} ${PCL_SEARCH_LIBRARY} ${catkin_LIBRARIES} ${VTK_LIBRARIES})
 
 #############
 ## Install ##

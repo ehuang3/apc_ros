@@ -34,3 +34,5 @@ apc_trajopt/test/test_apc_trajopt.cpp
 apc_trajopt/test/test_planning.cpp
 apc_pcl/nodes/ros_test_pcl_node.cpp
 apc_pcl/pcl_test/ros_test_pcl_node.cpp
+apc_pcl/src/pcl_tools/pcl_functions.cpp
+apc_pcl/src/pcl_tools/pcl_functions.h
