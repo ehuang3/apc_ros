@@ -85,7 +85,7 @@ private:
     pcl::PointCloud<PointType>::Ptr objects ;
 
 
-    void loadModel(pcl::PointCloud<PointType> model,std::string model_name);
+    void loadModel(pcl::PointCloud<PointType>::Ptr model,std::string model_name);
 
     //Processing functions
     void findCorrespondences (typename pcl::PointCloud<DescriptorType>::Ptr source,

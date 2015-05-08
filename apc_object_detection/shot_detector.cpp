@@ -96,7 +96,6 @@ void shot_detector::processImage()
         pcl::PointCloud<PointType>::Ptr updated_scene (new pcl::PointCloud<PointType> ());
         pcl_functions::removeBackground(scene,background,updated_scene);
         pcl_functions::voxelFilter(updated_scene,scene,voxel_sample_);
-        scene_filter.reset();
         norm_est.setInputCloud(scene);
         std::cerr << computeCloudResolution(scene) << std::endl;
         std::cerr << "input" << scene->size() << std::endl;;
@@ -125,7 +124,7 @@ void shot_detector::processImage()
    // }
 }
 
-void shot_detector::loadModel(pcl::PointCloud<PointType> model, std::string model_name)
+void shot_detector::loadModel(pcl::PointCloud<PointType>::Ptr model, std::string model_name)
 {
     std::string filename=model_name;
     vtkSmartPointer<vtkPLYReader> reader = vtkSmartPointer<vtkPLYReader>::New();
