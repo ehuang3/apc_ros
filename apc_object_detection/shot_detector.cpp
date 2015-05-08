@@ -87,11 +87,11 @@ shot_detector::shot_detector()
 
 void shot_detector::processImage()
 {
-    //if(data==true){
-       // convertMsg(depth_msg,scene);
-
+    if(data==true){
+        convertMsg(depth_msg,scene);
+        std::cerr << "start" << std::endl;
         pcl::PointCloud<PointType>::Ptr background (new pcl::PointCloud<PointType> ());
-        pcl::io::loadPCDFile ("scene", *scene);
+        pcl::io::savePCDFile ("/home/niko/projects/apc/catkin/src/apc_ros/apc_object_detection/better_background.pcd", *scene,true);
         pcl::io::loadPCDFile("/home/niko/projects/apc/catkin/src/apc_ros/apc_object_detection/background.pcd",*background);
         pcl::PointCloud<PointType>::Ptr updated_scene (new pcl::PointCloud<PointType> ());
         pcl_functions::removeBackground(scene,background,updated_scene);
@@ -121,7 +121,7 @@ void shot_detector::processImage()
         output();
         outwithver();
         }
-   // }
+    }
 }
 
 void shot_detector::loadModel(pcl::PointCloud<PointType>::Ptr model, std::string model_name)
@@ -631,7 +631,7 @@ main (int argc, char** argv)
   // Spin
     int i=0;
     std::cerr << "ros start" << std::endl;
- /* while(ros::ok)
+  while(ros::ok)
   {
     ros::spinOnce();
     std::cerr << "Spin" << std::endl;
@@ -640,7 +640,7 @@ main (int argc, char** argv)
     if (detector.activated==true || i==80)
         return 0;
     r.sleep();
-  }*/
+  }
   std::cerr << "End" << std::endl;
 }
 
