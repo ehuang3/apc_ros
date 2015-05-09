@@ -33,7 +33,7 @@ void removeBackground(pcl::PointCloud<PointType>::Ptr scene, pcl::PointCloud<Poi
     std::vector<int> indices;
     //Remove NaN values
     pcl::PointCloud<PointType>::Ptr nan_scene(new pcl::PointCloud<PointType>());
-    pcl::removeNaNFromPointCloud(*scene,*nan_scene, indices);
+    pcl::removeNaNFromPointCloud(*scene, *nan_scene, indices);
     std::vector<int> indexes;
     //  Iterate through pc and compare to points in the kdtree
     for (size_t i = 0; i < nan_scene->size (); ++i)
@@ -85,5 +85,6 @@ void voxelFilter(pcl::PointCloud<PointType>::Ptr cloud, pcl::PointCloud<PointTyp
 }
 }
 
-#endif //PCL_FUNCTIONS_H
+// PCL_FUNCTIONS_H
+#endif
 
