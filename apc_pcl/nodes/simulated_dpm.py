@@ -2,23 +2,25 @@
 import rospy
 from sensor_msgs.msg import PointCloud2, Image
 from apc_msgs.srv import *
+from apc_msgs.msg import DPMObject
+
 import cv2
-from cv_bridge import CvBridge, CvBridgeError
 import numpy as np
-from apc_tools import Image_Subscriber
+from apc_tools import get_image_msg
 '''Show the current image, allow the user to draw a bounding box
 '''
 
 class Simulated_DPM(object):
     def __init__(self):
         if not rospy.has_param("/kinect2/serial_number"):
-            rospy.set_param("/kinect2/serial_number", '196605135147')
+            rospy.set_param("/kinect2/serial_number", '503233542542')
             rospy.logerr("SETTING A FAKE KINECT SERIAL")
 
         rospy.init_node('simulated_dpm')
+        rospy.Service('/run_dpm_simulated', RunDPM, self.run_dpm)
+
         cv2.namedWindow("kinect_view")
         cv2.setMouseCallback("kinect_view", self.mouse_call)
-        self.im_sub = Image_Subscriber('/kinect2/mono/image', self.got_image)
 
         self.font = cv2.FONT_HERSHEY_SIMPLEX
         self.is_done = False
@@ -32,6 +34,25 @@ class Simulated_DPM(object):
         for corner in self.corners:
             cv2.circle(image, (corner[0], corner[1]), 5, (0, 0, 255))
 
+    def run_dpm(self, srv):
+        self.image = get_image_msg(srv.image)
+        print 'Executing on image of size {}'.format(self.image.shape)
+        self.run()
+        x, y, w, h = cv2.boundingRect(np.array([np.array(self.corners)]))
+        self.corners = []
+        self.state = 0
+        self.is_done = False
+        self.image = None
+        return RunDPMResponse([
+            DPMObject(
+                object_id=srv.target_objects[0],
+                x=x,
+                y=y,
+                height=h,
+                width=w,
+            )
+        ])
+
     def got_image(self, msg):
         self.image = msg
 
@@ -43,14 +64,17 @@ class Simulated_DPM(object):
                 if self.state >= len(self.states):
                     self.is_done = True
                     self.state = 0
-                    # self.corners = []
 
         if event == cv2.EVENT_RBUTTONDOWN:
             pass
 
     def run(self):
         rate = rospy.Rate(10)
-        while (not rospy.is_shutdown()):
+        done = False
+        cv2.namedWindow("kinect_view")
+        cv2.setMouseCallback("kinect_view", self.mouse_call)
+
+        while (not rospy.is_shutdown() and not done):
 
             if self.image is None:
                 continue
@@ -62,6 +86,8 @@ class Simulated_DPM(object):
 
             if self.is_done:
                 cv2.polylines(image, np.int32([self.corners]), True, (0, 255, 0), 6)
+                done = True
+                print 'DONE'
 
             cv2.imshow("kinect_view", image)
 
@@ -70,8 +96,11 @@ class Simulated_DPM(object):
                 break
                 rate.sleep()
 
+            if done:
+                cv2.destroyWindow("kinect_view")
+
 
 if __name__ == '__main__':
 
     sdpm = Simulated_DPM()
-    sdpm.run()
+    rospy.spin()
