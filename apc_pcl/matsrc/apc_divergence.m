@@ -2,17 +2,23 @@ function [distance] = divergence(set_1, set_2, method)
 	% Determine the Bregman diveregence specified in the string "method" to difference the two distributions
 	if nargin < 3
 		method = 'js'
+		% For APC datasets, this (Jensen-Shannon) worked the best
 	end
 
 	if strcmp(method, 'kl')
+		% Kullbeck-Leibler divergence
 		distance = kl_divergence(set_1, set_2);
 	elseif strcmp(method, 'js')
+		% Jensen-Shannon (Symmetrized KL-Divergence -- its square-root is metric)
 		distance = jensen_shannon(set_1, set_2);
 	elseif strcmp(method, 'is')
+		% Itakura Saito
 		distance = itakura_saito(set_1, set_2);
 	elseif strcmp(method, 'jsis')
+		% Jensen-Shannon style itakura saito
 		distance = jensen_shannon_itakura_saito(set_1, set_2);
 	elseif strcmp(method, 'cdf')
+		% Cumulative distribution function distance
 		distance = cdf_distance(set_1, set_2);
 	elseif strcmp(method, 'mahalanobis')
 		% Does this actually work?
@@ -62,7 +68,7 @@ function [dist] = jensen_shannon(P, Q)
 end
 
 function [dist] = itakura_saito(P, Q)
-	% Itakura-Saito divergence
+	% Itakura-Saito divergence, sucks
 	log_ = log(P ./ Q);
 	log_(isinf(log_)) = 0.0;
 	log_(isnan(log_)) = 0.0;
