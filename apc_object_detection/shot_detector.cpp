@@ -27,6 +27,7 @@
 #include <pcl/surface/convex_hull.h>
 #include <pcl/segmentation/extract_polygonal_prism_data.h>
 #include "../apc_pcl/src/pcl_tools/pcl_functions.h"
+#include <string>
 
 shot_detector::shot_detector()
 {
@@ -71,16 +72,8 @@ shot_detector::shot_detector()
 
     nh=ros::NodeHandle("apc_object_detection");
     kinect=nh.subscribe("/kinect2_cool/depth_highres/points", 1, &shot_detector::PointCloudCallback,this);
+    processor = nh.advertiseService("Shot detector",&shot_detector::processCloud,this);
 
-    pcl::PointCloud<PointType>::Ptr model_filter (new pcl::PointCloud<PointType> ());
-    pcl_functions::voxelFilter(model,model_filter,voxel_sample_);
-    model=model_filter;
-            std::cerr << computeCloudResolution(model) << std::endl;
-    norm_est.setKSearch (10);
-    descr_est.setRadiusSearch (descr_rad_);
-    downsample(model,model_keypoints,model_ss_);
-    calcNormals(model,model_normals);
-    calcSHOTDescriptors(model,model_keypoints,model_normals,model_descriptors);
     //calcPFHRGBDescriptors(model,model_keypoints,model_normals,model_descriptors);
     std::cerr << "Model stuff calculated" <<std::endl;
 }
@@ -91,11 +84,6 @@ void shot_detector::processImage()
         convertMsg(depth_msg,scene);
         std::cerr << "start" << std::endl;
         pcl::PointCloud<PointType>::Ptr background (new pcl::PointCloud<PointType> ());
-        pcl::io::savePCDFile ("/home/niko/projects/apc/catkin/src/apc_ros/apc_object_detection/better_background.pcd", *scene,true);
-        pcl::io::loadPCDFile("/home/niko/projects/apc/catkin/src/apc_ros/apc_object_detection/background.pcd",*background);
-        pcl::PointCloud<PointType>::Ptr updated_scene (new pcl::PointCloud<PointType> ());
-        pcl_functions::removeBackground(scene,background,updated_scene);
-        pcl_functions::voxelFilter(updated_scene,scene,voxel_sample_);
         norm_est.setInputCloud(scene);
         std::cerr << computeCloudResolution(scene) << std::endl;
         std::cerr << "input" << scene->size() << std::endl;;
@@ -127,6 +115,7 @@ void shot_detector::processImage()
 void shot_detector::loadModel(pcl::PointCloud<PointType>::Ptr model, std::string model_name)
 {
     std::string filename=model_name;
+    filename.append(".ply");
     vtkSmartPointer<vtkPLYReader> reader = vtkSmartPointer<vtkPLYReader>::New();
     vtkSmartPointer<vtkPolyData> data=vtkSmartPointer<vtkPolyData>::New();
     reader->SetFileName ( filename.c_str() );
@@ -134,6 +123,150 @@ void shot_detector::loadModel(pcl::PointCloud<PointType>::Ptr model, std::string
     data=reader->GetOutput();
 
     pcl::io::vtkPolyDataToPointCloud(data,*model);
+    processModel(model);
+}
+
+void shot_detector::processModel(pcl::PointCloud<PointType>::Ptr model)
+{
+    pcl::PointCloud<PointType>::Ptr model_filter (new pcl::PointCloud<PointType> ());
+    pcl_functions::voxelFilter(model,model_filter,voxel_sample_);
+    model=model_filter;
+    norm_est.setKSearch (10);
+    descr_est.setRadiusSearch (descr_rad_);
+    downsample(model,model_keypoints,model_ss_);
+    calcNormals(model,model_normals);
+    calcSHOTDescriptors(model,model_keypoints,model_normals,model_descriptors);
+}
+
+bool shot_detector::processCloud(apc_pcl_detection::shot_detector_srv::Request &req, apc_pcl_detection::shot_detector_srv::Response &res)
+{
+    std_msgs::String msg=req.object_name;
+    std::string filename=msg.data;
+    convertMsg(req.pointcloud,scene);
+    loadModel(scene,filename);
+    pcl::PointCloud<PointType>::Ptr scene_filter (new pcl::PointCloud<PointType> ());
+    pcl_functions::voxelFilter(scene,scene_filter,voxel_sample_);
+    scene=scene_filter;
+    descr_est.setRadiusSearch (descr_rad_);
+    downsample(scene,scene_keypoints,scene_ss_);
+    calcNormals(scene,scene_normals);
+    calcSHOTDescriptors(scene,scene_keypoints,scene_normals,scene_descriptors);
+    compare(model_descriptors,scene_descriptors);
+    std::cerr << scene_descriptors->size() << " and  "<< model_descriptors->size() << std::endl;
+    Eigen::Matrix4f pose;
+    if(model_scene_corrs->size ()!=0){
+        houghGrouping();
+        pose=refinePose(rototranslations,model,scene);
+
+    }
+    Eigen::Matrix4d md(pose.cast<double>());
+    Eigen::Affine3d affine(md);
+    geometry_msgs::Transform transform;
+    tf::transformEigenToMsg(affine, transform);
+    res.pose=transform;
+    if(pose!=Eigen::Matrix4f::Identity())
+        return true;
+    return false;
+}
+
+Eigen::Matrix4f shot_detector::refinePose(std::vector<Eigen::Matrix4f, Eigen::aligned_allocator<Eigen::Matrix4f> > transforms,
+                               pcl::PointCloud<PointType>::Ptr model,pcl::PointCloud<PointType>::Ptr scene)
+{
+    std::vector<Eigen::Matrix4f, Eigen::aligned_allocator<Eigen::Matrix4f> > final_transforms;
+    std::cerr << "verifying" << std::endl;
+    if (transforms.size () <= 0)
+      {
+        cerr << "*** No instances found! ***" << endl;
+        return Eigen::Matrix4f::Identity();
+      }
+      else
+      {
+        cerr << "Recognized Instances: " << transforms.size () << endl << endl;
+      }
+
+      /**
+       * Generates clouds for each instances found
+       */
+      std::vector<pcl::PointCloud<PointType>::ConstPtr> instances;
+
+      for (size_t i = 0; i < transforms.size (); ++i)
+      {
+        pcl::PointCloud<PointType>::Ptr rotated_model (new pcl::PointCloud<PointType> ());
+        pcl::transformPointCloud (*model, *rotated_model, transforms[i]);
+        instances.push_back (rotated_model);
+      }
+
+      /**
+       * ICP
+       */
+      std::vector<pcl::PointCloud<PointType>::ConstPtr> registered_instances;
+      if (true)
+      {
+        cerr << "--- ICP ---------" << endl;
+
+        for (size_t i = 0; i < transforms.size (); ++i)
+        {
+          pcl::IterativeClosestPoint<PointType, PointType> icp;
+          icp.setMaximumIterations (icp_max_iter_);
+          icp.setMaxCorrespondenceDistance (icp_corr_distance_);
+          icp.setInputTarget (scene);
+          icp.setInputSource (instances[i]);
+          pcl::PointCloud<PointType>::Ptr registered (new pcl::PointCloud<PointType>);
+          icp.align (*registered);
+          //registered_instances.push_back (registered);
+          cerr << "Instance " << i << " ";
+          if (icp.hasConverged ())
+          {
+            cerr << "Aligned!" << endl;
+            registered_instances.push_back (registered);
+            final_transforms.push_back(icp.getFinalTransformation());
+          }
+          else
+          {
+            cerr << "Not Aligned!" << endl;
+          }
+        }
+
+        cerr << "-----------------" << endl << endl;
+      }
+
+      /**
+       * Hypothesis Verification
+       */
+      cerr << "--- Hypotheses Verification ---" << endl;
+      std::vector<bool> hypotheses_mask;  // Mask Vector to identify positive hypotheses
+
+      pcl::GlobalHypothesesVerification<PointType, PointType> GoHv;
+
+      GoHv.setSceneCloud (scene);  // Scene Cloud
+      GoHv.addModels (registered_instances, true);  //Models to verify
+
+      GoHv.setInlierThreshold (hv_inlier_th_);
+      GoHv.setOcclusionThreshold (hv_occlusion_th_);
+      GoHv.setRegularizer (hv_regularizer_);
+      GoHv.setRadiusClutter (hv_rad_clutter_);
+      GoHv.setClutterRegularizer (hv_clutter_reg_);
+      GoHv.setDetectClutter (hv_detect_clutter_);
+      GoHv.setRadiusNormals (hv_rad_normals_);
+
+      GoHv.verify ();
+      GoHv.getMask (hypotheses_mask);  // i-element TRUE if hvModels[i] verifies hypotheses
+
+      for (int i = 0; i < hypotheses_mask.size (); i++)
+      {
+        if (hypotheses_mask[i])
+        {
+          cerr << "Instance " << i << " is GOOD! <---" << endl;
+          return final_transforms[i];
+        }
+        else
+        {
+          cerr << "Instance " << i << " is bad!" << endl;
+        }
+      }
+      cerr << "-------------------------------" << endl;
+      return Eigen::Matrix4f::Identity();
+
 }
 
 void shot_detector::findCorrespondences(pcl::PointCloud<DescriptorType>::Ptr source, pcl::PointCloud<DescriptorType>::Ptr target, std::vector<int> &correspondences)
@@ -627,7 +760,7 @@ main (int argc, char** argv)
   ros::init (argc, argv, "apc_object_detection");
     shot_detector detector;
       ros::Rate r(10);
-      detector.processImage();
+      //detector.processImage();
   // Spin
     int i=0;
     std::cerr << "ros start" << std::endl;
@@ -637,8 +770,6 @@ main (int argc, char** argv)
     std::cerr << "Spin" << std::endl;
     detector.processImage();
     i++;
-    if (detector.activated==true || i==80)
-        return 0;
     r.sleep();
   }
   std::cerr << "End" << std::endl;
