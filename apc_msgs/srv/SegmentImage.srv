@@ -1,0 +1,10 @@
+sensor_msgs/Image image
+string object_id  # Object name
+string[] bin_objects
+---
+int64 x  # box characteristics (Not necessarily a bounding box)
+int64 y  # box characteristics (Not necessarily a bounding box)
+int64 h  # box characteristics (Not necessarily a bounding box)
+int64 w  # box characteristics (Not necessarily a bounding box)
+sensor_msgs/Image image
+bool success

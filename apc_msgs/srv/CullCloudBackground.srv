@@ -1,0 +1,3 @@
+sensor_msgs/PointCloud2 cloud  # The pre-isolation cloud
+---
+sensor_msgs/PointCloud2 cloud  # The post-isolation cloud

@@ -89,6 +89,8 @@ add_service_files(
   GetImage.srv
   GetPointCloud.srv
   GetCloudFrustum.srv
+  CullCloudBackground.srv
+  SegmentImage.srv
 )
 
 ## Generate actions in the 'action' folder
