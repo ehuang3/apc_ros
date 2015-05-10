@@ -38,6 +38,7 @@ import rospy
 import rospkg
 import tf.transformations
 import openravepy
+import pdb
 
 
 def init_openrave():

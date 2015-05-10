@@ -136,15 +136,16 @@ def check_for_collisions_interp(action, problem, result, env, dn=10):
     T = result.GetTraj()
     num_pts = T.shape[0]
     num_dof = T.shape[1]
+    report = openravepy.CollisionReport()
     for i in range(num_pts - 1 - pregrasp_off):
         T_i = T[i:i+1,:]
         T_i = mu.interp2d(np.linspace(0,1,dn), np.linspace(0,1,len(T_i)), T_i)
         for (_,dofs) in enumerate(T_i):
             robot.SetActiveDOFValues(dofs)
             for robot_link in robot.GetLinks():
-                collision = env.CheckCollision(robot_link)
+                collision = env.CheckCollision(robot_link, report)
                 if collision:
-                    print robot_link.GetName(), "in collision at", i
+                    print "collision:", report
                     return False
     return True
 

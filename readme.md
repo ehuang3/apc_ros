@@ -26,6 +26,7 @@ sudo apt-get update
 sudo apt-get install libpcl-all
 
 sudo apt-get install ros-indigo-moveit-full
+sudo apt-get install ros-indigo-openni2-camera ros-indigo-openni2-launch
 
 ### ROS packages
 
@@ -75,3 +76,9 @@ make -j3
 make test
 make install
 
+# Matlab stuff
+To install python matlab engine
+
+in matlab, type "matlabroot"
+cd to `matlabroot`/extern/engines/python
+sudo python setup.py install

@@ -1,5 +1,5 @@
 sensor_msgs/Image image
-std_msgs/String bin_name
+string bin_name
 
 ---
 

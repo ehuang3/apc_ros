@@ -2,8 +2,14 @@
 # Camera Serial examples:
 #   Chrichton chest kinect: "503233542542"
 #   Primesense: "primesense"
-
+geometry_msgs/Pose kinect_crichton_origin
 string camera_id
 apc_msgs/BinInfo[12] bins # 12 bins, baby
+
+
+sensor_msgs/Image image
+sensor_msgs/PointCloud2 cloud
+
+apc_msgs/BinState[12] ground_truth_bins
 ---
 apc_msgs/BinState[12] bin_contents

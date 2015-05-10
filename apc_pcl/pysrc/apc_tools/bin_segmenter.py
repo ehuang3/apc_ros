@@ -25,22 +25,53 @@ class Bin_Segmenter(object):
         )
         return cam_matrix
 
-    def optical_to_image(self, point, rotation, translation):
+    def optical_to_image(self, point, rotation=np.array([0.0, 0.0, 0.0]), translation=np.array([0.0, 0.0, 0.0])):
         '''Convert a point in the camera optical frame to a pixel coordinate'''
         distortion = np.array([0.0, 0.0, 0.0, 0.0], np.float32)
-
-        img_point, _ = cv2.projectPoints(np.array([np.float32(point)]), rotation, translation, self.cam_matrix, distortion)
+        img_point, _ = cv2.projectPoints(np.array([np.float32(point[:3])]), rotation, translation, self.cam_matrix, distortion)
         return np.int32(img_point[0].flatten())
 
-    def draw_point(self, image, world_point, color=(0, 0, 255)):
-        world_point = np.array([world_point[0], world_point[1], world_point[2]])
+    def segment_bin(self, image, _bin, transform):
+        shelf_world = _bin.pose_shelf_frame
+        bin_shelf = _bin.pose_bin_shelf
+
+        shelf_world_tf = self.Transformer.fromTranslationRotation(
+            xyzarray(shelf_world.position), xyzwarray(shelf_world.orientation)
+        )
+
+        bin_shelf_tf = self.Transformer.fromTranslationRotation(
+            xyzarray(bin_shelf.position), xyzwarray(bin_shelf.orientation)
+        )
+
+        # Complete transform from bin to world (crichton origin)
+        bin_world_tf = np.dot(shelf_world_tf, bin_shelf_tf)
+        face_points = np.array([
+            [0.0, 1.0, 1.0, 1.0],
+            [0.0, -1.0, 1.0, 1.0],
+            [0.0, 1.0, -1.0, 1.0],
+            [0.0, -1.0, -1.0, 1.0],
+        ])
+
+        size = np.hstack([0.5 * xyzarray(_bin.bin_size), 1.0])
+        image_points = np.zeros((4, 2), np.int32)
+        for n, point in enumerate(face_points):
+            world_point = np.dot(bin_world_tf, point * size)
+            camera_point = np.dot(transform, world_point)
+            image_point = self.optical_to_image(camera_point)
+            image_points[n] = image_point
+        x, y, w, h = cv2.boundingRect(np.array([image_points]))
+        return image[y: y + h, x: x + w, :], (x, y, w, h)
+
+
+    def draw_point(self, image, camera_point, color=(0, 0, 255)):
+        camera_point = camera_point[:3]
 
         zero = rotation = translation = np.zeros(3, np.float32)
-        image_point = self.optical_to_image(world_point, rotation, translation)
+        image_point = self.optical_to_image(camera_point, rotation, translation)
         image_pt = (image_point[0], image_point[1])
         cv2.circle(image, image_pt, 5, color, -1)
 
-    def draw_bin(self, image, _bin, transform=None):
+    def draw_bin(self, image, _bin, transform):
         shelf_world = _bin.pose_shelf_frame
         bin_shelf = _bin.pose_bin_shelf
 

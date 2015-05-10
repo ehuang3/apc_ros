@@ -8,7 +8,7 @@ from apc_msgs.msg import BinState
 import cv2
 from cv_bridge import CvBridge, CvBridgeError
 import numpy as np
-from apc_tools import Image_Subscriber, Bin_Segmenter, xyzharray, xyzarray, xyzwarray
+from apc_tools import Image_Subscriber, Bin_Segmenter, xyzharray, xyzarray, xyzwarray, make_image_msg
 import tf
 '''Show the current image, allow the user to draw a bounding box
 '''
@@ -16,8 +16,11 @@ import tf
 class Vision_Server(object):
     def __init__(self):
         rospy.init_node('vision_server')
-        self.im_sub = Image_Subscriber('/kinect2_cool/mono/image', self.got_image)        
-        self.image = self.show_image = None
+        self.im_sub = Image_Subscriber('/camera/depth/cloud_image', self.got_image)        
+        self.image, self.show_image = None, None
+        self.segmented = None
+
+        self.cloud_sub = rospy.Subscriber('/kinect2_cool/depth_lowres/points/', PointCloud2, self.got_cloud)
 
         self.Listener = tf.TransformListener()
         self.Transformer = tf.TransformerROS(True, rospy.Duration(10.0))        
@@ -30,10 +33,19 @@ class Vision_Server(object):
         }
 
         rospy.Service('run_vision', RunVision, self.run_vision)
-        cv2.namedWindow("display")
+        # cv2.namedWindow("display")
+        cv2.namedWindow("sub_segment")
 
         self.point_pub = rospy.Publisher('test_points', PointStamped, queue_size=20)
         self.bin_pub = rospy.Publisher('bin_points', PointStamped, queue_size=40)
+
+        dpm_server = 'run_dpm_simulated'
+        # dpm_server = '/run_dpm_4'
+        rospy.logwarn("Looking for DPM server {}".format(dpm_server))
+
+        self.dpm_proxy = rospy.ServiceProxy(dpm_server, RunDPM)
+        self.frustum_proxy = rospy.ServiceProxy('cull_frustum', GetCloudFrustum)
+        self.background_cull_proxy = rospy.ServiceProxy('cull_background', CullCloudBackground)
 
         self.view_loop()
 
@@ -41,12 +53,20 @@ class Vision_Server(object):
         '''Temporary, while we are getting images ourselves'''
         self.image = msg
 
+    def got_cloud(self, msg):
+        self.cloud = msg
+
     def view_loop(self):
         while(not rospy.is_shutdown()):
             if self.show_image is None:
                 continue
-            cv2.imshow("display", self.show_image)
+            # cv2.imshow("display", self.show_image)
+
+            if self.segmented is not None:
+                cv2.imshow("sub_segment", self.segmented)
+
             key = cv2.waitKey(10) & 0xff
+
             if key == ord('q'):
                 break
 
@@ -59,6 +79,7 @@ class Vision_Server(object):
             ),
             point=Point(*point),
         )
+
     def publish_bin_pt(self, point, frame='crichton_origin'):
         point = point[:3]
         self.bin_pub.publish(
@@ -110,8 +131,9 @@ class Vision_Server(object):
         Bin_Seg = Bin_Segmenter(self.camera_name_mapping[srv.camera_id])
 
         target_frame = "kinect2_cool_rgb_optical_frame";
+        # target_frame = "kinect2_cool_ir_optical_frame";
         source_frame = "crichton_origin";
-        m = self.Listener.lookupTransform(target_frame, source_frame, rospy.Time())
+        m = self.Listener.lookupTransform(target_frame, source_frame, rospy.Time(0))
         transform = self.Transformer.fromTranslationRotation(*m)
 
         rospy.loginfo('Running vision')
@@ -126,24 +148,49 @@ class Vision_Server(object):
                 'bin_G': (0, 255, 0),
                 'bin_J': (255, 0, 0),
                 'bin_K': (255, 255, 0),
+                'bin_H': (255, 255, 0),
+
             }
             if _bin.bin_name in color_map.keys():
                 self.publish_bin(_bin)
-                crichton_bin_position = self.bin_to_world(_bin.pose_bin_shelf, _bin.pose_shelf_frame)
-
-                camera_optical_bin_position = np.dot(transform, crichton_bin_position)[:3]
-                camera_optical_bin_size = np.dot(transform[:3, :3], bin_size)
-
                 Bin_Seg.draw_bin(self.show_image, _bin, transform)
+
+                if _bin.bin_name == 'bin_G':
+                    segmented, (x, y, w, h) = Bin_Seg.segment_bin(self.image, _bin, transform)
+                    print segmented.shape
+                    assert segmented.shape != (0, 0, 1), "Bin region out of bounds"
+                    resp = self.dpm_proxy(
+                        make_image_msg(segmented), 
+                        ['oreo_mega_stuf'],
+                        ['oreo_mega_stuf'],
+                    )
+
+                    for obj in resp.detected_objects:
+                        print 'Detected {}, box x: {}, y: {}, width: {}, height: {}'.format(
+                            obj.object_id, obj.x, 
+                            obj.y, obj.height, obj.width
+                        )
+
+                        cv2.rectangle(segmented, (obj.x, obj.y), (obj.x + obj.width, obj.y + obj.height), (0, 255, 0), 2)
+                    self.segmented = segmented
+                    print 'Sending image of size {}'.format(self.image.shape)
+                    frustum_cloud = self.frustum_proxy(
+                        self.cloud,
+                        make_image_msg(self.image),
+                        obj.x + x, 
+                        obj.y + y, 
+                        obj.height, 
+                        obj.width
+                    )
+                    print 'Got frustum back, culling background'
+                    self.background_cull_proxy(frustum_cloud.sub_cloud)
+                    print 'culled background'
 
             else:
                 print _bin.bin_name
                 continue
 
-
-
             # Printing stuff
-
             info += '\n{}: Name: {}'.format(number, _bin.bin_name)
             position = _bin.pose_bin_shelf.position
             size = _bin.bin_size
@@ -163,9 +210,7 @@ class Vision_Server(object):
 
         rospy.loginfo(info)
 
-
         # Then call DPM (Or simulated DPM)
-
         return RunVisionResponse([BinState()] * 12)
 
 

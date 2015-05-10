@@ -7,6 +7,15 @@ from sensor_msgs.msg import Image
 This is a module that has an image publisher and an image reciever object that does shit in ROS
 '''
 
+def make_image_msg(cv_image, encoding='bgr8'):
+    bridge = CvBridge()    
+    image_message = bridge.cv2_to_imgmsg(cv_image, encoding)#,desired_encoding="passthrough")
+    return image_message
+
+def get_image_msg(ros_image, encoding='bgr8'):
+    bridge = CvBridge()
+    return bridge.imgmsg_to_cv2(ros_image, desired_encoding=encoding)
+
 class Image_Publisher(object):
     def __init__(self, topic="camera", encoding="bgr8", queue_size=1):
         '''Image Publisher -> Image_Publisher('/camera')'''
