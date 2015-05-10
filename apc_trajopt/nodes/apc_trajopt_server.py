@@ -105,7 +105,8 @@ def motion_planning_service(request):
 
     # Do optimization.
     trajopt_result = None
-    if not no_optimization:
+    do_opt = not no_optimization and not is_action_stationary(request.action)
+    if do_opt:
         trajopt_result = trajoptpy.OptimizeProblem(trajopt_problem)
 
     # Compute elapsed time.
@@ -127,7 +128,7 @@ def motion_planning_service(request):
     reset_target_item_collision_properties(request.action, trajopt_problem, env)
 
     # Exit early if we did not run the optimization.
-    if no_optimization:
+    if not do_opt:
         response.action = request.action
         response.valid = True
         response.collision_free = True
@@ -158,11 +159,21 @@ def main():
     # Initialize ROS.
     rospy.init_node('apc_trajopt_server')
 
-    parser = argparse.ArgumentParser(description='apc_trajopt_server')
-    parser.add_argument('-i', '--interactive', action='store_true', help='interactive mode')
-    parser.add_argument('-d', '--debug', action='store_true', help='print debug')
-    parser.add_argument('-n', '--no-optimization', action='store_true', help='no optimization')
-    args = parser.parse_args()
+    roslaunch = rospy.get_param('~roslaunch', False)
+
+    if not roslaunch:
+        parser = argparse.ArgumentParser(description='apc_trajopt_server')
+        parser.add_argument('-i', '--interactive', action='store_true', help='interactive mode')
+        parser.add_argument('-d', '--debug', action='store_true', help='print debug')
+        parser.add_argument('-n', '--no-optimization', action='store_true', help='no optimization')
+        args = parser.parse_args()
+    else:
+        class Args:
+            def __init__(self):
+                self.debug = rospy.get_param('~debug', True)
+                self.interactive = rospy.get_param('~interactive', False)
+                self.no_optimization = rospy.get_param('~no_optimization', False)
+        args = Args()
 
     global debug
     global no_optimization
@@ -180,7 +191,7 @@ def main():
 
     # Create service and loop.
     print "Starting up ROS..."
-    service_topic = rospy.get_param('~topic', 'motion_planning_service')
+    service_topic = rospy.get_param('~topic', 'compute_dense_motion_service_0')
     service = rospy.Service(service_topic, apc_msgs.srv.ComputeDenseMotion, motion_planning_service)
     rospy.spin()
 

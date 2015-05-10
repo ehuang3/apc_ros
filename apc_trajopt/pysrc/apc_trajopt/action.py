@@ -32,6 +32,8 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
 # OF THE POSSIBILITY OF SUCH DAMAGE.
 import rospy
+import numpy
+import pdb
 from apc_msgs.msg import PrimitiveAction
 from .apc_assert import ApcError, apc_assert
 
@@ -88,6 +90,11 @@ def is_action_nonprehensile(action):
 
 def is_action_grasping(action):
     return __action_type__(action) == 'grasp' or __action_type__(action) == 'postgrasp'
+
+def is_action_stationary(action):
+    start = action.joint_trajectory.points[0].positions
+    end = action.joint_trajectory.points[-1].positions
+    return numpy.allclose(start, end)
 
 def print_action_summary(action):
     # action = PrimitiveAction()
