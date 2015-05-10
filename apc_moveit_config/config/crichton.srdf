@@ -168,6 +168,42 @@
         <joint name="crichton_right_6_joint" value="0" />
         <joint name="crichton_right_7_joint" value="0" />
     </group_state>
+    <group_state name="crt_vertical" group="crichton_rightarm_torso">
+        <joint name="crichton_right_1_joint" value="-1.5707" />
+        <joint name="crichton_right_2_joint" value="1.5707" />
+        <joint name="crichton_right_3_joint" value="0" />
+        <joint name="crichton_right_4_joint" value="0" />
+        <joint name="crichton_right_5_joint" value="0" />
+        <joint name="crichton_right_6_joint" value="0" />
+        <joint name="crichton_right_7_joint" value="0" />
+        <joint name="crichton_right_finger_12_joint" value="0" />
+        <joint name="crichton_right_finger_13_joint" value="0" />
+        <joint name="crichton_right_finger_21_joint" value="0" />
+        <joint name="crichton_right_finger_22_joint" value="0" />
+        <joint name="crichton_right_finger_23_joint" value="0" />
+        <joint name="crichton_right_knuckle_joint" value="0" />
+        <joint name="crichton_right_thumb_2_joint" value="0" />
+        <joint name="crichton_right_thumb_3_joint" value="0" />
+        <joint name="crichton_torso_joint" value="0" />
+    </group_state>
+    <group_state name="clt_vertical" group="crichton_leftarm_torso">
+        <joint name="crichton_left_1_joint" value="1.5707" />
+        <joint name="crichton_left_2_joint" value="-1.5707" />
+        <joint name="crichton_left_3_joint" value="0.015" />
+        <joint name="crichton_left_4_joint" value="0" />
+        <joint name="crichton_left_5_joint" value="0" />
+        <joint name="crichton_left_6_joint" value="0" />
+        <joint name="crichton_left_7_joint" value="0.015" />
+        <joint name="crichton_left_finger_12_joint" value="0" />
+        <joint name="crichton_left_finger_13_joint" value="0" />
+        <joint name="crichton_left_finger_21_joint" value="0" />
+        <joint name="crichton_left_finger_22_joint" value="0" />
+        <joint name="crichton_left_finger_23_joint" value="0" />
+        <joint name="crichton_left_knuckle_joint" value="0" />
+        <joint name="crichton_left_thumb_2_joint" value="0" />
+        <joint name="crichton_left_thumb_3_joint" value="0" />
+        <joint name="crichton_torso_joint" value="0" />
+    </group_state>
     <!--END EFFECTOR: Purpose: Represent information about an end effector.-->
     <end_effector name="crichton_left_eef" parent_link="crichton_left_7_link" group="crichton_left_hand" parent_group="crichton_left_arm" />
     <end_effector name="crichton_right_eef" parent_link="crichton_right_7_link" group="crichton_right_hand" parent_group="crichton_right_arm" />

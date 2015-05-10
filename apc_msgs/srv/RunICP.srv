@@ -1,0 +1,10 @@
+# This is called by the apc_pcl cloud_client.py node
+# Something else will hand cloud_client an image, an image-frame bounding box, and a desired cubby
+
+sensor_msgs/Image image  # The image that was dpm'd 
+sensor_msgs/PointCloud2 cloud  # The post-isolation cloud
+geometry_msgs/Point bottom_left
+
+---
+
+geometry_msgs/PoseStamped object_pose  # In Camera frame

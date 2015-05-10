@@ -1,0 +1,12 @@
+sensor_msgs/PointCloud2 cloud  # The post-isolation cloud
+sensor_msgs/Image image
+
+# (x, y) is upper left corner
+int64 x
+int64 y
+int64 height
+int64 width
+
+---
+
+sensor_msgs/PointCloud2 sub_cloud

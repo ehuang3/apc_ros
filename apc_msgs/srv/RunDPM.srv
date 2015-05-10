@@ -1,0 +1,9 @@
+sensor_msgs/Image image
+
+string[] target_objects
+
+string[] bin_objects
+
+---
+
+DPMObject[] detected_objects
