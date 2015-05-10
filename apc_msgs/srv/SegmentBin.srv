@@ -1,0 +1,6 @@
+sensor_msgs/Image image
+std_msgs/String bin_name
+
+---
+
+sensor_msgs/Image segmented_image

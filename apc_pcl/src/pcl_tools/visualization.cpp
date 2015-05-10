@@ -9,7 +9,8 @@
 #include <pcl/visualization/pcl_visualizer.h>
 #include <pcl/io/io.h>
 #include <pcl/console/time.h>   // TicToc
-
+#include "pcl_tools.h"
+namespace pcl_tools {
 void visualize_cloud(pcl::PointCloud<pcl::PointXYZ>::Ptr pointCloud) {
     /* Run pcl visualize on an XYZ point cloud
         X:Red
@@ -35,14 +36,13 @@ void visualize_cloud(pcl::PointCloud<pcl::PointXYZRGBA>::Ptr pointCloud) {
     while(!viewer.wasStopped()) {/* Block until done */}
 }
 
-template<typename PointT> 
-void color_cloud(int pcl_color, pcl::PointCloud<PointT> &input_cloud, pcl::PointCloud<pcl::PointXYZRGBA> &destination_cloud) {
+void color_cloud(int pcl_color, pcl::PointCloud<pcl::PointXYZ> &input_cloud, pcl::PointCloud<pcl::PointXYZRGBA> &destination_cloud) {
     /* Set the color of a cloud. Output is RGBA 
         Speed:
             - Should preallocate an XYZRGBA cloud the size of input_cloud and not use push_back
                 Will this help? -->TODO
     */
-    typename pcl::PointCloud<PointT>::iterator point;
+    typename pcl::PointCloud<pcl::PointXYZ>::iterator point;
     pcl::PointXYZRGBA new_point;
 
     for (point = input_cloud.points.begin(); point < input_cloud.end(); point++) {
@@ -52,10 +52,10 @@ void color_cloud(int pcl_color, pcl::PointCloud<PointT> &input_cloud, pcl::Point
         new_point.rgba = pcl_color;
         destination_cloud.push_back(new_point);
     }
-
 }
 
 int pcl_color(float r, float g, float b) {
     /* Get the PCL style bit-magic color specification */
     return ((int)r) << 16 | ((int)g) << 8 | ((int)b);
+}
 }

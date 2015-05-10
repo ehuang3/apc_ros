@@ -1,4 +1,4 @@
-sensor_msgs/Image[] images
+sensor_msgs/Image image
 
 string[] target_objects
 

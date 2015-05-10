@@ -13,20 +13,20 @@
 #include <pcl/visualization/pcl_visualizer.h>
 #include <pcl/visualization/cloud_viewer.h>
 #include <pcl/point_types.h>
-#include <pcl/filters/passthrough.h>
 #include <pcl/recognition/hv/hv_go.h>
 #include <pcl/registration/icp.h>
 #include <pcl/common/transforms.h>
 #include <pcl/kdtree/kdtree_flann.h>
 #include <pcl/kdtree/impl/kdtree_flann.hpp>
+#include <pcl/octree/octree.h>
 #include <pcl_conversions/pcl_conversions.h>
 #include <pcl/registration/correspondence_rejection_sample_consensus.h>
 #include <pcl/sample_consensus/method_types.h>
 #include <pcl/sample_consensus/model_types.h>
 #include <pcl/segmentation/sac_segmentation.h>
-#include <pcl/filters/extract_indices.h>
 #include <pcl/surface/convex_hull.h>
 #include <pcl/segmentation/extract_polygonal_prism_data.h>
+#include "../apc_pcl/src/pcl_tools/pcl_functions.h"
 
 shot_detector::shot_detector()
 {
@@ -46,8 +46,8 @@ shot_detector::shot_detector()
     pcl::PointCloud<PointType>::Ptr model_good_kp_ (new pcl::PointCloud<PointType> ());
     pcl::PointCloud<PointType>::Ptr scene_good_kp_ (new pcl::PointCloud<PointType> ());
     pcl::PointCloud<PointType>::Ptr objects_ (new pcl::PointCloud<PointType> ());
-    //pcl::PointCloud<FeatureType>::Ptr model_descriptors_ (new pcl::PointCloud<FeatureType> ());
-    //pcl::PointCloud<FeatureType>::Ptr scene_descriptors_ (new pcl::PointCloud<FeatureType> ());
+    //pcl::PointCloud<DescriptorType>::Ptr model_descriptors_ (new pcl::PointCloud<DescriptorType> ());
+    //pcl::PointCloud<DescriptorType>::Ptr scene_descriptors_ (new pcl::PointCloud<DescriptorType> ());
     model=model_;
     model_keypoints=model_keypoints_;
     scene =scene_;
@@ -64,27 +64,16 @@ shot_detector::shot_detector()
     correspondences_=correspondences;
 
 
-    std::string filename="/home/niko/projects/apc/catkin/src/apc_object_detection/optimized_poisson_textured_mesh.ply";
-     vtkSmartPointer<vtkPLYReader> reader =
-      vtkSmartPointer<vtkPLYReader>::New();
 
-  vtkSmartPointer<vtkPolyData> data=vtkSmartPointer<vtkPolyData>::New();
-    reader->SetFileName ( filename.c_str() );
-      reader->Update();
-      data=reader->GetOutput();
-
-    pcl::io::vtkPolyDataToPointCloud(data,*model);
 
     std::cerr << model->size() << std::endl;
     std::cerr  << "Model created" << std::endl;
 
     nh=ros::NodeHandle("apc_object_detection");
-    kinect=nh.subscribe("/camera/depth_registered/points", 1, &shot_detector::PointCloudCallback,this);
-    //kinect = nh.subscribe<sensor_msgs::PointCloud2ConstPtr>
-      //      ("/camera/depth/points", 1,boost::bind(&shot_detector::PointCloudCallback,this, _1) );
+    kinect=nh.subscribe("/kinect2_cool/depth_highres/points", 1, &shot_detector::PointCloudCallback,this);
 
     pcl::PointCloud<PointType>::Ptr model_filter (new pcl::PointCloud<PointType> ());
-    voxelFilter(model,model_filter,voxel_sample_);
+    pcl_functions::voxelFilter(model,model_filter,voxel_sample_);
     model=model_filter;
             std::cerr << computeCloudResolution(model) << std::endl;
     norm_est.setKSearch (10);
@@ -100,10 +89,13 @@ void shot_detector::processImage()
 {
     if(data==true){
         convertMsg(depth_msg,scene);
-        pcl::PointCloud<PointType>::Ptr scene_filter (new pcl::PointCloud<PointType> ());
-        filter(scene,scene_filter);
-        voxelFilter(scene_filter,scene,voxel_sample_);
-        scene_filter.reset();
+        std::cerr << "start" << std::endl;
+        pcl::PointCloud<PointType>::Ptr background (new pcl::PointCloud<PointType> ());
+        pcl::io::savePCDFile ("/home/niko/projects/apc/catkin/src/apc_ros/apc_object_detection/better_background.pcd", *scene,true);
+        pcl::io::loadPCDFile("/home/niko/projects/apc/catkin/src/apc_ros/apc_object_detection/background.pcd",*background);
+        pcl::PointCloud<PointType>::Ptr updated_scene (new pcl::PointCloud<PointType> ());
+        pcl_functions::removeBackground(scene,background,updated_scene);
+        pcl_functions::voxelFilter(updated_scene,scene,voxel_sample_);
         norm_est.setInputCloud(scene);
         std::cerr << computeCloudResolution(scene) << std::endl;
         std::cerr << "input" << scene->size() << std::endl;;
@@ -117,13 +109,13 @@ void shot_detector::processImage()
         calcSHOTDescriptors(scene,scene_keypoints,scene_normals,scene_descriptors);
         //calcPFHRGBDescriptors(scene,scene_keypoints,scene_normals,scene_descriptors);
         std::cerr << "descriptors" << std::endl;
-        //compare(model_descriptors,scene_descriptors);
+        compare(model_descriptors,scene_descriptors);
         std::cerr << scene_descriptors->size() << " and  "<< model_descriptors->size() << std::endl;
-        findCorrespondences (model_descriptors, scene_descriptors, source2target_);
-        findCorrespondences (scene_descriptors, model_descriptors, target2source_);
+        //findCorrespondences (model_descriptors, scene_descriptors, source2target_);
+        //findCorrespondences (scene_descriptors, model_descriptors, target2source_);
 
-        filterCorrespondences ();
-        model_scene_corrs=correspondences_;
+        //filterCorrespondences ();
+        //model_scene_corrs=correspondences_;
         if(model_scene_corrs->size ()!=0){
         houghGrouping();
         output();
@@ -131,18 +123,17 @@ void shot_detector::processImage()
         }
     }
 }
-void shot_detector::extractClusters()
-{
-    if(data==true)
-    {
-        convertMsg(depth_msg,scene);
-        pcl::PointCloud<PointType>::Ptr scene_filter (new pcl::PointCloud<PointType> ());
-        filter(scene,scene_filter);
-        voxelFilter(scene_filter,scene,voxel_sample_);
-        scene_filter.reset();
 
-        planarExtraction( scene,objects);
-    }
+void shot_detector::loadModel(pcl::PointCloud<PointType>::Ptr model, std::string model_name)
+{
+    std::string filename=model_name;
+    vtkSmartPointer<vtkPLYReader> reader = vtkSmartPointer<vtkPLYReader>::New();
+    vtkSmartPointer<vtkPolyData> data=vtkSmartPointer<vtkPolyData>::New();
+    reader->SetFileName ( filename.c_str() );
+    reader->Update();
+    data=reader->GetOutput();
+
+    pcl::io::vtkPolyDataToPointCloud(data,*model);
 }
 
 void shot_detector::findCorrespondences(pcl::PointCloud<DescriptorType>::Ptr source, pcl::PointCloud<DescriptorType>::Ptr target, std::vector<int> &correspondences)
@@ -251,9 +242,9 @@ void shot_detector::calcSHOTDescriptors(pcl::PointCloud<PointType>::Ptr cloud, p
     descr_est.compute (*descriptors);
 }
 
-void shot_detector::calcPFHRGBDescriptors(pcl::PointCloud<PointType>::Ptr cloud, pcl::PointCloud<PointType>::Ptr keypoints
+/*void shot_detector::calcPFHRGBDescriptors(pcl::PointCloud<PointType>::Ptr cloud, pcl::PointCloud<PointType>::Ptr keypoints
                                           , pcl::PointCloud<NormalType>::Ptr normals,
-                                          pcl::PointCloud<FeatureType>::Ptr descriptors)
+                                          pcl::PointCloud<DescriptorType>::Ptr descriptors)
 {
     pfhrgbEstimation.setInputCloud (keypoints);
    // Provide the point cloud with normals
@@ -264,7 +255,7 @@ void shot_detector::calcPFHRGBDescriptors(pcl::PointCloud<PointType>::Ptr cloud,
    pfhrgbEstimation.setRadiusSearch (0.1);
    //pfhrgbEstimation.setKSearch (100);
    pfhrgbEstimation.compute (*descriptors);
-}
+}*/
 
 
 void shot_detector::downsample(pcl::PointCloud<PointType>::Ptr cloud, pcl::PointCloud<PointType>::Ptr keypoints,float sample_size)
@@ -276,10 +267,10 @@ void shot_detector::downsample(pcl::PointCloud<PointType>::Ptr cloud, pcl::Point
     pcl::copyPointCloud (*cloud, sampled_indices.points, *keypoints);
 }
 
-void shot_detector::compare(pcl::PointCloud<FeatureType>::Ptr model_descriptions, pcl::PointCloud<FeatureType>::Ptr scene_descriptions)
+void shot_detector::compare(pcl::PointCloud<DescriptorType>::Ptr model_descriptions, pcl::PointCloud<DescriptorType>::Ptr scene_descriptions)
 {
     model_scene_corrs->clear();
-    pcl::KdTreeFLANN<FeatureType> match_search;
+    pcl::KdTreeFLANN<DescriptorType> match_search;
     match_search.setInputCloud (model_descriptions);
     std::cerr << scene_descriptions->size() << " and  "<< model_descriptions->size() << std::endl;
     model_good_keypoints_indices.clear();
@@ -290,18 +281,15 @@ void shot_detector::compare(pcl::PointCloud<FeatureType>::Ptr model_descriptions
     {
       std::vector<int> neigh_indices (1);
       std::vector<float> neigh_sqr_dists (1);
-      if (!pcl_isfinite (scene_descriptions->at (i).histogram[0])) //skipping NaNs
+      if (!pcl_isfinite (scene_descriptors->at (i).descriptor[0])) //skipping NaNs
       {
         continue;
       }
-      int found_neighs = match_search.nearestKSearch (scene_descriptions->at (i), 1, neigh_indices, neigh_sqr_dists);
+      int found_neighs = match_search.nearestKSearch (scene_descriptors->at (i), 1, neigh_indices, neigh_sqr_dists);
       if(found_neighs == 1 && neigh_sqr_dists[0] < corr_dist_) //  add match only if the squared descriptor distance is less than 0.25 (SHOT descriptor distances are between 0 and 1 by design)
       {
-          std::cerr << "YAHTAAAAAAAAAAAAAAAAAAAAAH" << std::endl;
         pcl::Correspondence corr (neigh_indices[0], static_cast<int> (i), neigh_sqr_dists[0]);
         model_scene_corrs->push_back (corr);
-        model_good_keypoints_indices.push_back (corr.index_query);
-              scene_good_keypoints_indices.push_back (corr.index_match);
       }
     }
     pcl::copyPointCloud (*model_keypoints, model_good_keypoints_indices, *model_good_kp);
@@ -316,7 +304,7 @@ void shot_detector::houghGrouping()
         //  Compute (Keypoints) Reference Frames only for Hough
         //
 
-        pcl::PointCloud<RFType>::Ptr model_rf (new pcl::PointCloud<RFType> ());
+        /*pcl::PointCloud<RFType>::Ptr model_rf (new pcl::PointCloud<RFType> ());
         pcl::PointCloud<RFType>::Ptr scene_rf (new pcl::PointCloud<RFType> ());
 
         pcl::BOARDLocalReferenceFrameEstimation<PointType, NormalType, RFType> rf_est;
@@ -347,16 +335,16 @@ void shot_detector::houghGrouping()
         clusterer.setModelSceneCorrespondences (model_scene_corrs);
 
         //clusterer.cluster (clustered_corrs);
-        clusterer.recognize (rototranslations, clustered_corrs);
-        /*gc_clusterer.setGCSize (cg_size_);
+        clusterer.recognize (rototranslations, clustered_corrs);*/
+        gc_clusterer.setGCSize (cg_size_);
         gc_clusterer.setGCThreshold (cg_thresh_);
 
         gc_clusterer.setInputCloud (model_keypoints);
         gc_clusterer.setSceneCloud (scene_keypoints);
         gc_clusterer.setModelSceneCorrespondences (model_scene_corrs);
 
-        //gc_clusterer.cluster (clustered_corrs);
-        gc_clusterer.recognize (rototranslations, clustered_corrs);*/
+        gc_clusterer.cluster (clustered_corrs);
+        gc_clusterer.recognize (rototranslations, clustered_corrs);
 }
 
 void shot_detector::output()
@@ -632,87 +620,6 @@ double shot_detector::computeCloudResolution(const pcl::PointCloud<PointType>::P
         return resolution;
 }
 
-void shot_detector::voxelFilter(pcl::PointCloud<PointType>::Ptr cloud, pcl::PointCloud<PointType>::Ptr filtered_cloud, float sample_size)
-{
-    voxel_filter.setLeafSize(sample_size,sample_size,sample_size);
-    voxel_filter.setInputCloud(cloud);
-    voxel_filter.filter(*filtered_cloud);
-}
-
-
-void shot_detector::planarExtraction(pcl::PointCloud<PointType>::Ptr cloud, pcl::PointCloud<PointType>::Ptr clustered_objects)
-{
-    // Objects for storing the point clouds.
-    pcl::PointCloud<PointType>::Ptr plane(new pcl::PointCloud<PointType>);
-    pcl::PointCloud<PointType>::Ptr convexHull(new pcl::PointCloud<PointType>);
-
-
-    // Get the plane model, if present.
-    pcl::ModelCoefficients::Ptr coefficients(new pcl::ModelCoefficients);
-    pcl::SACSegmentation<PointType> segmentation;
-    segmentation.setInputCloud(cloud);
-    segmentation.setModelType(pcl::SACMODEL_PLANE);
-    segmentation.setMethodType(pcl::SAC_RANSAC);
-    segmentation.setDistanceThreshold(0.01);
-    segmentation.setOptimizeCoefficients(true);
-    pcl::PointIndices::Ptr planeIndices(new pcl::PointIndices);
-    segmentation.segment(*planeIndices, *coefficients);
-
-    if (planeIndices->indices.size() == 0)
-        std::cerr << "Could not find a plane in the scene." << std::endl;
-    else
-    {
-        // Copy the points of the plane to a new cloud.
-        pcl::ExtractIndices<PointType> extract;
-        extract.setInputCloud(cloud);
-        extract.setIndices(planeIndices);
-        extract.filter(*plane);
-
-        // Retrieve the convex hull.
-        pcl::ConvexHull<PointType> hull;
-        hull.setInputCloud(plane);
-        // Make sure that the resulting hull is bidimensional.
-        hull.setDimension(2);
-        hull.reconstruct(*convexHull);
-
-        // Redundant check.
-        if (hull.getDimension() == 2)
-        {
-            // Prism object.
-            pcl::ExtractPolygonalPrismData<PointType> prism;
-            prism.setInputCloud(cloud);
-            prism.setInputPlanarHull(convexHull);
-            prism.setHeightLimits(0.0f, 0.20f);
-            pcl::PointIndices::Ptr objectIndices(new pcl::PointIndices);
-
-            prism.segment(*objectIndices);
-
-            // Get and show all points retrieved by the hull.
-            extract.setIndices(objectIndices);
-            extract.filter(*clustered_objects);
-            pcl::visualization::CloudViewer viewerObjects("Objects on table");
-            viewerObjects.showCloud(clustered_objects);
-            while (!viewerObjects.wasStopped())
-            {
-                // Do nothing but wait.
-            }
-        }
-        else std::cerr << "The chosen hull is not planar." << std::endl;
-    }
-}
-
-void shot_detector::filter(pcl::PointCloud<PointType>::Ptr scene, pcl::PointCloud<PointType>::Ptr filtered_scene)
-{
-    pcl::PassThrough<PointType> pass;
-    pass.setInputCloud (scene);
-    pass.setFilterFieldName ("z");
-    pass.setFilterLimits (0.0, 1.5);
-    //pass.setFilterLimitsNegative (true);
-    pass.filter (*filtered_scene);
-
-}
-
-
 int
 main (int argc, char** argv)
 {
@@ -720,6 +627,7 @@ main (int argc, char** argv)
   ros::init (argc, argv, "apc_object_detection");
     shot_detector detector;
       ros::Rate r(10);
+      detector.processImage();
   // Spin
     int i=0;
     std::cerr << "ros start" << std::endl;
@@ -727,9 +635,9 @@ main (int argc, char** argv)
   {
     ros::spinOnce();
     std::cerr << "Spin" << std::endl;
-    detector.extractClusters();
+    detector.processImage();
     i++;
-    if (detector.activated==true || i==40)
+    if (detector.activated==true || i==80)
         return 0;
     r.sleep();
   }
