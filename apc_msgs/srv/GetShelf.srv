@@ -1,0 +1,3 @@
+geometry_msgs/Pose pose_shelf_world
+---
+uint32 dont_care

@@ -91,6 +91,7 @@ add_service_files(
   GetCloudFrustum.srv
   CullCloudBackground.srv
   SegmentImage.srv
+  GetShelf.srv
 )
 
 ## Generate actions in the 'action' folder
