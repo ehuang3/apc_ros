@@ -29,8 +29,10 @@ function [distance] = divergence(set_1, set_2, method)
 end
 
 function [dist] = mahalanobis(set_1, set_2)
-	mahal_dist = mahal(set_1', set_2');
-	dist = sum((set_1 - repmat(mean(set_2), 1, length(set_1))).^2, 2);
+	% To enable code generation, everything is commented
+	dist = 0;
+	% mahal_dist = mahal(set_1', set_2');
+	% dist = sum((set_1 - repmat(mean(set_2), 1, length(set_1))).^2, 2);
 end
 
 function [cdf] = compute_cdf(set)
@@ -58,7 +60,9 @@ function [dist] = kl_divergence(P, Q)
 	log_ = log(P ./ Q);
 	log_(isinf(log_)) = 0.0;
 	log_(isnan(log_)) = 0.0;
-	dist = sum(P .* log_);
+	% dist = sum(P .* log_);
+	dist = sum(P .* log_ - cumsum(P) + cumsum(Q));
+
 end
 
 function [dist] = jensen_shannon(P, Q)

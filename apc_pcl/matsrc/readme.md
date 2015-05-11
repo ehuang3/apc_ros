@@ -1,3 +1,7 @@
+# Better comparison
+- We need a smarter way to compare things. If a distribution is shifted, we lose some happiness
+
+
 # Using these files in Python
 
 import pymatlab
