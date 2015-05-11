@@ -13,10 +13,19 @@ find_package(
     roscpp
     rospy
     std_msgs
-    rostime)
+    rostime
+message_generation
+sensor_msgs 
+geometry_msgs
+eigen_conversions)
  find_package(PCL 1.7 REQUIRED COMPONENTS )
  find_package(VTK REQUIRED)
+find_package(Eigen3 REQUIRED)
+
+include_directories(EIGEN3_INCLUDE_DIR)
+
  include(${VTK_USE_FILE})
+
 
 
 set(catkin_LIBRARIES 
@@ -67,11 +76,10 @@ set(catkin_LIBRARIES
 # )
 
 ## Generate services in the 'srv' folder
-# add_service_files(
-#   FILES
-#   Service1.srv
-#   Service2.srv
-# )
+ add_service_files(
+   FILES
+   shot_detector_srv.srv
+ )
 
 ## Generate actions in the 'action' folder
 # add_action_files(
@@ -81,10 +89,10 @@ set(catkin_LIBRARIES
 # )
 
 ## Generate added messages and services with any dependencies listed here
-# generate_messages(
-#   DEPENDENCIES
-#   actionlib_msgs   control_msgs   std_msgs
-# )
+ generate_messages(
+   DEPENDENCIES
+   sensor_msgs geometry_msgs std_msgs
+ )
 
 ###################################
 ## catkin specific configuration ##

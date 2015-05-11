@@ -16,6 +16,10 @@
 #include <iostream>
 #include <pcl/features/pfhrgb.h>
 #include <pcl/features/pfh.h>
+#include "../../../devel/include/apc_pcl_detection/shot_detector_srv.h"
+#include <eigen3/Eigen/Core>
+#include <eigen_conversions/eigen_msg.h>
+#include <geometry_msgs/Transform.h>
 
 
 typedef pcl::PointXYZ PointType;
@@ -86,6 +90,10 @@ private:
 
 
     void loadModel(pcl::PointCloud<PointType>::Ptr model,std::string model_name);
+    void processModel(pcl::PointCloud<PointType>::Ptr model);
+    bool processCloud(apc_pcl_detection::shot_detector_srv::Request &req, apc_pcl_detection::shot_detector_srv::Response &res);
+    Eigen::Matrix4f refinePose(std::vector<Eigen::Matrix4f, Eigen::aligned_allocator<Eigen::Matrix4f> > transforms,
+                                   pcl::PointCloud<PointType>::Ptr model,pcl::PointCloud<PointType>::Ptr scene);
 
     //Processing functions
     void findCorrespondences (typename pcl::PointCloud<DescriptorType>::Ptr source,
@@ -136,6 +144,7 @@ private:
     bool data;
     ros::NodeHandle nh;
     ros::Subscriber kinect;
+    ros::ServiceServer processor;
     sensor_msgs::PointCloud2 depth_msg;
     void PointCloudCallback(const sensor_msgs::PointCloud2ConstPtr &data_msg);
     void convertMsg(sensor_msgs::PointCloud2 data_msg,pcl::PointCloud<PointType>::Ptr cloud);
