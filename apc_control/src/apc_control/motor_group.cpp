@@ -653,7 +653,7 @@ namespace apc_control
         }
 
         // Read in state with timeout.
-        if (ret = readState(100))
+        if (ret = readState(500))
             return ret;
 
         // Wait for at most 0.1 seconds for us to stop moving.
