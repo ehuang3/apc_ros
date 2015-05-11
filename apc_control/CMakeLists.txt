@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(apc_control)
 
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
+
 # We have some custom .cmake scripts not in the official distribution.
 # Maybe this can be used override existing behavior if needed?
 SET(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake;${CMAKE_MODULE_PATH}")
@@ -41,6 +43,9 @@ set(catkin_LIBRARIES
 )
 
 include_directories(${AMINO_INCLUDE_DIR}  ${ACH_INCLUDE_DIR} ${SNS_INCLUDE_DIR} ${EIGEN_INCLUDE_DIR})
+
+
+# add_subdirectory(backward-cpp)
 
 
 ## System dependencies are found with CMake's conventions
@@ -137,18 +142,23 @@ add_library(apc_control
 )
 
 ## Declare a cpp executable
-add_executable(apc_action_server           src/apc_action_server.cpp)
+add_executable(apc_action_server           src/apc_action_server.cpp src/backward.cpp)
 add_executable(apc_state_publisher         src/apc_state_publisher.cpp)
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
 add_dependencies(apc_action_server     apc_msgs_generate_messages_cpp)
 
+# add_backward(apc_action_server)
+
 ## Specify libraries to link a library or executable target against
 target_link_libraries(apc_action_server
   ${catkin_LIBRARIES}
   apc_control
+  bfd
+  dl
 )
+
 target_link_libraries(apc_state_publisher
   ${catkin_LIBRARIES}
 )
