@@ -169,7 +169,16 @@ apc_disconnect() {
     $SNS kill sdhstate-right
 }
 
+apc_zero() {
+    snsref -d ref-left -- 0 0 0 0 0 0 0
+    snsref -d ref-right -- 0 0 0 0 0 0 0
+    snsref -d ref-torso -- 0
+}
+
 case "$1" in
+    zero)
+        apc_zero
+        ;;
     start)
         apc_start
         ;;
