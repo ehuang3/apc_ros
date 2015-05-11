@@ -1,3 +1,7 @@
 sensor_msgs/PointCloud2 cloud  # The pre-isolation cloud
+sensor_msgs/PointCloud2 cloud_background  # Background cloud
+geometry_msgs/Pose shelf_world  # Pose of the shelf in world frame
+geometry_msgs/Pose background_world  # Pose of the background captured in world frame
 ---
+
 sensor_msgs/PointCloud2 cloud  # The post-isolation cloud

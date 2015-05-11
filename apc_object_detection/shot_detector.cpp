@@ -138,7 +138,7 @@ void shot_detector::processModel(pcl::PointCloud<PointType>::Ptr model)
     calcSHOTDescriptors(model,model_keypoints,model_normals,model_descriptors);
 }
 
-bool shot_detector::processCloud(apc_pcl_detection::shot_detector_srv::Request &req, apc_pcl_detection::shot_detector_srv::Response &res)
+bool shot_detector::processCloud(apc_msgs::shot_detector_srv::Request &req, apc_msgs::shot_detector_srv::Response &res)
 {
     std_msgs::String msg=req.object_name;
     std::string filename=msg.data;
