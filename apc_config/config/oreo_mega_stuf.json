@@ -3,7 +3,6 @@
   {
     "bin_A":
     [
-      "oreo_mega_stuf"
     ],
     "bin_B":
     [
@@ -22,6 +21,7 @@
     ],
     "bin_G":
     [
+      "oreo_mega_stuf"
     ],
     "bin_H":
     [
@@ -43,7 +43,7 @@
   "work_order":
   [
     {
-      "bin": "bin_A",
+      "bin": "bin_G",
       "item": "oreo_mega_stuf"
     }
   ]
