@@ -146,8 +146,8 @@ MotorGroupError execute_trajectory(const Action& action,
         if (ret = motors->applyPreConditions())
             return ret;
 
-        // Sleep for 10 ms.
-        usleep( (useconds_t) 10 * 1e3 ); // Based on can402 control loop frequency
+        // Sleep for 100 ms.
+        usleep( (useconds_t) 100 * 1e3 ); // Based on 10x can402 control loop frequency
     }
 
     ROS_INFO("Executing trajectory: %s", action.group_id.c_str());
