@@ -1,0 +1,50 @@
+#!/usr/bin/env python
+#
+# Copyright (c) 2015, Georgia Tech Research Corporation
+# All rights reserved.
+#
+# Author(s): Eric Huang <ehuang@gatech.edu>
+# Georgia Tech Humanoid Robotics Lab
+# Under Direction of Prof. Andrea Thomaz <athomaz@cc.gatech.edu>
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions
+# are met:
+#
+#     * Redistributions of source code must retain the above
+#       copyright notice, this list of conditions and the following
+#       disclaimer.
+#     * Redistributions in binary form must reproduce the above
+#       copyright notice, this list of conditions and the following
+#       disclaimer in the documentation and/or other materials
+#       provided with the distribution.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+# ''AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+# FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+# COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+# INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+# (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+# SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+# HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+# STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
+# OF THE POSSIBILITY OF SUCH DAMAGE.
+import sys
+
+def __debug_info__(type, value, tb):
+    if hasattr(sys, 'ps1') or not sys.stderr.isatty():
+    # we are in interactive mode or we don't have a tty-like
+    # device, so we call the default hook
+        sys.__excepthook__(type, value, tb)
+    else:
+        import traceback, pdb
+        # we are NOT in interactive mode, print the exception
+        traceback.print_exception(type, value, tb)
+        print
+        # then start the debugger in post-mortem mode.
+        # pdb.pm() # deprecated
+        pdb.post_mortem(tb) # more modern
+
+sys.excepthook = __debug_info__
