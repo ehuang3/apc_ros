@@ -65,7 +65,7 @@ namespace apc_control
             _state.groups[i]->resetState();
     }
 
-    void MotorGroupUnion::setActive(const JointNames& joint_names)
+    bool MotorGroupUnion::setActive(const JointNames& joint_names)
     {
         _state.active.clear();
         _state.num_active_dofs = 0;
@@ -78,6 +78,9 @@ namespace apc_control
                 _state.num_active_dofs += _state.groups[i]->getNumDofs();
             }
         }
+        if (_state.num_active_dofs != joint_names.size())
+            return false;
+        return true;
     }
 
     void MotorGroupUnion::setTrajectory(Trajectory& trajectory)

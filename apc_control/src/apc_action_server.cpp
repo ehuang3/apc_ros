@@ -91,7 +91,11 @@ MotorGroupError execute_trajectory(const Action& action,
     motors->reset();
 
     // Set the active motor groups.
-    motors->setActive(joint_names);
+    if (!motors->setActive(joint_names)) {
+        ret.error_code = MotorGroupError::INVALID_JOINTS;
+        ret.error_string = "Failed to find matching motor groups for all joints";
+        return ret;
+    }
 
     // Check that the joint encoder values are close to the start state.
     Eigen::VectorXd start_position(n_dof);

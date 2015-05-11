@@ -123,7 +123,7 @@ namespace apc_control
         void reset();
 
         // Set the active groups.
-        void setActive(const JointNames& joint_names);
+        bool setActive(const JointNames& joint_names);
 
         // Set the trajectory for all motor groups.
         void setTrajectory(Trajectory& trajectory);
