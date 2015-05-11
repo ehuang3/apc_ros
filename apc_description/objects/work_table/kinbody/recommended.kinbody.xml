@@ -1,0 +1,8 @@
+<KinBody name="work_table">
+  <Body type="static" name="work_table">
+    <Geom type="trimesh">
+      <Render>../reduced_meshes/work_table.dae</Render>
+      <Data>../reduced_meshes/work_table.dae</Data>
+    </Geom>
+  </Body>
+</KinBody>
