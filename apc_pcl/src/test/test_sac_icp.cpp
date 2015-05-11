@@ -7,15 +7,19 @@
 #include <pcl/visualization/cloud_viewer.h>
 #include <pcl/visualization/pcl_visualizer.h>
 #include "../pcl_tools/pcl_tools.h"
+// #include "../pcl_tools/loading.cpp"
+// #include "../pcl_tools/transform.cpp"
+// #include "../pcl_tools/visualization.cpp"
+// #include "../pcl_tools/registration.cpp"
 
 typedef pcl::PointXYZ InPointType;
 
 int main (int argc, char** argv)
 {
     typedef pcl::PointXYZ cloud_type;
-    pcl::console::TicToc time;
 
     char* filename = argv[1];
+    pcl::console::TicToc time;
 
     std::cout << "Opening polygon model at " << filename << std::endl;
     pcl::PointCloud<cloud_type>::Ptr target_cloud(new pcl::PointCloud<cloud_type>);
@@ -54,15 +58,34 @@ int main (int argc, char** argv)
 
     viewer.addText("0", 10, 10, 50, 1, 1, 1, "info", v2);
 
-    int steps, iterations = 0;
+    int frames, iterations = 0;
     bool go_on = true;
+
+    // Eigen::Vector3f origin(0.0, 0.0, 0.0);
+     static const Eigen::Vector3f seed_position_arr[] = {
+        Eigen::Vector3f(-1, 0, 0),
+        Eigen::Vector3f(0, -1, 0),
+        Eigen::Vector3f(0, 0, -1),
+        Eigen::Vector3f(1, 0, 0),
+        Eigen::Vector3f(0, 1, 0),
+        Eigen::Vector3f(0, 0, 1)
+    };
+
+    std::vector<Eigen::Vector3f> seed_positions (seed_position_arr, seed_position_arr + sizeof(seed_position_arr) / sizeof(seed_position_arr[0]));
+    Eigen::ArrayXf fitnesses = Eigen::ArrayXf::Zero(36);
+    int position = 0;
+    int max_position = seed_positions.size();
+
+    // apply_icp(input_cloud, target_cloud, Eigen::Vector3f::UnitZ(), 0.0, *position)
+
+    pcl::PointCloud<pcl::PointXYZ>::Ptr offset_cloud(new pcl::PointCloud<pcl::PointXYZ>);
     while(!viewer.wasStopped()) {
         /* Block until done */
-        steps++;
+        frames++;
         viewer.spinOnce();
         time.tic();
 
-        if ((steps % 30) == 0) {
+        if ((frames % 30) == 0) {
             iterations++;
             std::stringstream ss;
             ss << iterations;
@@ -70,9 +93,13 @@ int main (int argc, char** argv)
 
             pcl_tools::icp_result result;
             if (go_on) {
-                result = pcl_tools::apply_icp(input_cloud, target_cloud);
+                result = pcl_tools::apply_icp(input_cloud, target_cloud, offset_cloud, Eigen::Vector3f::UnitZ(), 0.0, seed_positions[position], 1);
             } else {
-                continue;
+                if (position >= max_position) {
+                    continue;
+                }
+                iterations = 0;
+                position++;
             }
 
             std::cout << "Fitness: " << result.fitness << std::endl;

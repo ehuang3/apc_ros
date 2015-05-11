@@ -10,10 +10,16 @@ fpath = path_to_file(__file__)
 root_path = path_to_root()
 
 class Bin_Segmenter(object):
-    def __init__(self, kinect_serial):
+    def __init__(self, kinect_serial=None, camera_matrix=None):
         '''Provide a service that, given an image and a bin name, will return that bin segmented out of the image
         '''
-        self.cam_matrix = self.get_cam_matrix(kinect_serial)
+        if camera_matrix is not None:
+            self.cam_matrix = camera_matrix
+        elif kinect_serial is not None:
+            self.cam_matrix = self.get_cam_matrix(kinect_serial)
+        else:
+            raise(Exception("No kinect specified"))
+
         self.shelf = self.get_shelf_urdf()
         self.Transformer = tf.TransformerROS(True, rospy.Duration(10.0))        
 

@@ -6,30 +6,30 @@
 #include <pcl/common/transforms.h>
 #include <pcl/visualization/cloud_viewer.h>
 #include <pcl/visualization/pcl_visualizer.h>
-#include "../pcl_tools/loading.cpp"
-#include "../pcl_tools/transform.cpp"
-#include "../pcl_tools/visualization.cpp"
+#include "../pcl_tools/pcl_tools.h"
 
-int main (int argc, char** argv)
+int main (int argc, const char** argv)
 {
     /* Test halfspace elimination */
+    std::cout << "Accomplishing something\n" << std::endl;
+    std::cout.flush();
     typedef pcl::PointXYZ cloud_type;
     pcl::console::TicToc time;
 
-    char* filename = argv[1];
+    const char* filename = argv[1];
 
     std::cout << "Opening polygon model at " << filename << std::endl;
     pcl::PointCloud<cloud_type>::Ptr output_cloud(new pcl::PointCloud<cloud_type>);
     pcl::PointCloud<cloud_type>::Ptr input_cloud(new pcl::PointCloud<cloud_type>);
 
-    cloud_from_ply(filename, *input_cloud);
+    pcl_tools::cloud_from_ply(filename, *input_cloud);
 
     // affine_cloud(Eigen::Vector3f::UnitZ(), -1.5, Eigen::Vector3f(0.4, 0.0, 0.0), *output_cloud, *input_cloud);
     Eigen::Vector3f origin, normal;
     origin << 0, 0, 0;
     normal << 1, 1, 0;
 
-    discard_halfspace(normal, origin, *input_cloud, *output_cloud);
+    pcl_tools::discard_halfspace(normal, origin, *input_cloud, *output_cloud);
 
     /* ***** ICP ***** */
     pcl::visualization::PCLVisualizer viewer ("Point Cloud Visualization ENHANCED!");

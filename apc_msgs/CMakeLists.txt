@@ -92,6 +92,7 @@ add_service_files(
   CullCloudBackground.srv
   SegmentImage.srv
   GetShelf.srv
+  shot_detector_srv.srv
 )
 
 ## Generate actions in the 'action' folder

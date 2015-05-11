@@ -78,7 +78,7 @@ set(catkin_LIBRARIES
 ## Generate services in the 'srv' folder
  add_service_files(
    FILES
-   shot_detector_srv.srv
+   #shot_detector_srv.srv
  )
 
 ## Generate actions in the 'action' folder

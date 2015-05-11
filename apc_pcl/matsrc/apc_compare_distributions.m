@@ -1,4 +1,4 @@
-function [result] = compare_distributions(distributions, dataset, method)
+function [result, divergence] = compare_distributions(distributions, dataset, method)
     % This uses color histograms
     if nargin < 3
         method = 'js';
@@ -16,7 +16,6 @@ function [result] = compare_distributions(distributions, dataset, method)
             result_num = setnum;
         end
     end
-
-    disp(minimum)
     result = dataset{result_num}.name;
+    divergence = minimum;
 end
