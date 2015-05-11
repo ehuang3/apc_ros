@@ -84,11 +84,6 @@ CAN_SDH_R=1
 apc_start() {
     apc_ach_mk
 
-    if [ $EUID != 0 ]; then
-        sudo "$0" "$@"
-        exit $?
-    fi
-
     $SNS run -d -r lwa-left -- \
         can402 -f $CAN_L -R 1 -C 0 -n 3 -n 4 -n 5 -n 6 -n 7 -n 8 -n 9 -c ref-left -s state-left
     $SNS run -d -r lwa-right -- \
