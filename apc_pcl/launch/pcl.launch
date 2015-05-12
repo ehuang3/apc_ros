@@ -1,7 +1,9 @@
 <launch>
 
     <rosparam>
-        meshpath: /home/apc/repos/apc/amazon_picking_challenge/crayola_64_ct/meshes/poisson.ply
+        <!-- meshpath: /home/apc/repos/apc/amazon_picking_challenge/crayola_64_ct/meshes/poisson.ply -->
+        meshpath: $(find apc_ros)/../amazon_picking_challenge/
+        stlpath: $(find apc_description)/objects
     </rosparam>
 
     <node name="vision_server" pkg="apc_pcl" type="vision_server.py" 
