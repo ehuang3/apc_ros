@@ -125,6 +125,10 @@ MotorGroupError execute_trajectory(const Action& action,
                 p[j] = T.points[i].positions[j];
             P.push_back(p);
         }
+        // Add another end point to avoid the bug where a two point
+        // trajectory with identical start and end positions takes 40s
+        // to execute.
+        P.push_back(p);
     }
 
     // Create velocity and acceleration limits.
