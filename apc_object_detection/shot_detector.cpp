@@ -132,10 +132,18 @@ bool shot_detector::processCloud(apc_msgs::shot_detector_srv::Request &req, apc_
 {
     pcl_functions::convertMsg(req.targetcloud,model);
     pcl_functions::convertMsg(req.pointcloud,scene);
+    std::cerr << "Originally positions" << std::endl;
+    std::cerr << scene->points[1].x << std::endl;
+    std::cerr << scene->points[1].y << std::endl;
+    std::cerr << scene->points[1].y << std::endl;
     //Downsample the model and the scene so they have rougly the same resolution
     pcl::PointCloud<PointType>::Ptr scene_filter (new pcl::PointCloud<PointType> ());
     pcl_functions::voxelFilter(scene,scene_filter,voxel_sample_);
     scene=scene_filter;
+    std::cerr << "AFter filter" << std::endl;
+    std::cerr << scene->points[1].x << std::endl;
+    std::cerr << scene->points[1].y << std::endl;
+    std::cerr << scene->points[1].y << std::endl;
     pcl::PointCloud<PointType>::Ptr model_filter (new pcl::PointCloud<PointType> ());
     pcl_functions::voxelFilter(model,model_filter,voxel_sample_);
     model=model_filter;
@@ -150,8 +158,8 @@ bool shot_detector::processCloud(apc_msgs::shot_detector_srv::Request &req, apc_
     calcSHOTDescriptors(scene,scene_keypoints,scene_normals,scene_descriptors);
     // Compare descriptors and try to find correspondences
     compare(model_descriptors,scene_descriptors);
-    void visualizeCorrespondences();
-    void visualizeICP();
+    visualizeCorrespondences();
+    visualizeICP();
     Eigen::Matrix4f pose;
     if(model_scene_corrs->size ()!=0){
         groupCorrespondences();
