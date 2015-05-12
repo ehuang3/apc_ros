@@ -34,7 +34,11 @@ shot_detector::shot_detector()
     data=false;
     activated=false;
     std::cerr  << "Starting" << std::endl;
+    // Start the ros stuff such as the subscriber and the service
+    nh=ros::NodeHandle("apc_object_detection");
     loadParameters();
+    //kinect=nh.subscribe("/kinect2_cool/depth_highres/points", 1, &shot_detector::PointCloudCallback,this);
+    processor = nh.advertiseService("Shot_detector",&shot_detector::processCloud,this);
     // As we use Ptr to access our pointcloud we first have to initalize something to point to
     pcl::PointCloud<PointType>::Ptr model_ (new pcl::PointCloud<PointType> ());
     pcl::PointCloud<PointType>::Ptr model_keypoints_ (new pcl::PointCloud<PointType> ());
@@ -64,10 +68,6 @@ shot_detector::shot_detector()
     objects=objects_;
     pcl::CorrespondencesPtr correspondences (new pcl::Correspondences);
     correspondences_=correspondences;
-    // Start the ros stuff such as the subscriber and the service
-    nh=ros::NodeHandle("apc_object_detection");
-    kinect=nh.subscribe("/kinect2_cool/depth_highres/points", 1, &shot_detector::PointCloudCallback,this);
-    processor = nh.advertiseService("Shot detector",&shot_detector::processCloud,this);
     //Set up a couple of the pcl settings
     descr_est.setRadiusSearch (descr_rad_);
     norm_est.setKSearch (10);
@@ -750,21 +750,19 @@ double shot_detector::computeCloudResolution(const pcl::PointCloud<PointType>::P
 int
 main (int argc, char** argv)
 {
-  // Initialize ROS
-  ros::init (argc, argv, "apc_object_detection");
-  shot_detector detector;
-      ros::Rate r(10);
-      //detector.processImage();
-  // Spin
-    int i=0;
+    // Initialize ROS
+    ros::init (argc, argv, "apc_object_detection");
+    shot_detector detector;
+    ros::Rate r(10);
+    //detector.processImage();
+    // Spin
     std::cerr << "ros start" << std::endl;
-  while(ros::ok)
-  {
-    ros::spinOnce();
-    std::cerr << "Spin" << std::endl;
-    i++;
-    r.sleep();
-  }
-  std::cerr << "End" << std::endl;
+    while(ros::ok)
+    {
+        ros::spinOnce();
+        std::cerr << "Spin" << std::endl;
+        r.sleep();
+    }
+    std::cerr << "End" << std::endl;
 }
 

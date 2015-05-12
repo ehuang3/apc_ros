@@ -16,10 +16,10 @@
 #include <iostream>
 #include <pcl/features/pfhrgb.h>
 #include <pcl/features/pfh.h>
-#include "../../../devel/include/apc_msgs/shot_detector_srv.h"
 #include <eigen3/Eigen/Core>
 #include <eigen_conversions/eigen_msg.h>
 #include <geometry_msgs/Transform.h>
+#include "../../../devel/include/apc_msgs/shot_detector_srv.h"
 
 
 typedef pcl::PointXYZ PointType;
