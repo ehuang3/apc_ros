@@ -25,7 +25,7 @@ class Vision_Server(object):
         self.image, self.show_image = None, None
         self.segmented = None
 
-        self.cloud_sub = rospy.Subscriber('/kinect2/depth_lowres/points/', PointCloud2, self.got_cloud)
+        self.cloud_sub = rospy.Subscriber('/kinect2/depth_highres/points/', PointCloud2, self.got_cloud)
 
         ## TF
         self.Listener = tf.TransformListener()
@@ -48,7 +48,8 @@ class Vision_Server(object):
         self.backgr_cloud, _, self.backgr_pose = load_background()
 
         self.target_cloud_proxy = rospy.ServiceProxy('/get_mesh', GetMesh)
-        self.registration_proxy = rospy.ServiceProxy('/shot_detector', shot_detector_srv)
+        # self.registration_proxy = rospy.ServiceProxy('/shot_detector', shot_detector_srv)
+        self.registration_proxy = rospy.ServiceProxy('/apc_object_detection/Shot_detector', shot_detector_srv)
 
         # Image viewing loop
         self.view_loop()
@@ -138,6 +139,7 @@ class Vision_Server(object):
         # target_frame = "kinect2_cool_ir_optical_frame";
         source_frame = "crichton_origin";
         now = rospy.Time.now()
+        rospy.sleep(0.1)
         # self.Listener.waitForTransform(target_frame, source_frame, now, rospy.Duration(4.0))
         # print 'waited for tf'
         m = self.Listener.lookupTransform(target_frame, source_frame, rospy.Time(0))
@@ -180,6 +182,7 @@ class Vision_Server(object):
                 )
 
                 for obj in resp.detected_objects:
+                # for obj in ['crayola_64_ct']:
                     print 'Detected {}, box x: {}, y: {}, width: {}, height: {}'.format(
                         obj.object_id, obj.x,
                         obj.y, obj.height, obj.width
@@ -198,17 +201,21 @@ class Vision_Server(object):
                     )
                     print 'Got frustum back, culling background'
                     object_alone = self.background_cull_proxy(frustum_cloud.sub_cloud, self.backgr_cloud, self.backgr_pose, Pose())
+                    # object_alone = self.background_cull_proxy(self.cloud, self.backgr_cloud, self.backgr_pose, Pose())
+
                     print 'Culled background'
 
                     print 'Getting target cloud'
                     target_cloud = self.target_cloud_proxy(object_name)
                     print 'Got target cloud'
 
+                    print 'Attempting to register'
                     registration = self.registration_proxy(
                         object_alone.cloud, 
                         target_cloud.cloud,
                         object_name
                     )
+                    print "Registered object"
                     object_pose = registration.pose
                     self.publish_pt(xyzarray(object_pose.position), frame='kinect2_rgb_optical_frame')
                     print object_pose

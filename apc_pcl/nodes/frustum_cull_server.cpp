@@ -65,19 +65,19 @@ bool APC_Frust_Cull::cull_frustum(apc_msgs::GetCloudFrustum::Request &req, apc_m
     std::vector<int> pointIndices;
     // pcl_tools::visualize_cloud(cloud);
 
+    std::cout << "Width " << req.cloud.width << " height " << req.cloud.height << std::endl;
     std::cout << "Culling Frustum" << std::endl;
-    for(unsigned int i = (req.x / 2); i < ((req.x / 2) +  (req.width / 2)); i++) {
-        for(unsigned int j = (req.x / 2); j < ((req.y / 2) + (req.height / 2)); j++) {
-            pointIndices.push_back((req.cloud.width * i) + j);
-        }
-    }
-
-    // std::cout << request_cloud.width << " " << request_cloud.height << std::endl;
     // for(unsigned int i = (req.x / 2); i < ((req.x / 2) +  (req.width / 2)); i++) {
-    //     for(unsigned int j = (req.x / 2); j < ((req.y / 2) + (req.height / 2)); j++) {
+    //     for(unsigned int j = (req.y / 2); j < ((req.y / 2) + (req.height / 2)); j++) {
     //         pointIndices.push_back((req.cloud.width * i) + j);
     //     }
     // }
+
+    for(unsigned int i = (req.x); i < ((req.x) +  (req.width)); i++) {
+        for(unsigned int j = (req.y); j < ((req.y) + (req.height)); j++) {
+            pointIndices.push_back((req.cloud.width * j) + i);
+        }
+    }
 
     std::cout << "Culling Frustum" << std::endl;
     boost::shared_ptr< std::vector<int> > indicesptr(new std::vector<int> (pointIndices));

@@ -4,7 +4,7 @@ import os
 import sys
 import rospy
 from .utils import path_to_root, path_to_file, xyzharray, xyzarray, xyzwarray
-from urdf_parser_py.urdf import URDF
+# from urdf_parser_py.urdf import URDF
 import tf
 fpath = path_to_file(__file__)
 root_path = path_to_root()
@@ -20,7 +20,7 @@ class Bin_Segmenter(object):
         else:
             raise(Exception("No kinect specified"))
 
-        self.shelf = self.get_shelf_urdf()
+        # self.shelf = self.get_shelf_urdf()
         self.Transformer = tf.TransformerROS(True, rospy.Duration(10.0))        
 
     def get_cam_matrix(self, kinect_serial):
