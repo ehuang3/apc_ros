@@ -9,8 +9,9 @@ import cv2
 from cv_bridge import CvBridge, CvBridgeError
 import numpy as np
 from rospy.numpy_msg import numpy_msg
-from apc_tools import Image_Subscriber, Bin_Segmenter, xyzharray, xyzarray, xyzwarray, make_image_msg, load_background
+from apc_tools import Image_Subscriber, Bin_Segmenter, xyzharray, xyzarray, xyzwarray, make_image_msg, load_background, path_to_root
 import tf
+import os
 '''Show the current image, allow the user to draw a bounding box
 '''
 
@@ -46,6 +47,7 @@ class Vision_Server(object):
         self.background_cull_proxy = rospy.ServiceProxy('cull_background', CullCloudBackground)
         self.backgr_cloud, _, self.backgr_pose = load_background()
 
+        self.target_cloud_proxy = rospy.ServiceProxy('/get_mesh', GetMesh)
         self.registration_proxy = rospy.ServiceProxy('/shot_detector', shot_detector_srv)
 
         # Image viewing loop
@@ -87,17 +89,17 @@ class Vision_Server(object):
             point=Point(*point),
         )
 
-    def publish_bin_pt(self, point, frame='crichton_origin'):
+    def publish_bin_pt(self, point, frame='kinect2_rgb_optical_frame'):
         point = point[:3]
         self.bin_pub.publish(
             header=Header(
-                stamp=rospy.Time(0),
+                stamp=rospy.Time.now(),
                 frame_id=frame,
             ),
             point=Point(*point),
         )
 
-    def publish_bin(self, _bin, transform=None):
+    def publish_bin(self, _bin, transform=None, transform_frame='crichton_origin'):
         shelf_world = _bin.pose_shelf_frame
         bin_shelf = _bin.pose_bin_shelf
         shelf_world_tf = self.Transformer.fromTranslationRotation(
@@ -123,7 +125,9 @@ class Vision_Server(object):
         size = np.hstack([0.5 * xyzarray(_bin.bin_size), 1.0])
 
         for point in cube_points:
-            self.publish_bin_pt(np.dot(bin_world_tf, point * size), frame='crichton_origin')
+            bin_world = np.dot(bin_world_tf, point * size)
+            bin_transformed = np.dot(transform, bin_world)
+            self.publish_bin_pt(bin_transformed, frame=transform_frame)
 
     def run_vision(self, srv):
         assert self.image is not None, "Have not yet cached an image"
@@ -133,6 +137,9 @@ class Vision_Server(object):
         target_frame = "kinect2_rgb_optical_frame";
         # target_frame = "kinect2_cool_ir_optical_frame";
         source_frame = "crichton_origin";
+        now = rospy.Time.now()
+        # self.Listener.waitForTransform(target_frame, source_frame, now, rospy.Duration(4.0))
+        # print 'waited for tf'
         m = self.Listener.lookupTransform(target_frame, source_frame, rospy.Time(0))
         transform = self.Transformer.fromTranslationRotation(*m)
 
@@ -158,8 +165,9 @@ class Vision_Server(object):
 
             }
             if _bin.bin_name in color_map.keys():
-                # self.publish_bin(_bin)
+                self.publish_bin(_bin, transform=transform, transform_frame=target_frame)
                 Bin_Seg.draw_bin(self.show_image, _bin, transform)
+                object_name = 'crayola_64_ct'
 
                 # if _bin.bin_name == 'bin_G':
                 segmented, (x, y, w, h) = Bin_Seg.segment_bin(self.image, _bin, transform)
@@ -167,8 +175,8 @@ class Vision_Server(object):
 
                 resp = self.dpm_proxy(
                     make_image_msg(segmented), 
-                    ['crayola_64_ct'],
-                    ['crayola_64_ct'],
+                    [object_name],
+                    [object_name],
                 )
 
                 for obj in resp.detected_objects:
@@ -190,14 +198,23 @@ class Vision_Server(object):
                     )
                     print 'Got frustum back, culling background'
                     object_alone = self.background_cull_proxy(frustum_cloud.sub_cloud, self.backgr_cloud, self.backgr_pose, Pose())
-                    print 'culled background'
-                    registration = self.registration_proxy(object_alone.cloud, 'crayola_64_ct')
+                    print 'Culled background'
+
+                    print 'Getting target cloud'
+                    target_cloud = self.target_cloud_proxy(object_name)
+                    print 'Got target cloud'
+
+                    registration = self.registration_proxy(
+                        object_alone.cloud, 
+                        target_cloud.cloud,
+                        object_name
+                    )
                     object_pose = registration.pose
                     self.publish_pt(xyzarray(object_pose.position), frame='kinect2_rgb_optical_frame')
                     print object_pose
 
                     object_state = ObjectState(
-                        object_id='crayola_64_ct',
+                        object_id=object_name,
                         object_key='',
                         object_pose=object_pose,
                     )
