@@ -43,5 +43,4 @@ namespace pcl_tools {
             return true;
         }
     }
-
 }

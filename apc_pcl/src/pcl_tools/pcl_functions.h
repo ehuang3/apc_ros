@@ -22,7 +22,7 @@ typedef pcl::PointXYZ PointType;
  * \param background: The background to be removed
  * This functions takes in a background and current scene pointcloud. It then
  */
-void removeBackground(pcl::PointCloud<PointType>::Ptr scene, pcl::PointCloud<PointType>::Ptr background,pcl::PointCloud<PointType>::Ptr pc_back_subtracted)
+void removeBackground(pcl::PointCloud<PointType>::Ptr scene, pcl::PointCloud<PointType>::Ptr background, pcl::PointCloud<PointType>::Ptr pc_back_subtracted)
 {
     // We use a kdtree to search for points that are close enough to the other pointcloud
     pcl::KdTreeFLANN<PointType> kdtree;

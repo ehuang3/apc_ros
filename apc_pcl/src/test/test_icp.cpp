@@ -70,7 +70,7 @@ int main (int argc, char** argv)
 
             pcl_tools::icp_result result;
             if (go_on) {
-                result = pcl_tools::apply_icp(input_cloud, target_cloud);
+                result = pcl_tools::apply_icp(input_cloud, target_cloud, 1);
             } else {
                 continue;
             }
