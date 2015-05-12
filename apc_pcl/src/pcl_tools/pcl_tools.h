@@ -3,13 +3,14 @@
 #include <iostream>
 #include <pcl/point_types.h>
 
+
 namespace pcl_tools {
-        /* Loading */
+    /* Loading */
     void cloud_from_ply(std::string filename, pcl::PointCloud<pcl::PointXYZ>& cloud);
     void cloud_from_ply(std::string filename, pcl::PointCloud<pcl::PointXYZRGBA>& cloud);
     bool cloud_from_pcd(std::string filename, pcl::PointCloud<pcl::PointXYZ>& cloud);
     bool cloud_from_pcd(std::string filename, pcl::PointCloud<pcl::PointXYZRGBA>& cloud);
-
+    bool cloud_from_stl(std::string filename, pcl::PCLPointCloud2& cloud);
 
     /* Registration */
     struct icp_result {

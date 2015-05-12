@@ -66,6 +66,20 @@ target_link_libraries(icp_server ${catkin_LIBRARIES} ${PCL_COMMON_LIBRARIES} ${P
 )
 add_dependencies(icp_server apc_msgs)
 
+add_executable(mesh_server nodes/get_mesh_server.cpp
+    ./src/pcl_tools/transform.cpp
+    ./src/pcl_tools/loading.cpp
+    ./src/pcl_tools/registration.cpp
+    ./src/pcl_tools/visualization.cpp
+    ./src/backward.cpp
+)
+target_link_libraries(mesh_server ${catkin_LIBRARIES} ${PCL_COMMON_LIBRARIES} ${PCL_IO_LIBRARIES} ${PCL_LIBRARIES} ${Boost_LIBRARIES}
+  bfd
+  dl
+)
+add_dependencies(mesh_server apc_msgs)
+
+
 
 install(
   TARGETS

@@ -92,6 +92,7 @@ add_service_files(
   CullCloudBackground.srv
   SegmentImage.srv
   GetShelf.srv
+  GetMesh.srv
   shot_detector_srv.srv
 )
 

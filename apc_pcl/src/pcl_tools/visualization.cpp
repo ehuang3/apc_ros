@@ -69,7 +69,7 @@ void visualize(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud) {
     pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZ> cloud_color_h (cloud, 255, 0, 0);
     viewer.addPointCloud(cloud, cloud_color_h, "cloud");
     while(!viewer.wasStopped()) {
-        // viewer.spinOnce();
+        viewer.spinOnce();
         boost::this_thread::sleep (boost::posix_time::microseconds (100000)); 
 
     }
@@ -81,7 +81,7 @@ void visualize(pcl::PointCloud<pcl::PointXYZRGBA>::Ptr cloud) {
     viewer.setSize(500, 500);
     viewer.addPointCloud(cloud, "cloud");
     while(!viewer.wasStopped()) {
-        // viewer.spinOnce();
+        viewer.spinOnce();
         boost::this_thread::sleep (boost::posix_time::microseconds (100000)); 
     }
     viewer.close();
@@ -99,7 +99,7 @@ void visualize(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_1, pcl::PointCloud<pcl:
     viewer.addPointCloud(cloud_2, cloud_2_color_h, "cloud_2");
 
     while(!viewer.wasStopped()) {
-        // viewer.spinOnce();
+        viewer.spinOnce();
         boost::this_thread::sleep (boost::posix_time::microseconds (100000)); 
     }
     viewer.close();
