@@ -150,6 +150,8 @@ bool shot_detector::processCloud(apc_msgs::shot_detector_srv::Request &req, apc_
     calcSHOTDescriptors(scene,scene_keypoints,scene_normals,scene_descriptors);
     // Compare descriptors and try to find correspondences
     compare(model_descriptors,scene_descriptors);
+    void visualizeCorrespondences();
+    void visualizeICP();
     Eigen::Matrix4f pose;
     if(model_scene_corrs->size ()!=0){
         groupCorrespondences();
@@ -753,16 +755,10 @@ main (int argc, char** argv)
     // Initialize ROS
     ros::init (argc, argv, "apc_object_detection");
     shot_detector detector;
-    ros::Rate r(10);
     //detector.processImage();
     // Spin
     std::cerr << "ros start" << std::endl;
-    while(ros::ok)
-    {
-        ros::spinOnce();
-        std::cerr << "Spin" << std::endl;
-        r.sleep();
-    }
+        ros::spin();
     std::cerr << "End" << std::endl;
 }
 
