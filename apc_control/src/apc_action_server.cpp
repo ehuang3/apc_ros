@@ -159,13 +159,15 @@ MotorGroupError execute_trajectory(const Action& action,
     // Get duration of trajectory.
     const double duration = T.getDuration();
 
+    ROS_INFO("Will run for %f seconds", duration);
+
     // Current timespec.
     struct timespec ts;
     if (ret = get_time( &ts ))
         return ret;
 
     // Record the start time.
-    double start = ts.tv_sec + ts.tv_nsec / (double) 1e9;
+    double start = ((double) ts.tv_sec) + ts.tv_nsec / (double) 1e9;
 
     // The current time in seconds.
     double time = start;
@@ -197,7 +199,7 @@ MotorGroupError execute_trajectory(const Action& action,
             break;
 
         // Convert the current time to seconds.
-        time = ts.tv_sec + ts.tv_nsec / (double) 1e9;
+        time = ((double) ts.tv_sec) + ts.tv_nsec / (double) 1e9;
 
         // Build reference command messages.
         if (ret = motors->buildCommands(time - start))
