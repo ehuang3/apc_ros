@@ -1,10 +1,7 @@
 <launch>
 
-    <rosparam>
-        <!-- meshpath: /home/apc/repos/apc/amazon_picking_challenge/crayola_64_ct/meshes/poisson.ply -->
-        meshpath: $(find apc_ros)/../amazon_picking_challenge/
-        stlpath: $(find apc_description)/objects
-    </rosparam>
+    <param name="stlpath" value="$(find apc_description)/objects" />
+    <param name="meshpath" value="$(find apc_ros)/../amazon_picking_challenge/" />
 
     <node name="vision_server" pkg="apc_pcl" type="vision_server.py" 
         output="screen" />   
@@ -13,8 +10,11 @@
     <node name="cloud_culler" pkg="apc_pcl" type="frustum_server"
         output="screen" />
     <node name="icp" pkg="apc_pcl" type="icp_server"
-        output="screen" >
-    </node>
+        output="screen" />
+
+    <node name="get_mesh" pkg="apc_pcl" type="mesh_server"
+        output="screen" />
+
     <!-- <node name="pcl2image" pkg="pcl_ros" type="convert_pointcloud_to_image"> -->
         <!-- <rosparam> -->
             <!-- input: /kinect2_cool/depth_lowres/points -->
