@@ -1,43 +1,64 @@
 #include <string>
 #include <iostream>
+#include <string>
+#include <iostream>
+#include <pcl/point_types.h>
+#include <pcl/console/time.h>   // TicToc
+#include <pcl/registration/icp.h>
+#include <pcl/common/transforms.h>
+#include <pcl/visualization/cloud_viewer.h>
+#include <pcl/visualization/pcl_visualizer.h>
+#include <pcl/PointIndices.h>
+#include <pcl/conversions.h>
+#include <pcl/PCLPointCloud2.h>
+#include <pcl_conversions/pcl_conversions.h>
+#include <vector>
+#include <eigen_conversions/eigen_msg.h>
+#include "apc_msgs/GetCloudFrustum.h"
+#include "apc_msgs/CullCloudBackground.h"
+#include "geometry_msgs/Point.h"
+#include "geometry_msgs/Pose.h"
 #include "ros/ros.h"
-#include "../src/pcl_tools/registration.cpp"
-#include "apc_msgs/RunICP.h"
+#include "apc_msgs/shot_detector_srv.h"
 #include "geometry_msgs/PoseStamped.h"
+#include "../src/pcl_tools/pcl_functions.h"
+#include "../src/pcl_tools/pcl_tools.h"
 
+std::string meshpath;
 class APC_ICP {
 
 public:
-    static bool run_ICP(apc_msgs::RunICP::Request &req, apc_msgs::RunICP::Response &resp);
+    static bool run_icp(apc_msgs::shot_detector_srv::Request &req, apc_msgs::shot_detector_srv::Response &resp);
     void clicked_point_callback(const geometry_msgs::PoseStamped::ConstPtr& msg);
     APC_ICP();
     ros::NodeHandle nh;
     ros::ServiceServer service;
-
 };
 
-bool APC_ICP::run_ICP(apc_msgs::RunICP::Request &req, apc_msgs::RunICP::Response &resp) {
+bool APC_ICP::run_icp(apc_msgs::shot_detector_srv::Request &req, apc_msgs::shot_detector_srv::Response &resp) {
     /* Run the Amazon Picking Challenge IPC object pose refinement method */
 
     std::cout << "Attempting to ICP!" << std::endl;
-    std::cout << "Frameid " << req.cloud.header.frame_id << std::endl;
-    resp.object_pose.pose.position.x = 0.0;
-    resp.object_pose.pose.position.y = 0.0;
-    resp.object_pose.pose.position.z = 0.0;
-    resp.object_pose.pose.orientation.x = 0.0;
-    resp.object_pose.pose.orientation.y = 0.0;
-    resp.object_pose.pose.orientation.z = 0.0;
-    resp.object_pose.pose.orientation.w = 0.0;
+    pcl::PointCloud<pcl::PointXYZ>::Ptr target_cloud(new pcl::PointCloud<pcl::PointXYZ>);
+    pcl::fromROSMsg(req.pointcloud, *target_cloud);
 
-    // ---------> TO FIX
-    resp.object_pose.header.frame_id = "/camera";
+    pcl::PointCloud<pcl::PointXYZ>::Ptr input_cloud(new pcl::PointCloud<pcl::PointXYZ>);
+
+    pcl_tools::cloud_from_ply(meshpath, *input_cloud);
+    pcl_tools::icp_result result;
+    result = pcl_tools::apply_icp(input_cloud, target_cloud, 45);
+    // pcl_tools::visualize_cloud(input_cloud);
+    pcl_tools::visualize(input_cloud, target_cloud);
+    tf::poseEigenToMsg(result.affine, resp.pose);
+
     return true;
 }
 
 APC_ICP::APC_ICP(){
     std::cout << "Initializing" << std::endl;
-    service = nh.advertiseService("/runICP", run_ICP);
-    // ros::Subscriber sub = nh.subscribe("clicked_point", 1, clicked_point_callback);
+    nh.getParam("meshpath", meshpath);
+    std::cout << "meshpath: " << meshpath << std::endl;
+    service = nh.advertiseService("/shot_detector", run_icp);
     std::cout << "advertised" << std::endl;
 }
 

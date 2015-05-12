@@ -2,9 +2,9 @@
 import rospy
 from sensor_msgs.msg import PointCloud2, Image, CameraInfo
 from std_msgs.msg import Header
-from geometry_msgs.msg import PointStamped, Point
+from geometry_msgs.msg import PointStamped, Point, Pose
 from apc_msgs.srv import *
-from apc_msgs.msg import BinState
+from apc_msgs.msg import BinState, ObjectState
 import cv2
 from cv_bridge import CvBridge, CvBridgeError
 import numpy as np
@@ -46,6 +46,8 @@ class Vision_Server(object):
         self.background_cull_proxy = rospy.ServiceProxy('cull_background', CullCloudBackground)
         self.backgr_cloud, _, self.backgr_pose = load_background()
 
+        self.registration_proxy = rospy.ServiceProxy('/shot_detector', shot_detector_srv)
+
         # Image viewing loop
         self.view_loop()
 
@@ -75,6 +77,7 @@ class Vision_Server(object):
                 break
 
     def publish_pt(self, point, frame='crichton_origin'):
+        print 'publishing a point'
         point = point[:3]
         self.point_pub.publish(
             header=Header(
@@ -88,7 +91,7 @@ class Vision_Server(object):
         point = point[:3]
         self.bin_pub.publish(
             header=Header(
-                stamp=rospy.Time.now(),
+                stamp=rospy.Time(0),
                 frame_id=frame,
             ),
             point=Point(*point),
@@ -127,18 +130,23 @@ class Vision_Server(object):
         self.show_image = np.copy(self.image)
         Bin_Seg = Bin_Segmenter(camera_matrix=self.camera_matrix)
 
-
         target_frame = "kinect2_rgb_optical_frame";
         # target_frame = "kinect2_cool_ir_optical_frame";
         source_frame = "crichton_origin";
-        m = self.Listener.lookupTransform(target_frame, source_frame, rospy.Time.now())
+        m = self.Listener.lookupTransform(target_frame, source_frame, rospy.Time(0))
         transform = self.Transformer.fromTranslationRotation(*m)
 
         rospy.loginfo('Running vision')
         info = ""
         info += '\nGot camera ID {}'.format(srv.camera_id)
 
+        bin_states = []
         for number, _bin in enumerate(srv.bins):
+            bin_state = BinState(
+                bin_name=_bin.bin_name
+            )
+            object_states = []
+
             bin_size = xyzarray(_bin.bin_size)
             shelf_position = xyzharray(_bin.pose_shelf_frame.position)
 
@@ -147,18 +155,20 @@ class Vision_Server(object):
                 # 'bin_J': (255, 0, 0),
                 # 'bin_K': (255, 255, 0),
                 # 'bin_H': (255, 255, 0),
+
             }
             if _bin.bin_name in color_map.keys():
-                self.publish_bin(_bin)
+                # self.publish_bin(_bin)
                 Bin_Seg.draw_bin(self.show_image, _bin, transform)
 
                 # if _bin.bin_name == 'bin_G':
                 segmented, (x, y, w, h) = Bin_Seg.segment_bin(self.image, _bin, transform)
                 assert segmented.shape != (0, 0, 1), "Bin region out of bounds"
+
                 resp = self.dpm_proxy(
                     make_image_msg(segmented), 
-                    ['oreo_mega_stuf'],
-                    ['oreo_mega_stuf'],
+                    ['crayola_64_ct'],
+                    ['crayola_64_ct'],
                 )
 
                 for obj in resp.detected_objects:
@@ -168,24 +178,36 @@ class Vision_Server(object):
                     )
 
                     cv2.rectangle(segmented, (obj.x, obj.y), (obj.x + obj.width, obj.y + obj.height), (0, 255, 0), 2)
-                self.segmented = segmented
-                # continue
-                print 'Sending image of size {}'.format(self.image.shape)
-                frustum_cloud = self.frustum_proxy(
-                    self.cloud,
-                    make_image_msg(self.image),
-                    obj.x + x,
-                    obj.y + y,
-                    obj.height,
-                    obj.width
-                )
-                # print 'Got frustum back, culling background'
-                # self.background_cull_proxy(frustum_cloud.sub_cloud)
-                # print 'culled background'
 
-            else:
-                print _bin.bin_name
-                continue
+                    print 'Sending image of size {}'.format(self.image.shape)
+                    frustum_cloud = self.frustum_proxy(
+                        self.cloud,
+                        make_image_msg(self.image),
+                        obj.x + x,
+                        obj.y + y,
+                        obj.height,
+                        obj.width
+                    )
+                    print 'Got frustum back, culling background'
+                    object_alone = self.background_cull_proxy(frustum_cloud.sub_cloud, self.backgr_cloud, self.backgr_pose, Pose())
+                    print 'culled background'
+                    registration = self.registration_proxy(object_alone.cloud, 'crayola_64_ct')
+                    object_pose = registration.pose
+                    self.publish_pt(xyzarray(object_pose.position), frame='kinect2_rgb_optical_frame')
+                    print object_pose
+
+                    object_state = ObjectState(
+                        object_id='crayola_64_ct',
+                        object_key='',
+                        object_pose=object_pose,
+                    )
+                    object_states.append(object_state)
+
+
+                self.segmented = segmented
+
+            bin_state.object_list = object_states
+            bin_states.append(bin_state)
 
             # Printing stuff
             info += '\n{}: Name: {}'.format(number, _bin.bin_name)
@@ -208,7 +230,10 @@ class Vision_Server(object):
         rospy.loginfo(info)
 
         # Then call DPM (Or simulated DPM)
-        return RunVisionResponse([BinState()] * 12)
+        print 'Sending bin states of length {}'.format(len(bin_states))
+        return RunVisionResponse(
+            bin_contents=bin_states
+        )
 
 
 if __name__ == '__main__':

@@ -1,7 +1,7 @@
 import rosbag
 import os 
 from . import path_to_root
-
+from sensor_msgs.msg import PointCloud2
 
 def load_background():
     '''Returns a background cloud, a background image, and the pose the original background was taken at'''
@@ -15,4 +15,7 @@ def load_background():
             pass
         returns.append(message)
     bag.close()
+    print type(returns[2])
+    print type(PointCloud2())
+    print dir(returns[2])
     return returns
