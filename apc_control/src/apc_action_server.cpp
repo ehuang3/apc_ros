@@ -69,6 +69,20 @@ Result error_to_result(const MotorGroupError& error)
     return r;
 }
 
+bool is_action_stationary(const Action& action)
+{
+    if (action.joint_trajectory.points.size() != 2)
+        return false;
+    const double tol = 1e-5;
+    const trajectory_msgs::JointTrajectoryPoint start = action.joint_trajectory.points.front();
+    const trajectory_msgs::JointTrajectoryPoint end = action.joint_trajectory.points.back();
+    for (int i = 0; i < action.joint_trajectory.joint_names.size(); i++) {
+        if (std::abs(start.positions[i] - end.positions[i]) > tol)
+            return false;
+    }
+    return true;
+}
+
 // TODO Assert trajectory is not malformed.
 // TODO Force safety limits.
 // TODO Haptic profile monitoring.
@@ -80,6 +94,12 @@ MotorGroupError execute_trajectory(const Action& action,
     MotorGroupError ret;
 
     ROS_INFO("Preparing trajectory: %s", action.group_id.c_str());
+
+    if (is_action_stationary(action)) {
+        ROS_INFO("Skipping over non-moving trajectory");
+        ret.error_string = "Skipping over non-moving trajectory";
+        return ret;
+    }
 
     // Get the number of degrees of freedom requested in this action.
     const int n_dof = action.joint_trajectory.joint_names.size();
@@ -128,7 +148,7 @@ MotorGroupError execute_trajectory(const Action& action,
         // Add another end point to avoid the bug where a two point
         // trajectory with identical start and end positions takes 40s
         // to execute.
-        P.push_back(p);
+        // P.push_back(p);
     }
 
     // Create velocity and acceleration limits.
