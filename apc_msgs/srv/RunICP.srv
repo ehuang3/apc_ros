@@ -3,8 +3,6 @@
 
 sensor_msgs/Image image  # The image that was dpm'd 
 sensor_msgs/PointCloud2 cloud  # The post-isolation cloud
-geometry_msgs/Point bottom_left
-
 ---
 
 geometry_msgs/PoseStamped object_pose  # In Camera frame

@@ -140,8 +140,8 @@ void shot_detector::processModel(pcl::PointCloud<PointType>::Ptr model)
 
 bool shot_detector::processCloud(apc_msgs::shot_detector_srv::Request &req, apc_msgs::shot_detector_srv::Response &res)
 {
-    std_msgs::String msg=req.object_name;
-    std::string filename=msg.data;
+    // std_msgs::String msg=req.object_name;
+    std::string filename=req.object_name;
     convertMsg(req.pointcloud,scene);
     loadModel(scene,filename);
     pcl::PointCloud<PointType>::Ptr scene_filter (new pcl::PointCloud<PointType> ());
@@ -161,8 +161,8 @@ bool shot_detector::processCloud(apc_msgs::shot_detector_srv::Request &req, apc_
     }
     Eigen::Matrix4d md(pose.cast<double>());
     Eigen::Affine3d affine(md);
-    geometry_msgs::Transform transform;
-    tf::transformEigenToMsg(affine, transform);
+    geometry_msgs::Pose transform;
+    tf::poseEigenToMsg(affine, transform);
     res.pose=transform;
     if(pose!=Eigen::Matrix4f::Identity())
         return true;
