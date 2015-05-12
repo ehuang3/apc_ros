@@ -1,0 +1,8 @@
+<KinBody name="order_bin">
+  <Body type="static" name="order_bin">
+    <Geom type="trimesh">
+      <Render>../reduced_meshes/order_bin.stl</Render>
+      <Data>../reduced_meshes/order_bin.stl</Data>
+    </Geom>
+  </Body>
+</KinBody>
