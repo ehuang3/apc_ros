@@ -96,6 +96,7 @@ MotorGroupError execute_trajectory(const Action& action,
     ROS_INFO("Preparing trajectory: %s", action.group_id.c_str());
 
     if (is_action_stationary(action)) {
+        ROS_INFO("Skipping over non-moving trajectory");
         ret.error_string = "Skipping over non-moving trajectory";
         return ret;
     }
