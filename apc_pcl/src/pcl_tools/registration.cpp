@@ -19,6 +19,8 @@ icp_result apply_icp(pcl::PointCloud<pcl::PointXYZ>::Ptr input_cloud, pcl::Point
     // min: 5e-7
     result.converged = icp.hasConverged();
     result.fitness = icp.getFitnessScore();
+    result.affine = Eigen::Affine3d(icp.getFinalTransformation().cast<double>());
+    std::cout << icp.getFinalTransformation() << std::endl;
     return result;
 }
 

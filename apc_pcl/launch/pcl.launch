@@ -1,16 +1,22 @@
 <launch>
 
+    <rosparam>
+        meshpath: /home/apc/repos/apc/amazon_picking_challenge/crayola_64_ct/meshes/poisson.ply
+    </rosparam>
+
     <node name="vision_server" pkg="apc_pcl" type="vision_server.py" 
         output="screen" />   
     <node name="simulated_dpm" pkg="apc_pcl" type="simulated_dpm.py"
         output="screen" />
     <node name="cloud_culler" pkg="apc_pcl" type="frustum_server"
         output="screen" />
-    <node name="pcl2image" pkg="pcl_ros" type="convert_pointcloud_to_image">
-        <rosparam>
-            input: /kinect2_cool/depth_lowres/points
-            output: /camera/depth/cloud_image            
-        </rosparam>
+    <node name="icp" pkg="apc_pcl" type="icp_server"
+        output="screen" >
     </node>
-
+    <!-- <node name="pcl2image" pkg="pcl_ros" type="convert_pointcloud_to_image"> -->
+        <!-- <rosparam> -->
+            <!-- input: /kinect2_cool/depth_lowres/points -->
+            <!-- output: /camera/depth/cloud_image             -->
+        <!-- </rosparam> -->
+    <!-- </node> -->
 </launch>

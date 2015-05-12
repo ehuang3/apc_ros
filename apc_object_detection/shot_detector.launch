@@ -1,4 +1,4 @@
 <launch>
-  <node name="detect_objects_pcl" pkg="apc_pcl_detection" type="detect_objects_pcl" />
-<rosparam command="load" file="/home/niko/projects/apc/catkin/src/apc_ros/apc_object_detection/config.yaml" />
+    <node name="detect_objects_pcl" pkg="apc_pcl_detection" type="detect_objects_pcl" />
+        <rosparam command="load" file="$(find apc_object_detection)/config.yaml" />
 </launch>

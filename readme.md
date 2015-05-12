@@ -27,6 +27,7 @@ sudo apt-get install libpcl-all
 
 sudo apt-get install ros-indigo-moveit-full
 sudo apt-get install ros-indigo-openni2-camera ros-indigo-openni2-launch
+sudo apt-get install binutils-dev
 
 ### ROS packages
 
@@ -82,3 +83,20 @@ To install python matlab engine
 in matlab, type "matlabroot"
 cd to `matlabroot`/extern/engines/python
 sudo python setup.py install
+
+sudo apt-get install csh
+sudo pip install pymatlab
+echo "export PATH=/usr/local/MATLAB/R02014b/bin:$PATH" >> ~/.bashrc
+
+source ~/.bashrc
+
+
+## Fixing time issues
+sudo apt-get install chrony
+sudo ntpdate patlabor
+(patlabor must have chrony installed)
+
+## Running Stuff
+roslaunch apc_moveit_config demo_movegroup.launch
+roslaunch apc_moveit_config demo_rviz.launch
+roslaunch apc_launch apc_kinect2.launch

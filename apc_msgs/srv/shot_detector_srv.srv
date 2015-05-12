@@ -1,4 +1,4 @@
 sensor_msgs/PointCloud2 pointcloud
-std_msgs/String object_name
+string object_name
 ---
-geometry_msgs/Transform pose
+geometry_msgs/Pose pose
