@@ -14,10 +14,10 @@ find_package(
     rospy
     std_msgs
     rostime
-message_generation
-sensor_msgs 
-geometry_msgs
-eigen_conversions)
+    message_generation
+    sensor_msgs 
+    geometry_msgs
+    eigen_conversions)
  find_package(PCL 1.7 REQUIRED COMPONENTS )
  find_package(VTK REQUIRED)
 find_package(Eigen3 REQUIRED)
@@ -99,7 +99,7 @@ set(catkin_LIBRARIES
 ###################################
 ## The catkin_package macro generates cmake config files for your package
 ## Declare things to be passed to dependent projects
-## INCLUDE_DIRS: uncomment this if you package contains header files
+## INCLUDE_DIRS: uncomment this if you package contains header filesa
 ## LIBRARIES: libraries you create in this project that dependent projects also need
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
@@ -126,7 +126,6 @@ ${PCL_INCLUDE_DIRS}
 # add_library(apc_control
 #   src/${PROJECT_NAME}/apc_control.cpp
 # )
-
 # link_directories(${PCL_LIBRARY_DIRS})
 # add_definitions(${PCL_DEFINITIONS})
 ## Declare a cpp executable
@@ -134,7 +133,7 @@ ${PCL_INCLUDE_DIRS}
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
-# add_dependencies(apc_trajectory_node apc_control_generate_messages_cpp)
+add_dependencies(detect_objects_pcl apc_msgs_generate_messages_cpp)
 
 ## Specify libraries to link a library or executable target against
 
