@@ -83,6 +83,19 @@ void voxelFilter(pcl::PointCloud<PointType>::Ptr cloud, pcl::PointCloud<PointTyp
     voxel_filter.setInputCloud(cloud);
     voxel_filter.filter(*filtered_cloud);
 }
+/*!
+ * \brief convertMsg
+ * \param data_msg
+ * \param cloud = the converted output cloud
+ * Takes in a ros poincloud2 msg and converts it
+ */
+void convertMsg(sensor_msgs::PointCloud2 data_msg, pcl::PointCloud<PointType>::Ptr cloud)
+{
+    pcl::PCLPointCloud2 pcl_pc;
+    pcl_conversions::toPCL(data_msg, pcl_pc);
+    pcl::PointCloud<PointType>::Ptr image_cloud(new pcl::PointCloud<PointType> ());
+    pcl::fromPCLPointCloud2(pcl_pc, *cloud);
+}
 }
 
 // PCL_FUNCTIONS_H

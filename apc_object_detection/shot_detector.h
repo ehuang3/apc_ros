@@ -16,7 +16,7 @@
 #include <iostream>
 #include <pcl/features/pfhrgb.h>
 #include <pcl/features/pfh.h>
-#include "apc_msgs/shot_detector_srv.h"
+#include "../../../devel/include/apc_msgs/shot_detector_srv.h"
 #include <eigen3/Eigen/Core>
 #include <eigen_conversions/eigen_msg.h>
 #include <geometry_msgs/Transform.h>
@@ -89,12 +89,10 @@ private:
     pcl::PointCloud<PointType>::Ptr objects ;
 
 
-    void loadModel(pcl::PointCloud<PointType>::Ptr model,std::string model_name);
-    void processModel(pcl::PointCloud<PointType>::Ptr model);
     bool processCloud(apc_msgs::shot_detector_srv::Request &req, apc_msgs::shot_detector_srv::Response &res);
     Eigen::Matrix4f refinePose(std::vector<Eigen::Matrix4f, Eigen::aligned_allocator<Eigen::Matrix4f> > transforms,
                                    pcl::PointCloud<PointType>::Ptr model,pcl::PointCloud<PointType>::Ptr scene);
-
+    void loadModel(pcl::PointCloud<PointType>::Ptr model, std::string model_name);
     //Processing functions
     void findCorrespondences (typename pcl::PointCloud<DescriptorType>::Ptr source,
                               typename pcl::PointCloud<DescriptorType>::Ptr target, std::vector<int>& correspondences);
@@ -107,12 +105,12 @@ private:
     /*void calcPFHRGBDescriptors(pcl::PointCloud<PointType>::Ptr cloud,pcl::PointCloud<PointType>::Ptr keypoints
                                ,pcl::PointCloud<NormalType>::Ptr normals,pcl::PointCloud<DescriptorType>::Ptr descriptors);*/
 
-    void downsample(pcl::PointCloud<PointType>::Ptr cloud,pcl::PointCloud<PointType>::Ptr keypoints, float sample_size);
+    void sampleKeypoints(pcl::PointCloud<PointType>::Ptr cloud,pcl::PointCloud<PointType>::Ptr keypoints, float sample_size);
     void compare(pcl::PointCloud<DescriptorType>::Ptr model_descriptions,
                  pcl::PointCloud<DescriptorType>::Ptr scene_descriptions);
-    void houghGrouping();
-    void output();
-    void outwithver();
+    void groupCorrespondences();
+    void visualizeCorrespondences();
+    void visualizeICP();
     // Detection thresholds
     float model_ss_;
     float scene_ss_;
@@ -147,7 +145,6 @@ private:
     ros::ServiceServer processor;
     sensor_msgs::PointCloud2 depth_msg;
     void PointCloudCallback(const sensor_msgs::PointCloud2ConstPtr &data_msg);
-    void convertMsg(sensor_msgs::PointCloud2 data_msg,pcl::PointCloud<PointType>::Ptr cloud);
 
     // Helper functions
     double computeCloudResolution(const pcl::PointCloud<PointType>::Ptr cloud);
