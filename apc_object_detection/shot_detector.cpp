@@ -171,10 +171,10 @@ void shot_detector::loadModel(pcl::PointCloud<PointType>::Ptr model, std::string
  */
 bool shot_detector::processCloud(apc_msgs::shot_detector_srv::Request &req, apc_msgs::shot_detector_srv::Response &res)
 {
-    //pcl_functions::convertMsg(req.targetcloud,model);
+    pcl_functions::convertMsg(req.targetcloud,model);
     //loadModel(*model,"/home/niko/projects/apc/catkin/src/apc_ros/apc_object_detection/optimized_poisson_textured_mesh.ply");
-    // pcl_functions::convertMsg(req.pointcloud,scene);
-    pcl::io::loadPCDFile("/home/niko/projects/apc/catkin/src/apc_ros/apc_object_detection/niko_file.pcd",*scene);
+     pcl_functions::convertMsg(req.pointcloud,scene);
+    //pcl::io::loadPCDFile("/home/niko/projects/apc/catkin/src/apc_ros/apc_object_detection/niko_file.pcd",*scene);
     std::cerr << "Originally positions" << std::endl;
     std::cerr << scene->points[1].x << std::endl;
     std::cerr << scene->points[1].y << std::endl;
@@ -822,8 +822,8 @@ main (int argc, char** argv)
     // Spin
     std::cerr << "ros start" << std::endl;
     //   ros::spin();
+        detector.processImage();
     ros::spin();
-    //detector.processImage();
     std::cerr << "End" << std::endl;
     return 0;
 }
