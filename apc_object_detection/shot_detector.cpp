@@ -277,7 +277,7 @@ Eigen::Matrix4f shot_detector::refinePose(std::vector<Eigen::Matrix4f, Eigen::al
                 cerr << "Aligned!" << endl;
                 registered_instances.push_back (registered);
                 std::cerr << icp.getFinalTransformation() << std::endl;
-                final_transforms.push_back(icp.getFinalTransformation()*rototranslations[i]);
+                final_transforms.push_back(icp.getFinalTransformation()*transforms[i]);
             }
             else
             {
