@@ -821,8 +821,8 @@ main (int argc, char** argv)
     //detector.processImage();
     // Spin
     std::cerr << "ros start" << std::endl;
-    //   ros::spin();
-        detector.processImage();
+    ros::spin();
+        //detector.processImage();
     ros::spin();
     std::cerr << "End" << std::endl;
     return 0;
