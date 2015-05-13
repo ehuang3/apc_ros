@@ -7,6 +7,7 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   rostime
   eigen_conversions
+apc_msgs
 )
 
 find_package(PCL 1.7 REQUIRED)
