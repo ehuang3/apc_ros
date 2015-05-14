@@ -46,6 +46,7 @@ add_executable(frustum_server nodes/frustum_cull_server.cpp
     ./src/pcl_tools/loading.cpp
     ./src/pcl_tools/registration.cpp
     ./src/pcl_tools/visualization.cpp
+    ./src/pcl_tools/segmentation.cpp
     ./src/backward.cpp
 )
 target_link_libraries(frustum_server ${catkin_LIBRARIES} ${PCL_COMMON_LIBRARIES} ${PCL_IO_LIBRARIES} ${PCL_LIBRARIES} ${Boost_LIBRARIES}
