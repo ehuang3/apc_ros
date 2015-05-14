@@ -91,7 +91,7 @@ bool APC_Frust_Cull::cull_frustum(apc_msgs::GetCloudFrustum::Request &req, apc_m
         pcl_tools::segment_region_growing(input_cloud, seed_index, output_cloud);
         pcl_tools::visualize(output_cloud, "Culled with region growing");
         std::cout << "Culled" << std::endl;
-        pcl::io::savePCDFile ("/home/apc/repos/apc/src/apc_ros/niko_file.pcd", *output_cloud, true);
+        // pcl::io::savePCDFile ("/home/apc/repos/apc/src/apc_ros/niko_file.pcd", *output_cloud, true);
         pcl::toROSMsg(*output_cloud, resp.sub_cloud);
 
         return true;
