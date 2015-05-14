@@ -61,6 +61,7 @@ namespace apc_control
             GOAL_TOLERANCE_VIOLATED = -5,
             FAILED_CLOCK_GETTIME = -6,
             PREEMPTED = -7,
+            TRAJECTORY_DURATION_TOO_LONG = -8,
         };
 
         ErrorCode   error_code;       // Value describing the error.
