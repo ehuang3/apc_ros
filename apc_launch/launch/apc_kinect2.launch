@@ -1,7 +1,7 @@
 <launch>
     <arg name="remapped_tf" default="/tf" />
     <node name="body_to_head_tf_publisher" pkg="tf" type="static_transform_publisher"
-          args="-0.135 0.065 -0.105 3.14 0.08 0 /crichton_middle_support /kinect2_link 30">
+          args="-0.135 0.045 -0.10 3.1 0.08 -0.04 /crichton_middle_support /kinect2_link 30">
         <remap from="/tf" to="$(arg remapped_tf)" />
     </node>
 </launch>

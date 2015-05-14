@@ -36,7 +36,9 @@ import numpy as np
 import openravepy
 import trajoptpy
 import trajoptpy.math_utils as mu
+from IPython.core.debugger import Tracer
 from .action import *
+
 
 
 def print_item_collision_checker_pairs(item, cc, env):
@@ -84,11 +86,13 @@ def set_target_item_collision_properties(action, problem, env):
         robot.ReleaseAllGrabbed()
     # If the action is a grasp or postgrasp, disable collisions between the
     # grabbed object and the robot.
-    if is_action_grasp(action) or is_action_postgrasp(action):
+    if is_action_pregrasp(action) or is_action_grasp(action) or is_action_postgrasp(action):
         robot = env.GetRobot('crichton')
         item = env.GetKinBody(action.object_key)
         collision_checkers = problem.GetCollisionCheckers()
         for cc in collision_checkers:
+            if not item:
+                Tracer()()
             for item_link in item.GetLinks():
                 # print "Disabling collisions between", item_link.GetName(), "and crichton"
                 for robot_link in robot.GetLinks():
@@ -131,6 +135,12 @@ def check_for_collisions_interp(action, problem, result, env, dn=10):
     pregrasp_off = 0
     if is_action_pregrasp(action):
         pregrasp_off = 1
+    # Disable collisions for items if the action is a pre-grasp. Grasp
+    # and post-grasp actions have attached the object to the robot, so
+    # collisions are not reported.
+    if is_action_pregrasp(action):
+        item = env.GetKinBody(action.object_key)
+        item.Enable(False)
     # Check interpolated trajectory for collisions.
     robot = env.GetRobot("crichton")
     T = result.GetTraj()
@@ -147,6 +157,12 @@ def check_for_collisions_interp(action, problem, result, env, dn=10):
                 if collision:
                     print "collision:", report
                     return False
+    # Re-enable collisions for items if the action is a pre-grasp. Grasp
+    # and post-grasp actions have attached the object to the robot, so
+    # collisions are not reported.
+    if is_action_pregrasp(action):
+        item = env.GetKinBody(action.object_key)
+        item.Enable(True)
     return True
 
 

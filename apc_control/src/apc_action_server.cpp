@@ -185,6 +185,12 @@ MotorGroupError execute_trajectory(const Action& action,
 
     ROS_INFO("Will run for %f seconds", duration);
 
+    if (duration > 40.0) {
+        ret.error_code = MotorGroupError::TRAJECTORY_DURATION_TOO_LONG;
+        ret.error_string = "Trajectory duration too long";
+        return ret;
+    }
+
     // Current timespec.
     struct timespec ts;
     if (ret = get_time( &ts ))
