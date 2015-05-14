@@ -7,6 +7,7 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   rostime
   eigen_conversions
+apc_msgs
 )
 
 find_package(PCL 1.7 REQUIRED)
@@ -45,6 +46,7 @@ add_executable(frustum_server nodes/frustum_cull_server.cpp
     ./src/pcl_tools/loading.cpp
     ./src/pcl_tools/registration.cpp
     ./src/pcl_tools/visualization.cpp
+    ./src/pcl_tools/segmentation.cpp
     ./src/backward.cpp
 )
 target_link_libraries(frustum_server ${catkin_LIBRARIES} ${PCL_COMMON_LIBRARIES} ${PCL_IO_LIBRARIES} ${PCL_LIBRARIES} ${Boost_LIBRARIES}
@@ -65,6 +67,20 @@ target_link_libraries(icp_server ${catkin_LIBRARIES} ${PCL_COMMON_LIBRARIES} ${P
   dl
 )
 add_dependencies(icp_server apc_msgs)
+
+add_executable(mesh_server nodes/get_mesh_server.cpp
+    ./src/pcl_tools/transform.cpp
+    ./src/pcl_tools/loading.cpp
+    ./src/pcl_tools/registration.cpp
+    ./src/pcl_tools/visualization.cpp
+    ./src/backward.cpp
+)
+target_link_libraries(mesh_server ${catkin_LIBRARIES} ${PCL_COMMON_LIBRARIES} ${PCL_IO_LIBRARIES} ${PCL_LIBRARIES} ${Boost_LIBRARIES}
+  bfd
+  dl
+)
+add_dependencies(mesh_server apc_msgs)
+
 
 
 install(

@@ -2,9 +2,8 @@ import numpy as np
 import cv2
 import os
 import sys
-import rospy
+from rospy import Duration
 from .utils import path_to_root, path_to_file, xyzharray, xyzarray, xyzwarray
-from urdf_parser_py.urdf import URDF
 import tf
 fpath = path_to_file(__file__)
 root_path = path_to_root()
@@ -20,8 +19,8 @@ class Bin_Segmenter(object):
         else:
             raise(Exception("No kinect specified"))
 
-        self.shelf = self.get_shelf_urdf()
-        self.Transformer = tf.TransformerROS(True, rospy.Duration(10.0))        
+        # self.shelf = self.get_shelf_urdf()
+        self.Transformer = tf.TransformerROS(True, Duration(10.0))        
 
     def get_cam_matrix(self, kinect_serial):
         calib_path = os.path.join(root_path, "apc_pcl", "calibration", kinect_serial, "calib_color.yaml")

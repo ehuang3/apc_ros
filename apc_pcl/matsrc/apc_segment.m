@@ -1,5 +1,9 @@
 function [segmented] = apc_segment(image, target_object, sets, show)
     % Run the segmentation algorithm on an image and get the results
+    % Options that work :
+    % Take the bounding box of all of the objects in the 99th percentile
+    % Take the 98th percentile -> take the largest region -> take the bounding box
+
     if nargin < 4
         show = false;
     end
@@ -12,7 +16,7 @@ function [segmented] = apc_segment(image, target_object, sets, show)
 
     compared = compared_1 + compared_2 + compared_3;
 
-    acceptability_thresh = prctile(compared(:), 99)  % 99th percentile
+    acceptability_thresh = prctile(compared(:), 98)  % 99th percentile
     segmented = compared > acceptability_thresh;
 
     if show

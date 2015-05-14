@@ -19,6 +19,7 @@ add_executable(test_sac_icp test_sac_icp.cpp
     ../pcl_tools/registration.cpp
     ../pcl_tools/visualization.cpp
 )
+
 target_link_libraries(test_sac_icp ${PCL_COMMON_LIBRARIES} ${PCL_IO_LIBRARIES} ${PCL_LIBRARIES} ${Boost_LIBRARIES})
 
 add_executable(test_icp test_icp.cpp

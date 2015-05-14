@@ -17,7 +17,8 @@ find_package(
     message_generation
     sensor_msgs 
     geometry_msgs
-    eigen_conversions)
+    eigen_conversions
+	apc_msgs)
  find_package(PCL 1.7 REQUIRED COMPONENTS )
  find_package(VTK REQUIRED)
 find_package(Eigen3 REQUIRED)

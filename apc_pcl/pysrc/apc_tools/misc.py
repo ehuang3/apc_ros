@@ -15,7 +15,4 @@ def load_background():
             pass
         returns.append(message)
     bag.close()
-    print type(returns[2])
-    print type(PointCloud2())
-    print dir(returns[2])
     return returns

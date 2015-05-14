@@ -34,7 +34,11 @@ shot_detector::shot_detector()
     data=false;
     activated=false;
     std::cerr  << "Starting" << std::endl;
+    // Start the ros stuff such as the subscriber and the service
+    nh=ros::NodeHandle("apc_object_detection");
     loadParameters();
+    //kinect=nh.subscribe("/kinect2_cool/depth_highres/points", 1, &shot_detector::PointCloudCallback,this);
+    processor = nh.advertiseService("Shot_detector",&shot_detector::processCloud,this);
     // As we use Ptr to access our pointcloud we first have to initalize something to point to
     pcl::PointCloud<PointType>::Ptr model_ (new pcl::PointCloud<PointType> ());
     pcl::PointCloud<PointType>::Ptr model_keypoints_ (new pcl::PointCloud<PointType> ());
@@ -64,10 +68,6 @@ shot_detector::shot_detector()
     objects=objects_;
     pcl::CorrespondencesPtr correspondences (new pcl::Correspondences);
     correspondences_=correspondences;
-    // Start the ros stuff such as the subscriber and the service
-    nh=ros::NodeHandle("apc_object_detection");
-    kinect=nh.subscribe("/kinect2_cool/depth_highres/points", 1, &shot_detector::PointCloudCallback,this);
-    processor = nh.advertiseService("Shot detector",&shot_detector::processCloud,this);
     //Set up a couple of the pcl settings
     descr_est.setRadiusSearch (descr_rad_);
     norm_est.setKSearch (10);
@@ -78,7 +78,7 @@ shot_detector::shot_detector()
 
 void shot_detector::processImage()
 {
-    if(data==true){
+    /*if(data==true){
         pcl_functions::convertMsg(depth_msg,scene);
         std::cerr << "start" << std::endl;
         pcl::PointCloud<PointType>::Ptr background (new pcl::PointCloud<PointType> ());
@@ -107,6 +107,47 @@ void shot_detector::processImage()
         visualizeCorrespondences();
         visualizeICP();
         }
+    }*/
+    //pcl_functions::convertMsg(req.targetcloud,model);
+    std::cerr << "Processing" << std::endl;
+    std::string file="/home/niko/projects/apc/catkin/src/apc_ros/apc_object_detection/optimized_poisson_textured_mesh.ply";
+    loadModel(model,file);
+    // pcl_functions::convertMsg(req.pointcloud,scene);
+    pcl::io::loadPCDFile("/home/niko/projects/apc/catkin/src/apc_ros/apc_object_detection/niko_file.pcd",*scene);
+    std::cerr << "Originally positions" << std::endl;
+    std::cerr << scene->points[1].x << std::endl;
+    std::cerr << scene->points[1].y << std::endl;
+    std::cerr << scene->points[1].z << std::endl;
+    //Downsample the model and the scene so they have rougly the same resolution
+    pcl::PointCloud<PointType>::Ptr scene_filter (new pcl::PointCloud<PointType> ());
+    pcl_functions::voxelFilter(scene,scene_filter,voxel_sample_);
+    scene=scene_filter;
+    std::cerr << "AFter filter" << std::endl;
+    std::cerr << scene->points[1].x << std::endl;
+    std::cerr << scene->points[1].y << std::endl;
+    std::cerr << scene->points[1].z << std::endl;
+    pcl::PointCloud<PointType>::Ptr model_filter (new pcl::PointCloud<PointType> ());
+    pcl_functions::voxelFilter(model,model_filter,voxel_sample_);
+    model=model_filter;
+    // Randomly select a couple of keypoints so we don't calculte descriptors for everything
+    sampleKeypoints(model,model_keypoints,model_ss_);
+    sampleKeypoints(scene,scene_keypoints,scene_ss_);
+    //Calculate the Normals
+    calcNormals(model,model_normals);
+    calcNormals(scene,scene_normals);
+    //Calculate the shot descriptors at each keypoint in the scene
+    calcSHOTDescriptors(model,model_keypoints,model_normals,model_descriptors);
+    calcSHOTDescriptors(scene,scene_keypoints,scene_normals,scene_descriptors);
+    // Compare descriptors and try to find correspondences
+    compare(model_descriptors,scene_descriptors);
+    groupCorrespondences();
+    visualizeCorrespondences();
+    visualizeICP();
+    Eigen::Matrix4f pose;
+    if(model_scene_corrs->size ()!=0){
+        groupCorrespondences();
+        pose=refinePose(rototranslations,model,scene);
+
     }
 }
 
@@ -131,11 +172,21 @@ void shot_detector::loadModel(pcl::PointCloud<PointType>::Ptr model, std::string
 bool shot_detector::processCloud(apc_msgs::shot_detector_srv::Request &req, apc_msgs::shot_detector_srv::Response &res)
 {
     pcl_functions::convertMsg(req.targetcloud,model);
-    pcl_functions::convertMsg(req.pointcloud,scene);
+    //loadModel(*model,"/home/niko/projects/apc/catkin/src/apc_ros/apc_object_detection/optimized_poisson_textured_mesh.ply");
+     pcl_functions::convertMsg(req.pointcloud,scene);
+    //pcl::io::loadPCDFile("/home/niko/projects/apc/catkin/src/apc_ros/apc_object_detection/niko_file.pcd",*scene);
+    std::cerr << "Originally positions" << std::endl;
+    std::cerr << scene->points[1].x << std::endl;
+    std::cerr << scene->points[1].y << std::endl;
+    std::cerr << scene->points[1].z << std::endl;
     //Downsample the model and the scene so they have rougly the same resolution
     pcl::PointCloud<PointType>::Ptr scene_filter (new pcl::PointCloud<PointType> ());
     pcl_functions::voxelFilter(scene,scene_filter,voxel_sample_);
     scene=scene_filter;
+    std::cerr << "AFter filter" << std::endl;
+    std::cerr << scene->points[1].x << std::endl;
+    std::cerr << scene->points[1].y << std::endl;
+    std::cerr << scene->points[1].z << std::endl;
     pcl::PointCloud<PointType>::Ptr model_filter (new pcl::PointCloud<PointType> ());
     pcl_functions::voxelFilter(model,model_filter,voxel_sample_);
     model=model_filter;
@@ -174,102 +225,106 @@ bool shot_detector::processCloud(apc_msgs::shot_detector_srv::Request &req, apc_
  * \return
  */
 Eigen::Matrix4f shot_detector::refinePose(std::vector<Eigen::Matrix4f, Eigen::aligned_allocator<Eigen::Matrix4f> > transforms,
-                               pcl::PointCloud<PointType>::Ptr model,pcl::PointCloud<PointType>::Ptr scene)
+                                          pcl::PointCloud<PointType>::Ptr model,pcl::PointCloud<PointType>::Ptr scene)
 {
     std::vector<Eigen::Matrix4f, Eigen::aligned_allocator<Eigen::Matrix4f> > final_transforms;
     std::cerr << "verifying" << std::endl;
+
     if (transforms.size () <= 0)
-      {
+    {
         cerr << "*** No instances found! ***" << endl;
         return Eigen::Matrix4f::Identity();
-      }
-      else
-      {
+    }
+    else
+    {
         cerr << "Recognized Instances: " << transforms.size () << endl << endl;
-      }
+    }
 
-      /**
+    /**
        * Generates clouds for each instances found
        */
-      std::vector<pcl::PointCloud<PointType>::ConstPtr> instances;
+    std::vector<pcl::PointCloud<PointType>::ConstPtr> instances;
 
-      for (size_t i = 0; i < transforms.size (); ++i)
-      {
+    for (size_t i = 0; i < transforms.size (); ++i)
+    {
         pcl::PointCloud<PointType>::Ptr rotated_model (new pcl::PointCloud<PointType> ());
         pcl::transformPointCloud (*model, *rotated_model, transforms[i]);
         instances.push_back (rotated_model);
-      }
+    }
 
-      /**
+    /**
        * ICP
        */
-      std::vector<pcl::PointCloud<PointType>::ConstPtr> registered_instances;
-      if (true)
-      {
+    std::vector<pcl::PointCloud<PointType>::ConstPtr> registered_instances;
+    if (true)
+    {
         cerr << "--- ICP ---------" << endl;
 
         for (size_t i = 0; i < transforms.size (); ++i)
         {
-          pcl::IterativeClosestPoint<PointType, PointType> icp;
-          icp.setMaximumIterations (icp_max_iter_);
-          icp.setMaxCorrespondenceDistance (icp_corr_distance_);
-          icp.setInputTarget (scene);
-          icp.setInputSource (instances[i]);
-          pcl::PointCloud<PointType>::Ptr registered (new pcl::PointCloud<PointType>);
-          icp.align (*registered);
-          //registered_instances.push_back (registered);
-          cerr << "Instance " << i << " ";
-          if (icp.hasConverged ())
-          {
-            cerr << "Aligned!" << endl;
-            registered_instances.push_back (registered);
-            final_transforms.push_back(icp.getFinalTransformation());
-          }
-          else
-          {
-            cerr << "Not Aligned!" << endl;
-          }
+            std::cerr << "initial" << transforms[i] <<std::endl;
+            pcl::IterativeClosestPoint<PointType, PointType> icp;
+            icp.setMaximumIterations (icp_max_iter_);
+            icp.setMaxCorrespondenceDistance (icp_corr_distance_);
+            icp.setInputTarget (scene);
+            icp.setInputSource (instances[i]);
+            pcl::PointCloud<PointType>::Ptr registered (new pcl::PointCloud<PointType>);
+            icp.align (*registered);
+            //registered_instances.push_back (registered);
+            cerr << "Instance " << i << " ";
+            if (icp.hasConverged ())
+            {
+                cerr << "Aligned!" << endl;
+                registered_instances.push_back (registered);
+                std::cerr << icp.getFinalTransformation() << std::endl;
+                final_transforms.push_back(icp.getFinalTransformation()*transforms[i]);
+            }
+            else
+            {
+                cerr << "Not Aligned!" << endl;
+            }
         }
 
         cerr << "-----------------" << endl << endl;
-      }
+    }
 
-      /**
+    /**
        * Hypothesis Verification
        */
-      cerr << "--- Hypotheses Verification ---" << endl;
-      std::vector<bool> hypotheses_mask;  // Mask Vector to identify positive hypotheses
+    cerr << "--- Hypotheses Verification ---" << endl;
+    std::vector<bool> hypotheses_mask;  // Mask Vector to identify positive hypotheses
 
-      pcl::GlobalHypothesesVerification<PointType, PointType> GoHv;
+    pcl::GlobalHypothesesVerification<PointType, PointType> GoHv;
 
-      GoHv.setSceneCloud (scene);  // Scene Cloud
-      GoHv.addModels (registered_instances, true);  //Models to verify
+    GoHv.setSceneCloud (scene);  // Scene Cloud
+    GoHv.addModels (registered_instances, true);  //Models to verify
 
-      GoHv.setInlierThreshold (hv_inlier_th_);
-      GoHv.setOcclusionThreshold (hv_occlusion_th_);
-      GoHv.setRegularizer (hv_regularizer_);
-      GoHv.setRadiusClutter (hv_rad_clutter_);
-      GoHv.setClutterRegularizer (hv_clutter_reg_);
-      GoHv.setDetectClutter (hv_detect_clutter_);
-      GoHv.setRadiusNormals (hv_rad_normals_);
+    GoHv.setInlierThreshold (hv_inlier_th_);
+    GoHv.setOcclusionThreshold (hv_occlusion_th_);
+    GoHv.setRegularizer (hv_regularizer_);
+    GoHv.setRadiusClutter (hv_rad_clutter_);
+    GoHv.setClutterRegularizer (hv_clutter_reg_);
+    GoHv.setDetectClutter (hv_detect_clutter_);
+    GoHv.setRadiusNormals (hv_rad_normals_);
 
-      GoHv.verify ();
-      GoHv.getMask (hypotheses_mask);  // i-element TRUE if hvModels[i] verifies hypotheses
+    GoHv.verify ();
+    GoHv.getMask (hypotheses_mask);  // i-element TRUE if hvModels[i] verifies hypotheses
 
-      for (int i = 0; i < hypotheses_mask.size (); i++)
-      {
+    for (int i = 0; i < hypotheses_mask.size (); i++)
+    {
         if (hypotheses_mask[i])
         {
-          cerr << "Instance " << i << " is GOOD! <---" << endl;
-          return final_transforms[i];
+            cerr << "Instance " << i << " is GOOD! <---" << endl;
+            std::cerr << final_transforms[i] << std::endl;
+            return final_transforms[i];
         }
         else
         {
-          cerr << "Instance " << i << " is bad!" << endl;
+            cerr << "Instance " << i << " is bad!" << endl;
         }
-      }
-      cerr << "-------------------------------" << endl;
-      return Eigen::Matrix4f::Identity();
+    }
+    cerr << "-------------------------------" << endl;
+    return Eigen::Matrix4f::Identity();
 
 }
 
@@ -288,8 +343,8 @@ void shot_detector::findCorrespondences(pcl::PointCloud<DescriptorType>::Ptr sou
     std::vector<float> k_squared_distances (k);
     for (int i = 0; i < static_cast<int> (source->size ()); ++i)
     {
-      descriptor_kdtree.nearestKSearch (*source, i, k, k_indices, k_squared_distances);
-      correspondences[i] = k_indices[0];
+        descriptor_kdtree.nearestKSearch (*source, i, k, k_indices, k_squared_distances);
+        correspondences[i] = k_indices[0];
     }
     cout << "OK" << endl;
 }
@@ -299,15 +354,15 @@ void shot_detector::filterCorrespondences()
     cerr << "correspondence rejection..." << std::endl;
     std::vector<std::pair<unsigned, unsigned> > correspondences;
     for (unsigned cIdx = 0; cIdx < source2target_.size (); ++cIdx)
-      if (target2source_[source2target_[cIdx]] == static_cast<int> (cIdx))
-        correspondences.push_back(std::make_pair(cIdx, source2target_[cIdx]));
+        if (target2source_[source2target_[cIdx]] == static_cast<int> (cIdx))
+            correspondences.push_back(std::make_pair(cIdx, source2target_[cIdx]));
 
     std::cerr << correspondences.size() << std::endl;
     correspondences_->resize (correspondences.size());
     for (unsigned cIdx = 0; cIdx < correspondences.size(); ++cIdx)
     {
-      (*correspondences_)[cIdx].index_query = correspondences[cIdx].first;
-      (*correspondences_)[cIdx].index_match = correspondences[cIdx].second;
+        (*correspondences_)[cIdx].index_query = correspondences[cIdx].first;
+        (*correspondences_)[cIdx].index_match = correspondences[cIdx].second;
     }
 
     pcl::registration::CorrespondenceRejectorSampleConsensus<PointType> rejector;
@@ -361,7 +416,7 @@ void shot_detector::calcNormals(pcl::PointCloud<PointType>::Ptr cloud, pcl::Poin
 }
 
 void shot_detector::calcSHOTDescriptors(pcl::PointCloud<PointType>::Ptr cloud, pcl::PointCloud<PointType>::Ptr keypoints
-                                    , pcl::PointCloud<NormalType>::Ptr normals, pcl::PointCloud<DescriptorType>::Ptr descriptors)
+                                        , pcl::PointCloud<NormalType>::Ptr normals, pcl::PointCloud<DescriptorType>::Ptr descriptors)
 {
     descr_est.setInputCloud (keypoints);
     descr_est.setInputNormals (normals);
@@ -406,21 +461,21 @@ void shot_detector::compare(pcl::PointCloud<DescriptorType>::Ptr model_descripti
     //  For each scene keypoint descriptor, find nearest neighbor into the model keypoints descriptor cloud and add it to the correspondences vector.
     for (size_t i = 0; i < scene_descriptions->size (); ++i)
     {
-      std::vector<int> neigh_indices (1);
-      std::vector<float> neigh_sqr_dists (1);
-      if (!pcl_isfinite (scene_descriptors->at (i).descriptor[0])) //skipping NaNs
-      {
-        continue;
-      }
-      int found_neighs = match_search.nearestKSearch (scene_descriptors->at (i), 1, neigh_indices, neigh_sqr_dists);
-      if(found_neighs == 1 && neigh_sqr_dists[0] < corr_dist_) //  add match only if the squared descriptor distance is less than 0.25 (SHOT descriptor distances are between 0 and 1 by design)
-      {
-        pcl::Correspondence corr (neigh_indices[0], static_cast<int> (i), neigh_sqr_dists[0]);
-        model_scene_corrs->push_back (corr);
-      }
+        std::vector<int> neigh_indices (1);
+        std::vector<float> neigh_sqr_dists (1);
+        if (!pcl_isfinite (scene_descriptors->at (i).descriptor[0])) //skipping NaNs
+        {
+            continue;
+        }
+        int found_neighs = match_search.nearestKSearch (scene_descriptors->at (i), 1, neigh_indices, neigh_sqr_dists);
+        if(found_neighs == 1 && neigh_sqr_dists[0] < corr_dist_) //  add match only if the squared descriptor distance is less than 0.25 (SHOT descriptor distances are between 0 and 1 by design)
+        {
+            pcl::Correspondence corr (neigh_indices[0], static_cast<int> (i), neigh_sqr_dists[0]);
+            model_scene_corrs->push_back (corr);
+        }
     }
     pcl::copyPointCloud (*model_keypoints, model_good_keypoints_indices, *model_good_kp);
-      pcl::copyPointCloud (*scene_keypoints, scene_good_keypoints_indices, *scene_good_kp);
+    pcl::copyPointCloud (*scene_keypoints, scene_good_keypoints_indices, *scene_good_kp);
     std::cerr << "Correspondences found: " << model_scene_corrs->size () << std::endl;
 
 }
@@ -428,10 +483,10 @@ void shot_detector::compare(pcl::PointCloud<DescriptorType>::Ptr model_descripti
 void shot_detector::groupCorrespondences()
 {
     //
-        //  Compute (Keypoints) Reference Frames only for Hough
-        //
+    //  Compute (Keypoints) Reference Frames only for Hough
+    //
 
-        /*pcl::PointCloud<RFType>::Ptr model_rf (new pcl::PointCloud<RFType> ());
+    /*pcl::PointCloud<RFType>::Ptr model_rf (new pcl::PointCloud<RFType> ());
         pcl::PointCloud<RFType>::Ptr scene_rf (new pcl::PointCloud<RFType> ());
 
         pcl::BOARDLocalReferenceFrameEstimation<PointType, NormalType, RFType> rf_est;
@@ -463,22 +518,22 @@ void shot_detector::groupCorrespondences()
 
         //clusterer.cluster (clustered_corrs);
         clusterer.recognize (rototranslations, clustered_corrs);*/
-        gc_clusterer.setGCSize (cg_size_);
-        gc_clusterer.setGCThreshold (cg_thresh_);
+    gc_clusterer.setGCSize (cg_size_);
+    gc_clusterer.setGCThreshold (cg_thresh_);
 
-        gc_clusterer.setInputCloud (model_keypoints);
-        gc_clusterer.setSceneCloud (scene_keypoints);
-        gc_clusterer.setModelSceneCorrespondences (model_scene_corrs);
+    gc_clusterer.setInputCloud (model_keypoints);
+    gc_clusterer.setSceneCloud (scene_keypoints);
+    gc_clusterer.setModelSceneCorrespondences (model_scene_corrs);
 
-        gc_clusterer.cluster (clustered_corrs);
-        gc_clusterer.recognize (rototranslations, clustered_corrs);
+    gc_clusterer.cluster (clustered_corrs);
+    gc_clusterer.recognize (rototranslations, clustered_corrs);
 }
 
 void shot_detector::visualizeCorrespondences()
 {
     std::cerr << "Model instances found: " << rototranslations.size () << std::endl;
-      for (size_t i = 0; i < rototranslations.size (); ++i)
-      {
+    for (size_t i = 0; i < rototranslations.size (); ++i)
+    {
         std::cerr << "\n    Instance " << i + 1 << ":" << std::endl;
         std::cerr << "        Correspondences belonging to this instance: " << clustered_corrs[i].size () << std::endl;
 
@@ -492,48 +547,49 @@ void shot_detector::visualizeCorrespondences()
         printf ("            | %6.3f %6.3f %6.3f | \n", rotation (2,0), rotation (2,1), rotation (2,2));
         printf ("\n");
         printf ("        t = < %0.3f, %0.3f, %0.3f >\n", translation (0), translation (1), translation (2));
-      }
+    }
 
-      //
-      //  Visualization
-      //
-      pcl::visualization::PCLVisualizer viewer ("Correspondence Grouping");
-      viewer.addPointCloud (scene, "scene_cloud");
+    //
+    //  Visualization
+    //
+    pcl::visualization::PCLVisualizer viewer ("Correspondence Grouping");
+    viewer.addCoordinateSystem (1.0);
+    viewer.addPointCloud (scene, "scene_cloud");
 
-      pcl::PointCloud<PointType>::Ptr off_scene_model (new pcl::PointCloud<PointType> ());
-      pcl::PointCloud<PointType>::Ptr off_scene_model_keypoints (new pcl::PointCloud<PointType> ());
+    pcl::PointCloud<PointType>::Ptr off_scene_model (new pcl::PointCloud<PointType> ());
+    pcl::PointCloud<PointType>::Ptr off_scene_model_keypoints (new pcl::PointCloud<PointType> ());
 
     // if (show_correspondences_ || show_keypoints_)
-     // {
-        //  We are translating the model so that it doesn't end in the middle of the scene representation
-        pcl::transformPointCloud (*model, *off_scene_model, Eigen::Vector3f (-1,0,0), Eigen::Quaternionf (1, 0, 0, 0));
-        pcl::transformPointCloud (*model_keypoints, *off_scene_model_keypoints, Eigen::Vector3f (-1,0,0), Eigen::Quaternionf (1, 0, 0, 0));
+    // {
+    //  We are translating the model so that it doesn't end in the middle of the scene representation
+    pcl::transformPointCloud (*model, *off_scene_model, Eigen::Vector3f (-1,0,0), Eigen::Quaternionf (1, 0, 0, 0));
+    pcl::transformPointCloud (*model_keypoints, *off_scene_model_keypoints, Eigen::Vector3f (-1,0,0), Eigen::Quaternionf (1, 0, 0, 0));
 
-        pcl::visualization::PointCloudColorHandlerCustom<PointType> off_scene_model_color_handler (off_scene_model, 255, 255, 128);
-        viewer.addPointCloud (off_scene_model, off_scene_model_color_handler, "off_scene_model");
-     // }
+    pcl::visualization::PointCloudColorHandlerCustom<PointType> off_scene_model_color_handler (off_scene_model, 255, 255, 128);
+    viewer.addPointCloud (off_scene_model, off_scene_model_color_handler, "off_scene_model");
+    // }
 
-      //if (show_keypoints_)
+    //if (show_keypoints_)
     //  {
-        /*pcl::visualization::PointCloudColorHandlerCustom<PointType> scene_keypoints_color_handler (scene_keypoints, 0, 0, 255);
+    /*pcl::visualization::PointCloudColorHandlerCustom<PointType> scene_keypoints_color_handler (scene_keypoints, 0, 0, 255);
         viewer.addPointCloud (scene_keypoints, scene_keypoints_color_handler, "scene_keypoints");
         viewer.setPointCloudRenderingProperties (pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 5, "scene_keypoints");*/
 
-        pcl::visualization::PointCloudColorHandlerCustom<PointType> off_scene_model_keypoints_color_handler (off_scene_model_keypoints, 0, 0, 255);
-        viewer.addPointCloud (off_scene_model_keypoints, off_scene_model_keypoints_color_handler, "off_scene_model_keypoints");
-        viewer.setPointCloudRenderingProperties (pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 5, "off_scene_model_keypoints");
-     // }
-                pcl::PointCloud<PointType>::Ptr scene_corr (new pcl::PointCloud<PointType> ());
-                for (int idx=0;idx< model_scene_corrs->size();++idx)
-                {
-                    PointType temp =scene_keypoints->at(model_scene_corrs->at(idx).index_match);
-                    scene_corr->push_back(temp);
-                }
-        pcl::visualization::PointCloudColorHandlerCustom<PointType> scene_corr_color_handler (scene_corr,255, 0, 0);
-        viewer.addPointCloud (scene_corr, scene_corr_color_handler, "scene_corr");
-        viewer.setPointCloudRenderingProperties (pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 5, "scene_corr");
-      for (size_t i = 0; i < rototranslations.size (); ++i)
-      {
+    pcl::visualization::PointCloudColorHandlerCustom<PointType> off_scene_model_keypoints_color_handler (off_scene_model_keypoints, 0, 0, 255);
+    viewer.addPointCloud (off_scene_model_keypoints, off_scene_model_keypoints_color_handler, "off_scene_model_keypoints");
+    viewer.setPointCloudRenderingProperties (pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 5, "off_scene_model_keypoints");
+    // }
+    pcl::PointCloud<PointType>::Ptr scene_corr (new pcl::PointCloud<PointType> ());
+    for (int idx=0;idx< model_scene_corrs->size();++idx)
+    {
+        PointType temp =scene_keypoints->at(model_scene_corrs->at(idx).index_match);
+        scene_corr->push_back(temp);
+    }
+    pcl::visualization::PointCloudColorHandlerCustom<PointType> scene_corr_color_handler (scene_corr,255, 0, 0);
+    viewer.addPointCloud (scene_corr, scene_corr_color_handler, "scene_corr");
+    viewer.setPointCloudRenderingProperties (pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 5, "scene_corr");
+    for (size_t i = 0; i < rototranslations.size (); ++i)
+    {
         pcl::PointCloud<PointType>::Ptr rotated_model (new pcl::PointCloud<PointType> ());
         pcl::transformPointCloud (*model, *rotated_model, rototranslations[i]);
 
@@ -546,8 +602,8 @@ void shot_detector::visualizeCorrespondences()
         //if (show_correspondences_)
         //{
         pcl::PointCloud<PointType>::Ptr scene_corr (new pcl::PointCloud<PointType> ());
-          for (size_t j = 0; j < clustered_corrs[i].size (); ++j)
-          {
+        for (size_t j = 0; j < clustered_corrs[i].size (); ++j)
+        {
             std::stringstream ss_line;
             ss_line << "correspondence_line" << i << "_" << j;
             PointType& model_point = off_scene_model_keypoints->at (clustered_corrs[i][j].index_query);
@@ -555,123 +611,129 @@ void shot_detector::visualizeCorrespondences()
 
             //  We are drawing a line for each pair of clustered correspondences found between the model and the scene
             viewer.addLine<PointType, PointType> (model_point, scene_point, 0, 255, 0, ss_line.str ());
-          }
-       // }
-      }
+        }
+        // }
+    }
 
-      while (!viewer.wasStopped ())
-      {
+    while (!viewer.wasStopped ())
+    {
         viewer.spinOnce ();
-      }
+    }
 }
 
 void shot_detector::visualizeICP()
 {
     std::cerr << "verifying" << std::endl;
     if (rototranslations.size () <= 0)
-      {
+    {
         cerr << "*** No instances found! ***" << endl;
         return;
-      }
-      else
-      {
+    }
+    else
+    {
         cerr << "Recognized Instances: " << rototranslations.size () << endl << endl;
-      }
+    }
 
-      /**
+    /**
        * Generates clouds for each instances found
        */
-      std::vector<pcl::PointCloud<PointType>::ConstPtr> instances;
+    std::vector<pcl::PointCloud<PointType>::ConstPtr> instances;
 
-      for (size_t i = 0; i < rototranslations.size (); ++i)
-      {
+    for (size_t i = 0; i < rototranslations.size (); ++i)
+    {
         pcl::PointCloud<PointType>::Ptr rotated_model (new pcl::PointCloud<PointType> ());
         pcl::transformPointCloud (*model, *rotated_model, rototranslations[i]);
         instances.push_back (rotated_model);
-      }
-
-      /**
+    }
+    std::vector<Eigen::Matrix4f, Eigen::aligned_allocator<Eigen::Matrix4f> > final_transforms;
+    /**
        * ICP
        */
-      std::vector<pcl::PointCloud<PointType>::ConstPtr> registered_instances;
-      if (true)
-      {
+    std::vector<pcl::PointCloud<PointType>::ConstPtr> registered_instances;
+    if (true)
+    {
         cerr << "--- ICP ---------" << endl;
 
         for (size_t i = 0; i < rototranslations.size (); ++i)
         {
-          pcl::IterativeClosestPoint<PointType, PointType> icp;
-          icp.setMaximumIterations (icp_max_iter_);
-          icp.setMaxCorrespondenceDistance (icp_corr_distance_);
-          icp.setInputTarget (scene);
-          icp.setInputSource (instances[i]);
-          pcl::PointCloud<PointType>::Ptr registered (new pcl::PointCloud<PointType>);
-          icp.align (*registered);
-          registered_instances.push_back (registered);
-          cerr << "Instance " << i << " ";
-          if (icp.hasConverged ())
-          {
-            cerr << "Aligned!" << endl;
-          }
-          else
-          {
-            cerr << "Not Aligned!" << endl;
-          }
+            pcl::IterativeClosestPoint<PointType, PointType> icp;
+            icp.setMaximumIterations (icp_max_iter_);
+            icp.setMaxCorrespondenceDistance (icp_corr_distance_);
+            icp.setInputTarget (scene);
+            icp.setInputSource (instances[i]);
+            pcl::PointCloud<PointType>::Ptr registered (new pcl::PointCloud<PointType>);
+            icp.align (*registered);
+            registered_instances.push_back (registered);
+            std::cerr << rototranslations[i] << std::endl;
+            final_transforms.push_back(icp.getFinalTransformation());
+            std::cerr << "answer" <<icp.getFinalTransformation()* rototranslations[i] <<std::endl;
+            cerr << "Instance " << i << std::endl;
+            if (icp.hasConverged ())
+            {
+                cerr << "Aligned!" << endl;
+            }
+            else
+            {
+                cerr << "Not Aligned!" << endl;
+            }
         }
 
         cerr << "-----------------" << endl << endl;
-      }
+    }
 
-      /**
+    /**
        * Hypothesis Verification
        */
-      cerr << "--- Hypotheses Verification ---" << endl;
-      std::vector<bool> hypotheses_mask;  // Mask Vector to identify positive hypotheses
+    cerr << "--- Hypotheses Verification ---" << endl;
+    std::vector<bool> hypotheses_mask;  // Mask Vector to identify positive hypotheses
 
-      pcl::GlobalHypothesesVerification<PointType, PointType> GoHv;
+    pcl::GlobalHypothesesVerification<PointType, PointType> GoHv;
 
-      GoHv.setSceneCloud (scene);  // Scene Cloud
-      GoHv.addModels (registered_instances, true);  //Models to verify
+    GoHv.setSceneCloud (scene);  // Scene Cloud
+    GoHv.addModels (registered_instances, true);  //Models to verify
 
-      GoHv.setInlierThreshold (hv_inlier_th_);
-      GoHv.setOcclusionThreshold (hv_occlusion_th_);
-      GoHv.setRegularizer (hv_regularizer_);
-      GoHv.setRadiusClutter (hv_rad_clutter_);
-      GoHv.setClutterRegularizer (hv_clutter_reg_);
-      GoHv.setDetectClutter (hv_detect_clutter_);
-      GoHv.setRadiusNormals (hv_rad_normals_);
+    GoHv.setInlierThreshold (hv_inlier_th_);
+    GoHv.setOcclusionThreshold (hv_occlusion_th_);
+    GoHv.setRegularizer (hv_regularizer_);
+    GoHv.setRadiusClutter (hv_rad_clutter_);
+    GoHv.setClutterRegularizer (hv_clutter_reg_);
+    GoHv.setDetectClutter (hv_detect_clutter_);
+    GoHv.setRadiusNormals (hv_rad_normals_);
 
-      GoHv.verify ();
-      GoHv.getMask (hypotheses_mask);  // i-element TRUE if hvModels[i] verifies hypotheses
+    GoHv.verify ();
+    GoHv.getMask (hypotheses_mask);  // i-element TRUE if hvModels[i] verifies hypotheses
 
-      for (int i = 0; i < hypotheses_mask.size (); i++)
-      {
+    for (int i = 0; i < hypotheses_mask.size (); i++)
+    {
         if (hypotheses_mask[i])
         {
-          cerr << "Instance " << i << " is GOOD! <---" << endl;
+            cerr << "Instance " << i << " is GOOD! <---" << endl;
         }
         else
         {
-          cerr << "Instance " << i << " is bad!" << endl;
+            cerr << "Instance " << i << " is bad!" << endl;
         }
-      }
-      cerr << "-------------------------------" << endl;
+    }
+    cerr << "-------------------------------" << endl;
 
-      /**
+    /**
        *  Visualization
        */
-      pcl::visualization::PCLVisualizer viewer ("Hypotheses Verification");
-      viewer.addPointCloud (scene, "scene_cloud");
+    pcl::visualization::PCLVisualizer viewer ("Hypotheses Verification");
+    viewer.addPointCloud (scene, "scene_cloud");
+    std::cerr << scene->points[1].x << scene->points[1].y << scene->points[1].z << std::endl;
+    viewer.addCoordinateSystem (1.0);
+    viewer.setPointCloudRenderingProperties (pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 5, "scene_cloud");
 
-      pcl::PointCloud<PointType>::Ptr off_scene_model (new pcl::PointCloud<PointType> ());
+    /* pcl::PointCloud<PointType>::Ptr off_scene_model (new pcl::PointCloud<PointType> ());
       pcl::PointCloud<PointType>::Ptr off_scene_model_keypoints (new pcl::PointCloud<PointType> ());
 
       pcl::PointCloud<PointType>::Ptr off_model_good_kp (new pcl::PointCloud<PointType> ());
       pcl::transformPointCloud (*model, *off_scene_model, Eigen::Vector3f (-1, 0, 0), Eigen::Quaternionf (1, 0, 0, 0));
       pcl::transformPointCloud (*model_keypoints, *off_scene_model_keypoints, Eigen::Vector3f (-1, 0, 0), Eigen::Quaternionf (1, 0, 0, 0));
-      pcl::transformPointCloud (*model_good_kp, *off_model_good_kp, Eigen::Vector3f (-1, 0, 0), Eigen::Quaternionf (1, 0, 0, 0));
+      pcl::transformPointCloud (*model_good_kp, *off_model_good_kp, Eigen::Vector3f (-1, 0, 0), Eigen::Quaternionf (1, 0, 0, 0));*/
 
-      //if (show_keypoints_)
+    /* //if (show_keypoints_)
       {
         CloudStyle modelStyle = style_white;
         pcl::visualization::PointCloudColorHandlerCustom<PointType> off_scene_model_color_handler (off_scene_model, modelStyle.r, modelStyle.g, modelStyle.b);
@@ -692,79 +754,76 @@ void shot_detector::visualizeICP()
         viewer.addPointCloud (scene_good_kp, scene_good_keypoints_color_handler, "scene_good_keypoints");
         viewer.setPointCloudRenderingProperties (pcl::visualization::PCL_VISUALIZER_POINT_SIZE, goodKeypointStyle.size, "scene_good_keypoints");
       }
-
-      for (size_t i = 0; i < instances.size (); ++i)
-      {
+*/
+    for (size_t i = 0; i < instances.size (); ++i)
+    {
         std::stringstream ss_instance;
         ss_instance << "instance_" << i;
-
+        /*
         CloudStyle clusterStyle = style_red;
         pcl::visualization::PointCloudColorHandlerCustom<PointType> instance_color_handler (instances[i], clusterStyle.r, clusterStyle.g, clusterStyle.b);
         viewer.addPointCloud (instances[i], instance_color_handler, ss_instance.str ());
         viewer.setPointCloudRenderingProperties (pcl::visualization::PCL_VISUALIZER_POINT_SIZE, clusterStyle.size, ss_instance.str ());
-
+*/
         CloudStyle registeredStyles = hypotheses_mask[i] ? style_green : style_cyan;
-        ss_instance << "_registered" << endl;
-        pcl::visualization::PointCloudColorHandlerCustom<PointType> registered_instance_color_handler (registered_instances[i], registeredStyles.r,
-                                                                                                       registeredStyles.g, registeredStyles.b);
-        viewer.addPointCloud (registered_instances[i], registered_instance_color_handler, ss_instance.str ());
-        viewer.setPointCloudRenderingProperties (pcl::visualization::PCL_VISUALIZER_POINT_SIZE, registeredStyles.size, ss_instance.str ());
-      }
+        if(hypotheses_mask[i]){
+            std::cerr << final_transforms[i] << std::endl;
+            ss_instance << "_registered" << endl;
+            pcl::visualization::PointCloudColorHandlerCustom<PointType> registered_instance_color_handler (registered_instances[i], registeredStyles.r,
+                                                                                                           registeredStyles.g, registeredStyles.b);
+            viewer.addPointCloud (registered_instances[i], registered_instance_color_handler, ss_instance.str ());
+            viewer.setPointCloudRenderingProperties (pcl::visualization::PCL_VISUALIZER_POINT_SIZE, registeredStyles.size, ss_instance.str ());
+        }
+    }
 
-      while (!viewer.wasStopped ())
-      {
+    while (!viewer.wasStopped ())
+    {
         viewer.spinOnce ();
-      }
+    }
 }
 
 
 double shot_detector::computeCloudResolution(const pcl::PointCloud<PointType>::Ptr cloud)
 {
-        double resolution = 0.0;
-        int numberOfPoints = 0;
-        int nres;
-        std::vector<int> indices(2);
-        std::vector<float> squaredDistances(2);
-        pcl::search::KdTree<PointType> tree;
-        tree.setInputCloud(cloud);
+    double resolution = 0.0;
+    int numberOfPoints = 0;
+    int nres;
+    std::vector<int> indices(2);
+    std::vector<float> squaredDistances(2);
+    pcl::search::KdTree<PointType> tree;
+    tree.setInputCloud(cloud);
 
-        for (size_t i = 0; i < cloud->size(); ++i)
+    for (size_t i = 0; i < cloud->size(); ++i)
+    {
+        if (! pcl_isfinite((*cloud)[i].x))
+            continue;
+
+        // Considering the second neighbor since the first is the point itself.
+        nres = tree.nearestKSearch(i, 2, indices, squaredDistances);
+        if (nres == 2)
         {
-            if (! pcl_isfinite((*cloud)[i].x))
-                continue;
-
-            // Considering the second neighbor since the first is the point itself.
-            nres = tree.nearestKSearch(i, 2, indices, squaredDistances);
-            if (nres == 2)
-            {
-                resolution += sqrt(squaredDistances[1]);
-                ++numberOfPoints;
-            }
+            resolution += sqrt(squaredDistances[1]);
+            ++numberOfPoints;
         }
-        if (numberOfPoints != 0)
-            resolution /= numberOfPoints;
+    }
+    if (numberOfPoints != 0)
+        resolution /= numberOfPoints;
 
-        return resolution;
+    return resolution;
 }
 
 int
 main (int argc, char** argv)
 {
-  // Initialize ROS
-  ros::init (argc, argv, "apc_object_detection");
-  shot_detector detector;
-      ros::Rate r(10);
-      //detector.processImage();
-  // Spin
-    int i=0;
+    // Initialize ROS
+    ros::init (argc, argv, "apc_object_detection");
+    shot_detector detector;
+    //detector.processImage();
+    // Spin
     std::cerr << "ros start" << std::endl;
-  while(ros::ok)
-  {
-    ros::spinOnce();
-    std::cerr << "Spin" << std::endl;
-    i++;
-    r.sleep();
-  }
-  std::cerr << "End" << std::endl;
+    ros::spin();
+        //detector.processImage();
+    std::cerr << "End" << std::endl;
+    return 0;
 }
 
