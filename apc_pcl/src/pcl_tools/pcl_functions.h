@@ -14,7 +14,7 @@
 #include <Eigen/Core>
 
 namespace pcl_functions{
-typedef pcl::PointXYZ PointType;
+typedef pcl::PointXYZRGB PointType;
 
 /*!
  * \brief shot_detector::removeBackground
