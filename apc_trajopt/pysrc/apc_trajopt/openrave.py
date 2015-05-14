@@ -101,7 +101,7 @@ def load_and_set_items_to_openrave(request, env):
 
         # Stupid hack to rotate the convex decomp mesh because osg
         # can't load the collada file correctly.
-        if obj_key == "kiva_pod":
+        if obj_key == "kiva_pod" or obj_key == "order_bin":
             T_hack = np.array( [ [ 1, 0, 0, 0 ],
                                  [ 0, 0, -1, 0 ],
                                  [ 0, 1, 0, 0 ],

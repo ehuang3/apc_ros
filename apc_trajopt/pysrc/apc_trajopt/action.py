@@ -35,7 +35,9 @@ import rospy
 import numpy
 import pdb
 from apc_msgs.msg import PrimitiveAction
+import trajectory_msgs
 from .apc_assert import ApcError, apc_assert
+
 
 def __action_type__(action):
     # Is the robot moving?
@@ -49,6 +51,8 @@ def __action_type__(action):
         object_pose_exists = len(action.object_trajectory.poses) > 0
         object_pose_moving = object_pose_exists and action.object_trajectory.poses[0] != action.object_trajectory.poses[0]
         object_moving = object_pose_moving or (robot_moving and object_pose_exists)
+        apc_assert(action.object_id and action.object_key,
+                   ("Missing object key to match object id %s") % (action.object_id))
     # Compute the action type.
     transit    = bool(not action.object_id)
     pregrasp   = bool(robot_moving and not grasping and not object_moving and action.object_id)
@@ -102,7 +106,40 @@ def print_action_summary(action):
     print "action group  :", action.group_id
     print "action frame  :", action.frame_id
     print "action object :", action.object_id
+    print "action objkey :", action.object_key
     print "action type   :", __action_type__(action)
+
+def compute_disabled_dof_indexes(action, env):
+    robot = env.GetRobot('crichton')
+    disabled = []
+    for joint in robot.GetJoints():
+        if joint.GetName() in action.joint_trajectory.joint_names:
+            continue
+        else:
+            disabled.append(joint.GetDOFIndex())
+    return disabled
+
+def check_for_nonactive_joint_motion(action, problem, result, env):
+    # start = action.joint_trajectory.points[0].positions
+    # end = action.joint_trajectory.points[-1].positions
+    # return numpy.allclose(start, end)
+    return False
+
+def fill_response_action(action, problem, result, env):
+    robot = env.GetRobot('crichton')
+    disabled = compute_disabled_dof_indexes(action, env)
+    M = [0 for name in action.joint_trajectory.joint_names]
+    for joint in robot.GetJoints():
+        if joint.GetDOFIndex() in disabled:
+            continue
+        M[action.joint_trajectory.joint_names.index(joint.GetName())] = joint.GetDOFIndex()
+    trajectory = result.GetTraj()
+    action.joint_trajectory.points = []
+    for p in trajectory:
+        q = trajectory_msgs.msg.JointTrajectoryPoint()
+        for i in range(len(M)):
+            q.positions.append(p[M[i]])
+        action.joint_trajectory.points.append(q)
 
 if __name__=='__main__':
     action = apc_msgs.msg.PrimitiveAction()
