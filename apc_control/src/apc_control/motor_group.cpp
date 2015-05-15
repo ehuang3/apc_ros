@@ -482,11 +482,11 @@ namespace apc_control
         void* buf;
 
         // We will get the latest message with timeout.
-	int opt = 0;
-	if (time_out)
-		opt = ACH_O_WAIT | ACH_O_LAST | ACH_O_RELTIME;
-	else
-		opt = ACH_O_LAST | ACH_O_NONBLOCK;
+        int opt = 0;
+        if (time_out)
+            opt = ACH_O_WAIT | ACH_O_LAST | ACH_O_RELTIME;
+        else
+            opt = ACH_O_LAST | ACH_O_NONBLOCK;
         //int opt = ACH_O_LAST | (time_out ? ACH_O_WAIT : 0);
 
         // Get the motor state message.
@@ -942,6 +942,16 @@ namespace apc_control
         // Build reference command message.
         if (ret = buildCommand(p))
             return ret;
+
+        // Set the tracking state to the latest current state to avoid
+        // any feedback gains. FIXME I hope another state isn't read
+        // between this and the gains.
+        if (ret = readState(0))
+            return ret;
+        for (int i = 0; i < _params.map.size(); i++) {
+            _state.track->X[i].pos = _state.state->X[i].pos;
+            _state.track->X[i].vel = _state.state->X[i].vel;
+        }
 
         // Send motor reference command.
         if (ret = sendCommand(_state.ref))
