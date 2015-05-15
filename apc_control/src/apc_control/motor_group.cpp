@@ -832,7 +832,7 @@ namespace apc_control
             return r;
 
         for (size_t i = 0; i < cmd->header.n; i++) {
-            double p   = _state.state->X[i].pos - _state.track->X[i].pos;
+            double p   = _state.track->X[i].pos - _state.state->X[i].pos;
             double k_p = _params.k_p * p;
             clamp(k_p, _params.max_gain);
             cmd->u[i] = cmd->u[i] + k_p;
