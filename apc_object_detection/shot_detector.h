@@ -22,7 +22,7 @@
 #include "../../../devel/include/apc_msgs/shot_detector_srv.h"
 
 
-typedef pcl::PointXYZRGB PointType;
+typedef pcl::PointXYZ PointType;
 typedef pcl::Normal NormalType;
 typedef pcl::ReferenceFrame RFType;
 typedef pcl::SHOT352 DescriptorType;
