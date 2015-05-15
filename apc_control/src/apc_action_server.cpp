@@ -122,8 +122,8 @@ MotorGroupError execute_trajectory(const Action& action,
     const trajectory_msgs::JointTrajectoryPoint& point = action.joint_trajectory.points[0];
     for (int i = 0; i < n_dof; i++)
         start_position[i] = point.positions[i];
-    if (ret = motors->checkStartState(start_position, joint_names))
-        return ret;
+    // if (ret = motors->checkStartState(start_position, joint_names))
+    //     return ret;
 
     // Get start state from robot encoders. If we are not executing,
     // the motors will not fill out the state.
