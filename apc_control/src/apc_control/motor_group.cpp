@@ -679,7 +679,7 @@ namespace apc_control
             {
                 usleep( (useconds_t) 10 * 1e3 ); // Based on can402 control loop frequency
                 t += 0.010;
-                if (t > 0.5)
+                if (t > 1.0)
                 {
                     ret.error_code = MotorGroupError::INVALID_JOINTS;
                     ret.error_string = std::string("Failed to satisfy non-moving pre-condition for ") + _params.name_group;
