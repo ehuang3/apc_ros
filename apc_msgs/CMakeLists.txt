@@ -67,6 +67,7 @@ add_message_files(
   ObjectState.msg
   WorldState.msg
   DPMObject.msg
+  ItemSymmetry.msg
 
   # Vision
   BinInfo.msg
