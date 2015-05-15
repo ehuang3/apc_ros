@@ -259,8 +259,18 @@ void execute(const GoalConstPtr& goal,
     // For each primitive action in the primitive plan...
     for (int i = 0; i < goal->plan.actions.size(); i++)
     {
+        ROS_INFO("--------------------            EXECUTE            --------------------");
+
         // Get the primitive action to execute.
         const Action& action = goal->plan.actions[i];
+
+        ROS_INFO( "action name   : %s", action.action_name.c_str());
+        ROS_INFO( "action group  : %s", action.group_id.c_str());
+        ROS_INFO( "action frame  : %s", action.frame_id.c_str());
+        ROS_INFO( "action object : %s", action.object_id.c_str());
+        ROS_INFO( "action objkey : %s", action.object_key.c_str());
+        ROS_INFO( "action T.size : %ld", action.joint_trajectory.points.size());
+        // ROS_INFO( "action type   :", __action_type__(action)c_str());
 
         // Execute the trajectory.
         r = execute_trajectory(action, action_server, motors);
@@ -268,6 +278,9 @@ void execute(const GoalConstPtr& goal,
         // If something erred, stop further execution.
         if (r)
             break;
+
+
+        ROS_INFO("--------------------             STOP              --------------------");
 
         // Provide feedback.
         {
