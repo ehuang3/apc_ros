@@ -61,6 +61,8 @@ namespace apc_control
             GOAL_TOLERANCE_VIOLATED = -5,
             FAILED_CLOCK_GETTIME = -6,
             PREEMPTED = -7,
+            TRAJECTORY_DURATION_TOO_LONG = -8,
+            FORCE_TORQUE_DETECTED_CONTACT = -9,
         };
 
         ErrorCode   error_code;       // Value describing the error.
@@ -196,6 +198,14 @@ namespace apc_control
             double dt;                           // Time between control loop iterations.
             bool allow_execution;                // If true, execute commands on real hardware. vBoth must be true.
             bool enabled;                        // If true, execute commands on real hardware. ^Both must be true.
+
+            double k_p;                          // Position error gain.
+
+            bool log;                            // If true, output logging messages to the logging channels.
+            std::string name_track;              // Name of the debug command channel.
+            ach_channel_t chan_track;            // Channel to send full commands to for debugging.
+            std::string name_feedback_state;     // Name of the debug feedback state channel.
+            ach_channel_t chan_feedback_state;   // Channel to send feedback states for debugging.
         };
 
         // Motor group state.
@@ -208,6 +218,8 @@ namespace apc_control
             bool dirty_state;                    // True if motor state has not been read since last command.
             bool fresh_ref;                      // True if a new motor command is ready to be sent.
             int64_t num_sent;                    // Number of messages sent.
+
+            struct sns_msg_motor_state* track;   // Latest command position and velocity to track.
         };
 
         MotorGroup();

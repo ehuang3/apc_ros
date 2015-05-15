@@ -36,6 +36,8 @@ import numpy as np
 import rospy
 import openravepy
 import trajoptpy
+import pdb
+from IPython.core.debugger import Tracer
 from .action import *
 
 
@@ -80,12 +82,15 @@ def build_trajopt_request(srv_request, env):
     if is_action_pregrasp(srv_request.action):
         distance_penalty = 0.02 # 1 cm
 
+    disabled_dofs = compute_disabled_dof_indexes(srv_request.action, env)
+
     # Fill out trajopt request.
     trajopt_request = {
         "basic_info" : {
             "n_steps" : 20,
             "manip" : "active", # see below for valid values
-            "start_fixed" : True # i.e., DOF values at first timestep are fixed based on current robot state
+            "start_fixed" : True, # i.e., DOF values at first timestep are fixed based on current robot state
+            "dofs_fixed" : disabled_dofs
         },
         "costs" : [
             {

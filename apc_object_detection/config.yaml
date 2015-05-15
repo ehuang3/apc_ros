@@ -1,9 +1,17 @@
 model_sample: .01
 scene_sample: .01
 descriptor_rad: .08
-rf_rad: .015
-cg_size: 1.0
-cg_thresh: 3.0
-corr_dist: .5
-voxel_leaf: 0.01
+rf_rad: 0.01
+cg_size: 3.0
+cg_thresh: 0.0
+corr_dist: .8
+voxel_leaf: 0.001
+icp_corr_distance: .05
+icp_max_iter: 95
+ran_inlier_dist: .01
+ran_corr_random: 3
+ran_sample_num: 3
+ran_sim_thresh: .9
+ran_max_corr_dist: .05
+ran_max_iter: 3000
 

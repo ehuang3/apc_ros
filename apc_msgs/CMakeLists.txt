@@ -67,6 +67,7 @@ add_message_files(
   ObjectState.msg
   WorldState.msg
   DPMObject.msg
+  ItemSymmetry.msg
 
   # Vision
   BinInfo.msg
@@ -92,6 +93,7 @@ add_service_files(
   CullCloudBackground.srv
   SegmentImage.srv
   GetShelf.srv
+  GetMesh.srv
   shot_detector_srv.srv
 )
 

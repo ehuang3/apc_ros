@@ -17,7 +17,7 @@ class Simulated_DPM(object):
             rospy.logerr("SETTING A FAKE KINECT SERIAL")
 
         rospy.init_node('simulated_dpm')
-        rospy.Service('/run_dpm_simulated', RunDPM, self.run_dpm)
+        rospy.Service('/run_dpm_simulated', SegmentImage, self.run_dpm)
 
         cv2.namedWindow("kinect_view")
         cv2.setMouseCallback("kinect_view", self.mouse_call)
@@ -37,21 +37,21 @@ class Simulated_DPM(object):
     def run_dpm(self, srv):
         self.image = get_image_msg(srv.image)
         print 'Executing on image of size {}'.format(self.image.shape)
+        self.target_object = srv.object_id
         self.run()
         x, y, w, h = cv2.boundingRect(np.array([np.array(self.corners)]))
         self.corners = []
         self.state = 0
         self.is_done = False
         self.image = None
-        return RunDPMResponse([
-            DPMObject(
-                object_id=srv.target_objects[0],
-                x=x,
-                y=y,
-                height=h,
-                width=w,
-            )
-        ])
+        return SegmentImageResponse(
+            x=x,
+            y=y,
+            height=h,
+            width=w,
+            success=True,
+        )
+        
 
     def got_image(self, msg):
         self.image = msg
@@ -81,7 +81,7 @@ class Simulated_DPM(object):
 
             image = np.copy(self.image)
             state = self.states[self.state].replace('_', ' ')
-            cv2.putText(image, 'Click the {} corner'.format(state), (10, 500), self.font, 4, (255, 100, 80), 2)
+            cv2.putText(image, 'Click the {}'.format(self.target_object), (10, self.image.shape[1] - 100), self.font, 1, (255, 100, 80), 2)
             self.draw_corners(image)
 
             if self.is_done:

@@ -307,6 +307,10 @@ namespace apc_control
         READ_PARAM(_map,       map);
         READ_PARAM(_dt,        dt);
         READ_PARAM(_enabled,   enabled);
+        READ_PARAM(_log,       log);
+        READ_PARAM(_track,     name_track);
+        READ_PARAM(_k_p,       k_p);
+        READ_PARAM(_feedback,  name_feedback_state);
 
 #undef READ_PARAM
 
@@ -362,6 +366,7 @@ namespace apc_control
         }
         _state.state = sns_msg_motor_state_heap_alloc(_params.map.size());
         _state.ref   = sns_msg_motor_ref_heap_alloc(_params.map.size());
+        _state.track  = sns_msg_motor_state_heap_alloc(_params.map.size());
 
         return true;
     }
@@ -381,6 +386,8 @@ namespace apc_control
         bool success = true;
         success &= openChannel(_params.name_state, &_params.chan_state);
         success &= openChannel(_params.name_ref,   &_params.chan_ref);
+        success &= openChannel(_params.name_track, &_params.chan_track);
+        success &= openChannel(_params.name_feedback_state, &_params.chan_feedback_state);
         return success;
     }
 
@@ -388,8 +395,11 @@ namespace apc_control
     {
         _state.T = NULL;
         _state.map.clear();
-        memset(_state.state, 0, sizeof (struct sns_msg_motor_state));
-        memset(_state.ref,   0, sizeof (struct sns_msg_motor_ref));
+
+        sns_msg_motor_state_init(_state.state, _params.map.size());
+        sns_msg_motor_state_init(_state.track, _params.map.size());
+        sns_msg_motor_ref_init(_state.ref, _params.map.size());
+
         _state.dirty_state = true;
         _state.fresh_ref = false;
         _state.num_sent = 0;
@@ -741,11 +751,20 @@ namespace apc_control
             return ret;
         }
 
+        // TODO Add control loop frequency to track next desired.
+        const Eigen::VectorXd track_pos = _state.T->getPosition(t);
+        const Eigen::VectorXd track_vel = _state.T->getVelocity(t);
+
+        // Re-initialize tracking state.
+        sns_msg_motor_state_init(_state.track, _params.map.size());
+
         // Convert the trajectory command into the sequence we expect to send over ACH.
         Eigen::VectorXd x(_params.map.size());
         for (JointMap::iterator iter = _state.map.begin(); iter != _state.map.end(); ++iter)
         {
             x[_params.map[iter->first]] = cmd[iter->second];
+            _state.track->X[_params.map[iter->first]].pos = track_pos[iter->second];
+            _state.track->X[_params.map[iter->first]].vel = track_vel[iter->second];
         }
 
         // Build SNS command to send over ACH.
@@ -758,8 +777,8 @@ namespace apc_control
     {
         MotorGroupError r;
 
-        // Clear reference command.
-        memset( _state.ref, 0, sizeof (struct sns_msg_motor_ref));
+        // Clear reference command. FIXME Wrong way to do this.
+        // memset( _state.ref, 0, sizeof (struct sns_msg_motor_ref));
 
         // Initialize the message.
         sns_msg_motor_ref_init( _state.ref, _state.map.size() );
@@ -799,8 +818,44 @@ namespace apc_control
     {
         MotorGroupError r;
 
+        // Read latest state for feedback.
+        if (r = readState(0))
+            return r;
+
+        // for (size_t i = 0; i < cmd->header.n; i++) {
+        //     double p = _state.state->X[i].pos - _state.track->X[i].pos;
+        //     cmd->u[i] = cmd->u[i] + k_p * p;
+        // }
+
         // The ACH return status.
         ach_status_t status = ACH_OK;
+
+        // Put tracking state onto channel if we are logging.
+        if (_params.log) {
+
+            // Put down the tracking state.
+            struct timespec now;
+            clock_gettime( ACH_DEFAULT_CLOCK, &now );
+            sns_msg_set_time( &_state.track->header, &now, 1e9 ); /* 1 second duration */
+
+            status = ach_put( &_params.chan_track, _state.track, sns_msg_motor_state_size(_state.track) );
+
+            if (status != ACH_OK) {
+                SNS_LOG(LOG_ERR, "ach_put failed: %s\n", ach_result_to_string(status));
+                r.error_code = MotorGroupError::INVALID_JOINTS;
+                r.error_string = std::string("Failed ach_put: ") + ach_result_to_string(status);
+            }
+
+            // Put down the read state.
+            status = ach_put( &_params.chan_feedback_state, _state.state, sns_msg_motor_state_size(_state.state) );
+
+            if (status != ACH_OK) {
+                SNS_LOG(LOG_ERR, "ach_put failed: %s\n", ach_result_to_string(status));
+                r.error_code = MotorGroupError::INVALID_JOINTS;
+                r.error_string = std::string("Failed ach_put: ") + ach_result_to_string(status);
+            }
+
+        }
 
         // Send reference command message, if enabled.
         if (_params.allow_execution && !_params.enabled)

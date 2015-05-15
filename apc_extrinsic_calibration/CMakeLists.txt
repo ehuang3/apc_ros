@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(apc_pcl_detection)
+project(apc_extrinsic_calibration)
 
 # We have some custom .cmake scripts not in the official distribution.
 # Maybe this can be used override existing behavior if needed?
@@ -15,18 +15,7 @@ find_package(
     std_msgs
     rostime
     message_generation
-    sensor_msgs 
-    geometry_msgs
-    eigen_conversions
-	apc_msgs)
- find_package(PCL 1.7 REQUIRED COMPONENTS )
- find_package(VTK REQUIRED)
-find_package(Eigen3 REQUIRED)
-
-include_directories(EIGEN3_INCLUDE_DIR)
-
- include(${VTK_USE_FILE})
-
+std_msgs)
 
 
 set(catkin_LIBRARIES 
@@ -92,7 +81,7 @@ set(catkin_LIBRARIES
 ## Generate added messages and services with any dependencies listed here
  generate_messages(
    DEPENDENCIES
-   sensor_msgs geometry_msgs std_msgs
+   std_msgs
  )
 
 ###################################
@@ -130,15 +119,15 @@ ${PCL_INCLUDE_DIRS}
 # link_directories(${PCL_LIBRARY_DIRS})
 # add_definitions(${PCL_DEFINITIONS})
 ## Declare a cpp executable
- add_executable(detect_objects_pcl shot_detector.cpp)
+ add_executable(calibrate_extrinsic calibrate_extrinsic.cpp)
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
-add_dependencies(detect_objects_pcl apc_msgs_generate_messages_cpp)
+#add_dependencies(calibrate_extrinsic apc_msgs_generate_messages_cpp)
 
 ## Specify libraries to link a library or executable target against
 
- target_link_libraries(detect_objects_pcl  ${PCL_LIBRARIES} -lpcl_features -lpcl_visualization -lpcl_keypoints -lpcl_recognition -lpcl_registration -lpcl_filters -lpcl_sample_consensus -lpcl_segmentation -lpcl_surface ${PCL_COMMON_LIBRARIES} ${PCL_FEATURES_LIBRARIES} ${PCL_IO_LIBRARIES} ${PCL_KDTREE_LIBRARY} ${PCL_SEARCH_LIBRARY} ${catkin_LIBRARIES} ${VTK_LIBRARIES})
+ target_link_libraries(calibrate_extrinsic ${catkin_LIBRARIES})
 
 #############
 ## Install ##

@@ -29,7 +29,6 @@ class APC_ICP {
 
 public:
     static bool run_icp(apc_msgs::shot_detector_srv::Request &req, apc_msgs::shot_detector_srv::Response &resp);
-    void clicked_point_callback(const geometry_msgs::PoseStamped::ConstPtr& msg);
     APC_ICP();
     ros::NodeHandle nh;
     ros::ServiceServer service;
@@ -43,8 +42,8 @@ bool APC_ICP::run_icp(apc_msgs::shot_detector_srv::Request &req, apc_msgs::shot_
     pcl::fromROSMsg(req.pointcloud, *target_cloud);
 
     pcl::PointCloud<pcl::PointXYZ>::Ptr input_cloud(new pcl::PointCloud<pcl::PointXYZ>);
+    pcl::fromROSMsg(req.targetcloud, *target_cloud);
 
-    pcl_tools::cloud_from_ply(meshpath, *input_cloud);
     pcl_tools::icp_result result;
     result = pcl_tools::apply_icp(input_cloud, target_cloud, 45);
     // pcl_tools::visualize_cloud(input_cloud);
@@ -55,11 +54,11 @@ bool APC_ICP::run_icp(apc_msgs::shot_detector_srv::Request &req, apc_msgs::shot_
 }
 
 APC_ICP::APC_ICP(){
-    std::cout << "Initializing" << std::endl;
+    std::cout << "Initializing icp server" << std::endl;
     nh.getParam("meshpath", meshpath);
     std::cout << "meshpath: " << meshpath << std::endl;
     service = nh.advertiseService("/shot_detector", run_icp);
-    std::cout << "advertised" << std::endl;
+    std::cout << "advertised icp server" << std::endl;
 }
 
 int main(int argc, char** argv) {

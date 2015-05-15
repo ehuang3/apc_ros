@@ -5,13 +5,14 @@
 #include <pcl/io/pcd_io.h>
 #include <pcl/point_types.h>
 #include <pcl/io/vtk_lib_io.h>
+#include <pcl/PCLPointCloud2.h>
 #include "pcl_tools.h"
+
 namespace pcl_tools {
 
     void cloud_from_ply(std::string filename, pcl::PointCloud<pcl::PointXYZ>& cloud) {
         /* Extract a pcl::PointCloudXYZ from a .ply file*/
         pcl::PolygonMesh mesh;
-        pcl::PCLPointCloud2 temp_cloud;
         pcl::io::loadPolygonFilePLY(filename, mesh);
         pcl::fromPCLPointCloud2(mesh.cloud, cloud);
     }
@@ -19,7 +20,6 @@ namespace pcl_tools {
     void cloud_from_ply(std::string filename, pcl::PointCloud<pcl::PointXYZRGBA>& cloud) {
         /* Extract a pcl::PointCloudXYZ from a .ply file*/
         pcl::PolygonMesh mesh;
-        pcl::PCLPointCloud2 temp_cloud;
         pcl::io::loadPolygonFilePLY(filename, mesh);
         pcl::fromPCLPointCloud2(mesh.cloud, cloud);
     }
@@ -42,5 +42,12 @@ namespace pcl_tools {
         } else{
             return true;
         }
+    }
+
+    bool cloud_from_stl(std::string filename, pcl::PCLPointCloud2& cloud) {
+        pcl::PolygonMesh mesh;
+        pcl::io::loadPolygonFileSTL(filename, mesh);
+        cloud = mesh.cloud;
+        // pcl::fromPCLPointCloud2(mesh.cloud, cloud);
     }
 }
