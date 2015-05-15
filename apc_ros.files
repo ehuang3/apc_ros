@@ -37,3 +37,5 @@ apc_pcl/pcl_test/ros_test_pcl_node.cpp
 apc_pcl/src/pcl_tools/pcl_functions.cpp
 apc_pcl/src/pcl_tools/pcl_functions.h
 apc_pcl/nodes/frustum_cull_server.cpp
+apc_extrinsic_calibration/calibrate_extrinsic.h
+apc_extrinsic_calibration/calibrate_extrinsic.cpp

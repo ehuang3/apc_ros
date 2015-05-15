@@ -22,7 +22,7 @@
 #include "../../../devel/include/apc_msgs/shot_detector_srv.h"
 
 
-typedef pcl::PointXYZ PointType;
+typedef pcl::PointXYZRGB PointType;
 typedef pcl::Normal NormalType;
 typedef pcl::ReferenceFrame RFType;
 typedef pcl::SHOT352 DescriptorType;
@@ -52,8 +52,6 @@ CloudStyle style_green (0.0, 255.0, 0.0, 5.0);
 CloudStyle style_cyan (93.0, 200.0, 217.0, 4.0);
 CloudStyle style_violet (255.0, 0.0, 255.0, 8.0);
 
-int icp_max_iter_ (5);
-float icp_corr_distance_ (0.1f);
 float hv_clutter_reg_ (5.0f);
 float hv_inlier_th_ (0.03f);
 float hv_occlusion_th_ (0.01f);
@@ -93,6 +91,8 @@ private:
     Eigen::Matrix4f refinePose(std::vector<Eigen::Matrix4f, Eigen::aligned_allocator<Eigen::Matrix4f> > transforms,
                                    pcl::PointCloud<PointType>::Ptr model,pcl::PointCloud<PointType>::Ptr scene);
     void loadModel(pcl::PointCloud<PointType>::Ptr model, std::string model_name);
+    void ransac(std::vector<Eigen::Matrix4f, Eigen::aligned_allocator<Eigen::Matrix4f> > &transforms,
+                pcl::PointCloud<PointType>::Ptr model,pcl::PointCloud<PointType>::Ptr scene);
     //Processing functions
     void findCorrespondences (typename pcl::PointCloud<DescriptorType>::Ptr source,
                               typename pcl::PointCloud<DescriptorType>::Ptr target, std::vector<int>& correspondences);
@@ -120,6 +120,14 @@ private:
     float cg_thresh_;
     float corr_dist_;
     float voxel_sample_;
+    int icp_max_iter_;
+    float icp_corr_distance_;
+    float ran_inlier_dist_;
+    int ran_corr_random_;
+    int ran_sample_num_;
+    float ran_sim_thresh_;
+    float ran_max_corr_dist_;
+    int ran_max_iter_;
 
     //PointCloud classes for calculating various features
     pcl::NormalEstimationOMP<PointType, NormalType> norm_est;

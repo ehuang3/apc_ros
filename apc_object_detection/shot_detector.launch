@@ -1,4 +1,5 @@
 <launch>
-    <node name="detect_objects_pcl" pkg="apc_pcl_detection" type="detect_objects_pcl" />
+    <node name="detect_objects_pcl" pkg="apc_pcl_detection" type="detect_objects_pcl" >
         <rosparam command="load" file="$(find apc_pcl_detection)/config.yaml" />
+</node>
 </launch>

@@ -26,6 +26,7 @@
 #include <pcl/segmentation/sac_segmentation.h>
 #include <pcl/surface/convex_hull.h>
 #include <pcl/segmentation/extract_polygonal_prism_data.h>
+#include <pcl/registration/sample_consensus_prerejective.h>
 #include "../apc_pcl/src/pcl_tools/pcl_functions.h"
 #include <string>
 
@@ -78,54 +79,14 @@ shot_detector::shot_detector()
 
 void shot_detector::processImage()
 {
-    /*if(data==true){
-        pcl_functions::convertMsg(depth_msg,scene);
-        std::cerr << "start" << std::endl;
-        pcl::PointCloud<PointType>::Ptr background (new pcl::PointCloud<PointType> ());
-        norm_est.setInputCloud(scene);
-        std::cerr << computeCloudResolution(scene) << std::endl;
-        std::cerr << "input" << scene->size() << std::endl;;
-        std::cerr << "normals" << std::endl;
-        std::cerr << scene_ss_ << std::endl;
-            descr_est.setRadiusSearch (descr_rad_);
-        sampleKeypoints(scene,scene_keypoints,scene_ss_);
-        calcNormals(scene,scene_normals);
-               // std::cerr << scene_keypoints.size() << " and " << model_keypoints.size() << std::endl;
-        std::cerr << "downsample" << std::endl;
-        calcSHOTDescriptors(scene,scene_keypoints,scene_normals,scene_descriptors);
-        //calcPFHRGBDescriptors(scene,scene_keypoints,scene_normals,scene_descriptors);
-        std::cerr << "descriptors" << std::endl;
-        compare(model_descriptors,scene_descriptors);
-        std::cerr << scene_descriptors->size() << " and  "<< model_descriptors->size() << std::endl;
-        //findCorrespondences (model_descriptors, scene_descriptors, source2target_);
-        //findCorrespondences (scene_descriptors, model_descriptors, target2source_);
-
-        //filterCorrespondences ();
-        //model_scene_corrs=correspondences_;
-        if(model_scene_corrs->size ()!=0){
-        groupCorrespondences();
-        visualizeCorrespondences();
-        visualizeICP();
-        }
-    }*/
-    //pcl_functions::convertMsg(req.targetcloud,model);
     std::cerr << "Processing" << std::endl;
     std::string file="/home/niko/projects/apc/catkin/src/apc_ros/apc_object_detection/optimized_poisson_textured_mesh.ply";
     loadModel(model,file);
-    // pcl_functions::convertMsg(req.pointcloud,scene);
     pcl::io::loadPCDFile("/home/niko/projects/apc/catkin/src/apc_ros/apc_object_detection/niko_file.pcd",*scene);
-    std::cerr << "Originally positions" << std::endl;
-    std::cerr << scene->points[1].x << std::endl;
-    std::cerr << scene->points[1].y << std::endl;
-    std::cerr << scene->points[1].z << std::endl;
     //Downsample the model and the scene so they have rougly the same resolution
     pcl::PointCloud<PointType>::Ptr scene_filter (new pcl::PointCloud<PointType> ());
     pcl_functions::voxelFilter(scene,scene_filter,voxel_sample_);
     scene=scene_filter;
-    std::cerr << "AFter filter" << std::endl;
-    std::cerr << scene->points[1].x << std::endl;
-    std::cerr << scene->points[1].y << std::endl;
-    std::cerr << scene->points[1].z << std::endl;
     pcl::PointCloud<PointType>::Ptr model_filter (new pcl::PointCloud<PointType> ());
     pcl_functions::voxelFilter(model,model_filter,voxel_sample_);
     model=model_filter;
@@ -139,16 +100,20 @@ void shot_detector::processImage()
     calcSHOTDescriptors(model,model_keypoints,model_normals,model_descriptors);
     calcSHOTDescriptors(scene,scene_keypoints,scene_normals,scene_descriptors);
     // Compare descriptors and try to find correspondences
+    //ransac(rototranslations,model,scene);
+    //refinePose(rototranslations,model,scene);
     compare(model_descriptors,scene_descriptors);
     groupCorrespondences();
     visualizeCorrespondences();
     visualizeICP();
-    Eigen::Matrix4f pose;
+
+    /*Eigen::Matrix4f pose;
     if(model_scene_corrs->size ()!=0){
         groupCorrespondences();
+        ransac(rototranslations,model,scene);
         pose=refinePose(rototranslations,model,scene);
 
-    }
+    }*/
 }
 
 void shot_detector::loadModel(pcl::PointCloud<PointType>::Ptr model, std::string model_name)
@@ -159,8 +124,54 @@ void shot_detector::loadModel(pcl::PointCloud<PointType>::Ptr model, std::string
     reader->SetFileName ( filename.c_str() );
     reader->Update();
     data=reader->GetOutput();
-
+    std::cerr << "model loaded" << std::endl;
     pcl::io::vtkPolyDataToPointCloud(data,*model);
+}
+
+void shot_detector::ransac(std::vector<Eigen::Matrix4f, Eigen::aligned_allocator<Eigen::Matrix4f> >& transforms, pcl::PointCloud<PointType>::Ptr model, pcl::PointCloud<PointType>::Ptr scene)
+{
+    // Note: here you would compute or load the descriptors for both
+    // the scene and the model. It has been omitted here for simplicity.
+    std::cerr << "STart ransac" << std::endl;
+    pcl::PointCloud<PointType>::Ptr alignedModel(new pcl::PointCloud<PointType>);
+    // Object for pose estimation.
+    pcl::SampleConsensusPrerejective<PointType, PointType, DescriptorType> pose;
+    pose.setInputSource(model);
+    pose.setInputTarget(scene);
+    pose.setSourceFeatures(model_descriptors);
+    pose.setTargetFeatures(scene_descriptors);
+    // Instead of matching a descriptor with its nearest neighbor, choose randomly between
+    // the N closest ones, making it more robust to outliers, but increasing time.
+    pose.setCorrespondenceRandomness(ran_corr_random_);
+    // Set the fraction (0-1) of inlier points required for accepting a transformation.
+    // At least this number of points will need to be aligned to accept a pose.
+    pose.setInlierFraction(ran_inlier_dist_);
+    // Set the number of samples to use during each iteration (minimum for 6 DoF is 3).
+    pose.setNumberOfSamples(ran_sample_num_);
+    // Set the similarity threshold (0-1) between edge lengths of the polygons. The
+    // closer to 1, the more strict the rejector will be, probably discarding acceptable poses.
+    pose.setSimilarityThreshold(ran_sim_thresh_);
+    // Set the maximum distance threshold between two correspondent points in source and target.
+    // If the distance is larger, the points will be ignored in the alignment process.
+    pose.setMaxCorrespondenceDistance(ran_max_corr_dist_);
+    //pose.setMaximumIterations (ran_max_iter_);
+
+    pose.align(*alignedModel);
+    std::cerr << "ransac ran" << std::endl;
+    if (pose.hasConverged())
+    {
+        Eigen::Matrix4f transformation = pose.getFinalTransformation();
+        transforms.push_back(transformation);
+        Eigen::Matrix3f rotation = transformation.block<3, 3>(0, 0);
+        Eigen::Vector3f translation = transformation.block<3, 1>(0, 3);
+
+        std::cerr << "Transformation matrix:" << transformation << std::endl << std::endl;
+        pcl::visualization::PCLVisualizer visu("Alignment");
+         visu.addPointCloud (scene, "scene");
+         visu.addPointCloud (alignedModel, "object_aligned");
+         visu.spin ();
+    }
+    else std::cerr << "Did not converge." << std::endl;
 }
 
 /*!
@@ -199,11 +210,12 @@ bool shot_detector::processCloud(apc_msgs::shot_detector_srv::Request &req, apc_
     //Calculate the shot descriptors at each keypoint in the scene
     calcSHOTDescriptors(model,model_keypoints,model_normals,model_descriptors);
     calcSHOTDescriptors(scene,scene_keypoints,scene_normals,scene_descriptors);
+    ransac(rototranslations,model,scene);
     // Compare descriptors and try to find correspondences
-    compare(model_descriptors,scene_descriptors);
+  //  compare(model_descriptors,scene_descriptors);
     Eigen::Matrix4f pose;
     if(model_scene_corrs->size ()!=0){
-        groupCorrespondences();
+        //groupCorrespondences();
         pose=refinePose(rototranslations,model,scene);
 
     }
@@ -229,6 +241,7 @@ Eigen::Matrix4f shot_detector::refinePose(std::vector<Eigen::Matrix4f, Eigen::al
 {
     std::vector<Eigen::Matrix4f, Eigen::aligned_allocator<Eigen::Matrix4f> > final_transforms;
     std::cerr << "verifying" << std::endl;
+    typedef pcl::visualization::PointCloudColorHandlerCustom<PointType> ColorHandlerT;
 
     if (transforms.size () <= 0)
     {
@@ -260,24 +273,31 @@ Eigen::Matrix4f shot_detector::refinePose(std::vector<Eigen::Matrix4f, Eigen::al
     {
         cerr << "--- ICP ---------" << endl;
 
-        for (size_t i = 0; i < transforms.size (); ++i)
+        //for (size_t i = 0; i < transforms.size (); ++i)
         {
-            std::cerr << "initial" << transforms[i] <<std::endl;
+           // std::cerr << "initial" << transforms[i] <<std::endl;
             pcl::IterativeClosestPoint<PointType, PointType> icp;
             icp.setMaximumIterations (icp_max_iter_);
             icp.setMaxCorrespondenceDistance (icp_corr_distance_);
             icp.setInputTarget (scene);
-            icp.setInputSource (instances[i]);
+            icp.setInputSource (instances[0]);
             pcl::PointCloud<PointType>::Ptr registered (new pcl::PointCloud<PointType>);
             icp.align (*registered);
+            icp.setMaxCorrespondenceDistance (.01);
+            icp.align (*registered);
+            icp.setMaxCorrespondenceDistance (.005);
+            icp.align (*registered);
+            icp.setMaxCorrespondenceDistance (.001);
+            icp.align (*registered);
             //registered_instances.push_back (registered);
-            cerr << "Instance " << i << " ";
+            //cerr << "Instance " << i << " ";
             if (icp.hasConverged ())
             {
                 cerr << "Aligned!" << endl;
                 registered_instances.push_back (registered);
                 std::cerr << icp.getFinalTransformation() << std::endl;
-                final_transforms.push_back(icp.getFinalTransformation()*transforms[i]);
+
+                final_transforms.push_back(icp.getFinalTransformation()*transforms[0]);
             }
             else
             {
@@ -287,6 +307,12 @@ Eigen::Matrix4f shot_detector::refinePose(std::vector<Eigen::Matrix4f, Eigen::al
 
         cerr << "-----------------" << endl << endl;
     }
+    pcl::visualization::PCLVisualizer visu("icp");
+    pcl::PointCloud<PointType>::Ptr notated_model (new pcl::PointCloud<PointType> ());
+     visu.addPointCloud (scene, ColorHandlerT (scene, 0.0, 255.0, 0.0), "scene");
+     pcl::transformPointCloud (*model, *notated_model, final_transforms[0]);
+     visu.addPointCloud (notated_model, ColorHandlerT (notated_model, 0.0, 0.0, 255.0), "object_aligned");
+    visu.spin();
 
     /**
        * Hypothesis Verification
@@ -383,14 +409,31 @@ void shot_detector::loadParameters()
     double cg_thresh;
     double corr_dist;
     double voxel_sample;
-    nh.param<double>("/apc_object_detection/model_sample",model_ss,.01);
-    nh.param<double>("/apc_object_detection/scene_sample",scene_ss,.01);
-    nh.param<double>("/apc_object_detection/descriptor_rad",descr_rad,.06);
-    nh.param<double>("/apc_object_detection/rf_rad",rf_rad,.015);
-    nh.param<double>("/apc_object_detection/cg_size",cg_size,.04);
-    nh.param<double>("/apc_object_detection/cg_thresh",cg_thresh,8.0);
-    nh.param<double>("/apc_object_detection/corr_dist",corr_dist,.75);
-    nh.param<double>("/apc_object_detection/voxel_leaf",voxel_sample,.01);
+    double icp_corr_distance;
+    int icp_max_iter;
+    double ran_inlier_dist;
+    int ran_corr_random;
+    int ran_sample_num;
+    double ran_sim_thresh;
+    double ran_max_corr_dist;
+    int ran_max_iter;
+
+    nh.param<double>("/detect_objects_pcl/model_sample",model_ss,.01);
+    nh.param<double>("/detect_objects_pcl/scene_sample",scene_ss,.01);
+    nh.param<double>("/detect_objects_pcl/descriptor_rad",descr_rad,.06);
+    nh.param<double>("/detect_objects_pcl/rf_rad",rf_rad,.015);
+    nh.param<double>("/detect_objects_pcl/cg_size",cg_size,.04);
+    nh.param<double>("/detect_objects_pcl/cg_thresh",cg_thresh,8.0);
+    nh.param<double>("/detect_objects_pcl/corr_dist",corr_dist,.75);
+    nh.param<double>("/detect_objects_pcl/voxel_leaf",voxel_sample,.01);
+    nh.param<double>("/detect_objects_pcl/icp_correlation_dist",icp_corr_distance,.05);
+    nh.param<int>("/detect_objects_pcl/icp_max_iter",icp_max_iter,100);
+    nh.param<double>("/detect_objects_pcl/ran_inlier_dist",ran_inlier_dist,0.25);
+    nh.param<int>("/detect_objects_pcl/ran_corr_random",ran_corr_random,2.0);
+    nh.param<int>("/detect_objects_pcl/ran_sample_num",ran_sample_num,5.0);
+    nh.param<double>("/detect_objects_pcl/ran_sim_thresh",ran_sim_thresh,0.6);
+    nh.param<double>("/detect_objects_pcl/ran_max_corr_dist",ran_max_corr_dist,.25);
+    nh.param<int>("/detect_objects_pcl/ran_max_iter",ran_max_iter,3000);
     model_ss_=static_cast<float>(model_ss);
     scene_ss_=static_cast<float>(scene_ss);
     rf_rad_=static_cast<float>(rf_rad);
@@ -399,6 +442,14 @@ void shot_detector::loadParameters()
     cg_thresh_=static_cast<float>(cg_thresh);
     corr_dist_=static_cast<float>(corr_dist);
     voxel_sample_=static_cast<float>(voxel_sample);
+    icp_corr_distance_=icp_corr_distance;
+    icp_max_iter_=icp_max_iter;
+    ran_inlier_dist_=static_cast<float>(ran_inlier_dist);
+    ran_corr_random_=ran_corr_random;
+    ran_sim_thresh_=static_cast<float>(ran_sim_thresh);
+    ran_sample_num_=ran_sample_num;
+    ran_max_corr_dist_=static_cast<float>(ran_corr_random);
+    ran_max_iter_=ran_max_iter;
 }
 
 void shot_detector::PointCloudCallback(const sensor_msgs::PointCloud2ConstPtr &data_msg)
@@ -418,7 +469,8 @@ void shot_detector::calcNormals(pcl::PointCloud<PointType>::Ptr cloud, pcl::Poin
 void shot_detector::calcSHOTDescriptors(pcl::PointCloud<PointType>::Ptr cloud, pcl::PointCloud<PointType>::Ptr keypoints
                                         , pcl::PointCloud<NormalType>::Ptr normals, pcl::PointCloud<DescriptorType>::Ptr descriptors)
 {
-    descr_est.setInputCloud (keypoints);
+    //descr_est.setInputCloud (keypoints);
+    descr_est.setInputCloud(cloud);
     descr_est.setInputNormals (normals);
     descr_est.setSearchSurface (cloud);
     descr_est.compute (*descriptors);
@@ -486,7 +538,7 @@ void shot_detector::groupCorrespondences()
     //  Compute (Keypoints) Reference Frames only for Hough
     //
 
-    /*pcl::PointCloud<RFType>::Ptr model_rf (new pcl::PointCloud<RFType> ());
+    pcl::PointCloud<RFType>::Ptr model_rf (new pcl::PointCloud<RFType> ());
         pcl::PointCloud<RFType>::Ptr scene_rf (new pcl::PointCloud<RFType> ());
 
         pcl::BOARDLocalReferenceFrameEstimation<PointType, NormalType, RFType> rf_est;
@@ -517,8 +569,8 @@ void shot_detector::groupCorrespondences()
         clusterer.setModelSceneCorrespondences (model_scene_corrs);
 
         //clusterer.cluster (clustered_corrs);
-        clusterer.recognize (rototranslations, clustered_corrs);*/
-    gc_clusterer.setGCSize (cg_size_);
+        clusterer.recognize (rototranslations, clustered_corrs);
+    /*gc_clusterer.setGCSize (cg_size_);
     gc_clusterer.setGCThreshold (cg_thresh_);
 
     gc_clusterer.setInputCloud (model_keypoints);
@@ -526,7 +578,7 @@ void shot_detector::groupCorrespondences()
     gc_clusterer.setModelSceneCorrespondences (model_scene_corrs);
 
     gc_clusterer.cluster (clustered_corrs);
-    gc_clusterer.recognize (rototranslations, clustered_corrs);
+    gc_clusterer.recognize (rototranslations, clustered_corrs);*/
 }
 
 void shot_detector::visualizeCorrespondences()
@@ -566,7 +618,7 @@ void shot_detector::visualizeCorrespondences()
     pcl::transformPointCloud (*model_keypoints, *off_scene_model_keypoints, Eigen::Vector3f (-1,0,0), Eigen::Quaternionf (1, 0, 0, 0));
 
     pcl::visualization::PointCloudColorHandlerCustom<PointType> off_scene_model_color_handler (off_scene_model, 255, 255, 128);
-    viewer.addPointCloud (off_scene_model, off_scene_model_color_handler, "off_scene_model");
+    viewer.addPointCloud (off_scene_model, "off_scene_model");
     // }
 
     //if (show_keypoints_)
@@ -575,9 +627,9 @@ void shot_detector::visualizeCorrespondences()
         viewer.addPointCloud (scene_keypoints, scene_keypoints_color_handler, "scene_keypoints");
         viewer.setPointCloudRenderingProperties (pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 5, "scene_keypoints");*/
 
-    pcl::visualization::PointCloudColorHandlerCustom<PointType> off_scene_model_keypoints_color_handler (off_scene_model_keypoints, 0, 0, 255);
-    viewer.addPointCloud (off_scene_model_keypoints, off_scene_model_keypoints_color_handler, "off_scene_model_keypoints");
-    viewer.setPointCloudRenderingProperties (pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 5, "off_scene_model_keypoints");
+   /* pcl::visualization::PointCloudColorHandlerCustom<PointType> off_scene_model_keypoints_color_handler (off_scene_model_keypoints, 0, 0, 255);
+    viewer.addPointCloud (off_scene_model_keypoints, "off_scene_model_keypoints");
+    viewer.setPointCloudRenderingProperties (pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 5, "off_scene_model_keypoints");*/
     // }
     pcl::PointCloud<PointType>::Ptr scene_corr (new pcl::PointCloud<PointType> ());
     for (int idx=0;idx< model_scene_corrs->size();++idx)
@@ -662,6 +714,10 @@ void shot_detector::visualizeICP()
             icp.setInputTarget (scene);
             icp.setInputSource (instances[i]);
             pcl::PointCloud<PointType>::Ptr registered (new pcl::PointCloud<PointType>);
+            icp.align (*registered);
+            icp.setMaxCorrespondenceDistance (.01);
+            icp.align (*registered);
+            icp.setMaxCorrespondenceDistance (.005);
             icp.align (*registered);
             registered_instances.push_back (registered);
             std::cerr << rototranslations[i] << std::endl;
@@ -821,8 +877,8 @@ main (int argc, char** argv)
     //detector.processImage();
     // Spin
     std::cerr << "ros start" << std::endl;
+        detector.processImage();
     ros::spin();
-        //detector.processImage();
     std::cerr << "End" << std::endl;
     return 0;
 }
