@@ -4,4 +4,9 @@
           args="-0.135 0.045 -0.10 3.1 0.08 -0.04 /crichton_middle_support /kinect2_link 30">
         <remap from="/tf" to="$(arg remapped_tf)" />
     </node>
+<arg name="remapped_tf2" default="/tf" />
+    <node name="body_to_head_top_tf_publisher" pkg="tf" type="static_transform_publisher"
+    args="0.1143 0.0 -0.45 0 0 0 /kinect2_bottom_link /kinect2_zebra_link 30">
+        <remap from="/tf" to="$(arg remapped_tf2)" />
+    </node>
 </launch>
