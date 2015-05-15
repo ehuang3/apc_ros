@@ -210,27 +210,35 @@
     <!--VIRTUAL JOINT: Purpose: this element defines a virtual joint between a robot link and an external frame of reference (considered fixed with respect to the robot)-->
     <virtual_joint name="crichton" type="fixed" parent_frame="map" child_link="crichton_origin" />
     <!--DISABLE COLLISIONS: By default it is assumed that any link of the robot could potentially come into collision with any other link in the robot. This tag disables collision checking between a specified pair of links. -->
+    <disable_collisions link1="crichton_bottom_kinect" link2="crichton_left_0_link" reason="Never" />
+    <disable_collisions link1="crichton_bottom_kinect" link2="crichton_left_2_link" reason="Never" />
+    <disable_collisions link1="crichton_bottom_kinect" link2="crichton_middle_support" reason="Adjacent" />
+    <disable_collisions link1="crichton_bottom_kinect" link2="crichton_right_0_link" reason="Never" />
+    <disable_collisions link1="crichton_bottom_kinect" link2="crichton_right_2_link" reason="Never" />
+    <disable_collisions link1="crichton_bottom_kinect" link2="crichton_top_kinect" reason="Never" />
+    <disable_collisions link1="crichton_bottom_kinect" link2="crichton_vertical_support" reason="Never" />
     <disable_collisions link1="crichton_left_0_link" link2="crichton_left_1_link" reason="Adjacent" />
     <disable_collisions link1="crichton_left_0_link" link2="crichton_left_2_link" reason="Never" />
     <disable_collisions link1="crichton_left_0_link" link2="crichton_left_4_link" reason="Never" />
     <disable_collisions link1="crichton_left_0_link" link2="crichton_middle_support" reason="Adjacent" />
     <disable_collisions link1="crichton_left_0_link" link2="crichton_right_0_link" reason="Default" />
-    <disable_collisions link1="crichton_left_0_link" link2="crichton_right_1_link" reason="Never" />
+    <disable_collisions link1="crichton_left_0_link" link2="crichton_right_1_link" reason="Default" />
     <disable_collisions link1="crichton_left_0_link" link2="crichton_right_2_link" reason="Never" />
     <disable_collisions link1="crichton_left_0_link" link2="crichton_right_4_link" reason="Never" />
+    <disable_collisions link1="crichton_left_0_link" link2="crichton_top_kinect" reason="Never" />
     <disable_collisions link1="crichton_left_0_link" link2="crichton_vertical_support" reason="Never" />
     <disable_collisions link1="crichton_left_1_link" link2="crichton_left_2_link" reason="Adjacent" />
     <disable_collisions link1="crichton_left_1_link" link2="crichton_left_4_link" reason="Never" />
     <disable_collisions link1="crichton_left_1_link" link2="crichton_middle_support" reason="Default" />
-    <disable_collisions link1="crichton_left_1_link" link2="crichton_right_0_link" reason="Never" />
+    <disable_collisions link1="crichton_left_1_link" link2="crichton_right_0_link" reason="Default" />
     <disable_collisions link1="crichton_left_1_link" link2="crichton_right_1_link" reason="Never" />
     <disable_collisions link1="crichton_left_1_link" link2="crichton_right_2_link" reason="Never" />
     <disable_collisions link1="crichton_left_1_link" link2="crichton_right_4_link" reason="Never" />
+    <disable_collisions link1="crichton_left_1_link" link2="crichton_top_kinect" reason="Default" />
     <disable_collisions link1="crichton_left_1_link" link2="crichton_vertical_support" reason="Never" />
     <disable_collisions link1="crichton_left_2_link" link2="crichton_left_3_link" reason="Adjacent" />
     <disable_collisions link1="crichton_left_2_link" link2="crichton_left_4_link" reason="Never" />
     <disable_collisions link1="crichton_left_2_link" link2="crichton_left_6_link" reason="Never" />
-    <disable_collisions link1="crichton_left_2_link" link2="crichton_left_finger_11_link" reason="Never" />
     <disable_collisions link1="crichton_left_2_link" link2="crichton_middle_support" reason="Default" />
     <disable_collisions link1="crichton_left_2_link" link2="crichton_right_0_link" reason="Never" />
     <disable_collisions link1="crichton_left_2_link" link2="crichton_right_1_link" reason="Never" />
@@ -239,6 +247,7 @@
     <disable_collisions link1="crichton_left_2_link" link2="crichton_right_4_link" reason="Never" />
     <disable_collisions link1="crichton_left_2_link" link2="crichton_right_5_link" reason="Never" />
     <disable_collisions link1="crichton_left_2_link" link2="crichton_right_6_link" reason="Never" />
+    <disable_collisions link1="crichton_left_2_link" link2="crichton_top_kinect" reason="Never" />
     <disable_collisions link1="crichton_left_2_link" link2="crichton_vertical_support" reason="Never" />
     <disable_collisions link1="crichton_left_3_link" link2="crichton_left_4_link" reason="Adjacent" />
     <disable_collisions link1="crichton_left_3_link" link2="crichton_left_6_link" reason="Never" />
@@ -246,10 +255,8 @@
     <disable_collisions link1="crichton_left_3_link" link2="crichton_left_finger_11_link" reason="Never" />
     <disable_collisions link1="crichton_left_3_link" link2="crichton_left_finger_12_link" reason="Never" />
     <disable_collisions link1="crichton_left_3_link" link2="crichton_left_finger_21_link" reason="Never" />
-    <disable_collisions link1="crichton_left_3_link" link2="crichton_left_finger_22_link" reason="Never" />
     <disable_collisions link1="crichton_left_3_link" link2="crichton_left_palm_link" reason="Never" />
     <disable_collisions link1="crichton_left_3_link" link2="crichton_left_thumb_1_link" reason="Never" />
-    <disable_collisions link1="crichton_left_3_link" link2="crichton_left_thumb_2_link" reason="Never" />
     <disable_collisions link1="crichton_left_3_link" link2="crichton_right_2_link" reason="Never" />
     <disable_collisions link1="crichton_left_3_link" link2="crichton_right_4_link" reason="Never" />
     <disable_collisions link1="crichton_left_3_link" link2="crichton_vertical_support" reason="Never" />
@@ -318,6 +325,9 @@
     <disable_collisions link1="crichton_left_finger_11_link" link2="crichton_left_palm_link" reason="Adjacent" />
     <disable_collisions link1="crichton_left_finger_11_link" link2="crichton_left_thumb_1_link" reason="Never" />
     <disable_collisions link1="crichton_left_finger_11_link" link2="crichton_left_thumb_2_link" reason="Never" />
+    <disable_collisions link1="crichton_left_finger_11_link" link2="crichton_right_finger_11_link" reason="Never" />
+    <disable_collisions link1="crichton_left_finger_11_link" link2="crichton_right_finger_21_link" reason="Never" />
+    <disable_collisions link1="crichton_left_finger_11_link" link2="crichton_right_finger_23_link" reason="Never" />
     <disable_collisions link1="crichton_left_finger_11_link" link2="crichton_vertical_support" reason="Never" />
     <disable_collisions link1="crichton_left_finger_12_link" link2="crichton_left_finger_13_link" reason="Adjacent" />
     <disable_collisions link1="crichton_left_finger_12_link" link2="crichton_left_finger_21_link" reason="Default" />
@@ -325,10 +335,11 @@
     <disable_collisions link1="crichton_left_finger_12_link" link2="crichton_left_palm_link" reason="Never" />
     <disable_collisions link1="crichton_left_finger_12_link" link2="crichton_left_thumb_1_link" reason="Never" />
     <disable_collisions link1="crichton_left_finger_12_link" link2="crichton_left_thumb_2_link" reason="Never" />
-    <disable_collisions link1="crichton_left_finger_12_link" link2="crichton_right_thumb_1_link" reason="Never" />
     <disable_collisions link1="crichton_left_finger_12_link" link2="crichton_vertical_support" reason="Never" />
     <disable_collisions link1="crichton_left_finger_13_link" link2="crichton_left_finger_23_link" reason="Default" />
     <disable_collisions link1="crichton_left_finger_13_link" link2="crichton_left_palm_link" reason="Never" />
+    <disable_collisions link1="crichton_left_finger_13_link" link2="crichton_right_thumb_1_link" reason="Never" />
+    <disable_collisions link1="crichton_left_finger_13_link" link2="crichton_right_thumb_2_link" reason="Never" />
     <disable_collisions link1="crichton_left_finger_13_link" link2="crichton_vertical_support" reason="Never" />
     <disable_collisions link1="crichton_left_finger_21_link" link2="crichton_left_finger_22_link" reason="Adjacent" />
     <disable_collisions link1="crichton_left_finger_21_link" link2="crichton_left_finger_23_link" reason="Never" />
@@ -337,56 +348,79 @@
     <disable_collisions link1="crichton_left_finger_21_link" link2="crichton_left_thumb_2_link" reason="Never" />
     <disable_collisions link1="crichton_left_finger_21_link" link2="crichton_left_thumb_3_link" reason="Never" />
     <disable_collisions link1="crichton_left_finger_21_link" link2="crichton_right_finger_11_link" reason="Never" />
+    <disable_collisions link1="crichton_left_finger_21_link" link2="crichton_right_finger_12_link" reason="Never" />
+    <disable_collisions link1="crichton_left_finger_21_link" link2="crichton_right_finger_13_link" reason="Never" />
+    <disable_collisions link1="crichton_left_finger_21_link" link2="crichton_right_finger_22_link" reason="Never" />
+    <disable_collisions link1="crichton_left_finger_21_link" link2="crichton_right_finger_23_link" reason="Never" />
     <disable_collisions link1="crichton_left_finger_21_link" link2="crichton_right_thumb_1_link" reason="Never" />
+    <disable_collisions link1="crichton_left_finger_21_link" link2="crichton_right_thumb_2_link" reason="Never" />
+    <disable_collisions link1="crichton_left_finger_21_link" link2="crichton_right_thumb_3_link" reason="Never" />
     <disable_collisions link1="crichton_left_finger_21_link" link2="crichton_vertical_support" reason="Never" />
     <disable_collisions link1="crichton_left_finger_22_link" link2="crichton_left_finger_23_link" reason="Adjacent" />
     <disable_collisions link1="crichton_left_finger_22_link" link2="crichton_left_palm_link" reason="Never" />
     <disable_collisions link1="crichton_left_finger_22_link" link2="crichton_left_thumb_1_link" reason="Never" />
     <disable_collisions link1="crichton_left_finger_22_link" link2="crichton_left_thumb_3_link" reason="Never" />
+    <disable_collisions link1="crichton_left_finger_22_link" link2="crichton_right_finger_11_link" reason="Never" />
+    <disable_collisions link1="crichton_left_finger_22_link" link2="crichton_right_finger_12_link" reason="Never" />
+    <disable_collisions link1="crichton_left_finger_22_link" link2="crichton_right_finger_13_link" reason="Never" />
+    <disable_collisions link1="crichton_left_finger_22_link" link2="crichton_right_finger_22_link" reason="Never" />
     <disable_collisions link1="crichton_left_finger_22_link" link2="crichton_right_thumb_1_link" reason="Never" />
     <disable_collisions link1="crichton_left_finger_22_link" link2="crichton_vertical_support" reason="Never" />
     <disable_collisions link1="crichton_left_finger_23_link" link2="crichton_left_palm_link" reason="Never" />
+    <disable_collisions link1="crichton_left_finger_23_link" link2="crichton_right_finger_13_link" reason="Never" />
+    <disable_collisions link1="crichton_left_finger_23_link" link2="crichton_right_finger_23_link" reason="Never" />
     <disable_collisions link1="crichton_left_finger_23_link" link2="crichton_vertical_support" reason="Never" />
     <disable_collisions link1="crichton_left_palm_link" link2="crichton_left_thumb_1_link" reason="Adjacent" />
     <disable_collisions link1="crichton_left_palm_link" link2="crichton_left_thumb_2_link" reason="Never" />
     <disable_collisions link1="crichton_left_palm_link" link2="crichton_left_thumb_3_link" reason="Never" />
+    <disable_collisions link1="crichton_left_palm_link" link2="crichton_right_finger_11_link" reason="Never" />
+    <disable_collisions link1="crichton_left_palm_link" link2="crichton_right_finger_21_link" reason="Never" />
     <disable_collisions link1="crichton_left_palm_link" link2="crichton_vertical_support" reason="Never" />
     <disable_collisions link1="crichton_left_thumb_1_link" link2="crichton_left_thumb_2_link" reason="Adjacent" />
     <disable_collisions link1="crichton_left_thumb_1_link" link2="crichton_left_thumb_3_link" reason="Never" />
     <disable_collisions link1="crichton_left_thumb_1_link" link2="crichton_right_finger_11_link" reason="Never" />
-    <disable_collisions link1="crichton_left_thumb_1_link" link2="crichton_right_thumb_3_link" reason="Never" />
+    <disable_collisions link1="crichton_left_thumb_1_link" link2="crichton_right_finger_21_link" reason="Never" />
+    <disable_collisions link1="crichton_left_thumb_1_link" link2="crichton_right_finger_23_link" reason="Never" />
+    <disable_collisions link1="crichton_left_thumb_1_link" link2="crichton_right_thumb_1_link" reason="Never" />
     <disable_collisions link1="crichton_left_thumb_1_link" link2="crichton_vertical_support" reason="Never" />
     <disable_collisions link1="crichton_left_thumb_2_link" link2="crichton_left_thumb_3_link" reason="Adjacent" />
     <disable_collisions link1="crichton_left_thumb_2_link" link2="crichton_right_finger_11_link" reason="Never" />
     <disable_collisions link1="crichton_left_thumb_2_link" link2="crichton_vertical_support" reason="Never" />
+    <disable_collisions link1="crichton_left_thumb_3_link" link2="crichton_right_finger_11_link" reason="Never" />
+    <disable_collisions link1="crichton_left_thumb_3_link" link2="crichton_right_finger_12_link" reason="Never" />
+    <disable_collisions link1="crichton_left_thumb_3_link" link2="crichton_right_finger_13_link" reason="Never" />
+    <disable_collisions link1="crichton_left_thumb_3_link" link2="crichton_right_finger_21_link" reason="Never" />
+    <disable_collisions link1="crichton_left_thumb_3_link" link2="crichton_right_finger_22_link" reason="Never" />
     <disable_collisions link1="crichton_left_thumb_3_link" link2="crichton_right_thumb_1_link" reason="Never" />
+    <disable_collisions link1="crichton_left_thumb_3_link" link2="crichton_right_thumb_3_link" reason="Never" />
     <disable_collisions link1="crichton_left_thumb_3_link" link2="crichton_vertical_support" reason="Never" />
     <disable_collisions link1="crichton_middle_support" link2="crichton_right_0_link" reason="Adjacent" />
-    <disable_collisions link1="crichton_middle_support" link2="crichton_right_1_link" reason="User" />
     <disable_collisions link1="crichton_middle_support" link2="crichton_right_2_link" reason="Never" />
     <disable_collisions link1="crichton_middle_support" link2="crichton_right_4_link" reason="Never" />
+    <disable_collisions link1="crichton_middle_support" link2="crichton_top_kinect" reason="Adjacent" />
     <disable_collisions link1="crichton_middle_support" link2="crichton_vertical_support" reason="Adjacent" />
     <disable_collisions link1="crichton_right_0_link" link2="crichton_right_1_link" reason="Adjacent" />
     <disable_collisions link1="crichton_right_0_link" link2="crichton_right_2_link" reason="Never" />
     <disable_collisions link1="crichton_right_0_link" link2="crichton_right_4_link" reason="Never" />
+    <disable_collisions link1="crichton_right_0_link" link2="crichton_top_kinect" reason="Never" />
     <disable_collisions link1="crichton_right_0_link" link2="crichton_vertical_support" reason="Never" />
     <disable_collisions link1="crichton_right_1_link" link2="crichton_right_2_link" reason="Adjacent" />
     <disable_collisions link1="crichton_right_1_link" link2="crichton_right_4_link" reason="Never" />
+    <disable_collisions link1="crichton_right_1_link" link2="crichton_top_kinect" reason="Default" />
     <disable_collisions link1="crichton_right_1_link" link2="crichton_vertical_support" reason="Never" />
     <disable_collisions link1="crichton_right_2_link" link2="crichton_right_3_link" reason="Adjacent" />
     <disable_collisions link1="crichton_right_2_link" link2="crichton_right_4_link" reason="Never" />
     <disable_collisions link1="crichton_right_2_link" link2="crichton_right_6_link" reason="Never" />
+    <disable_collisions link1="crichton_right_2_link" link2="crichton_top_kinect" reason="Never" />
     <disable_collisions link1="crichton_right_2_link" link2="crichton_vertical_support" reason="Never" />
     <disable_collisions link1="crichton_right_3_link" link2="crichton_right_4_link" reason="Adjacent" />
     <disable_collisions link1="crichton_right_3_link" link2="crichton_right_6_link" reason="Never" />
     <disable_collisions link1="crichton_right_3_link" link2="crichton_right_7_link" reason="Never" />
     <disable_collisions link1="crichton_right_3_link" link2="crichton_right_finger_11_link" reason="Never" />
-    <disable_collisions link1="crichton_right_3_link" link2="crichton_right_finger_12_link" reason="Never" />
     <disable_collisions link1="crichton_right_3_link" link2="crichton_right_finger_21_link" reason="Never" />
     <disable_collisions link1="crichton_right_3_link" link2="crichton_right_finger_22_link" reason="Never" />
     <disable_collisions link1="crichton_right_3_link" link2="crichton_right_palm_link" reason="Never" />
     <disable_collisions link1="crichton_right_3_link" link2="crichton_right_thumb_1_link" reason="Never" />
-    <disable_collisions link1="crichton_right_3_link" link2="crichton_right_thumb_2_link" reason="Never" />
     <disable_collisions link1="crichton_right_3_link" link2="crichton_vertical_support" reason="Never" />
     <disable_collisions link1="crichton_right_4_link" link2="crichton_right_5_link" reason="Adjacent" />
     <disable_collisions link1="crichton_right_4_link" link2="crichton_right_6_link" reason="Never" />
@@ -467,14 +501,18 @@
     <disable_collisions link1="crichton_right_finger_22_link" link2="crichton_right_palm_link" reason="Never" />
     <disable_collisions link1="crichton_right_finger_22_link" link2="crichton_right_thumb_1_link" reason="Never" />
     <disable_collisions link1="crichton_right_finger_22_link" link2="crichton_right_thumb_3_link" reason="Never" />
+    <disable_collisions link1="crichton_right_finger_22_link" link2="crichton_vertical_support" reason="Never" />
     <disable_collisions link1="crichton_right_finger_23_link" link2="crichton_right_palm_link" reason="Never" />
     <disable_collisions link1="crichton_right_finger_23_link" link2="crichton_vertical_support" reason="Never" />
     <disable_collisions link1="crichton_right_palm_link" link2="crichton_right_thumb_1_link" reason="Adjacent" />
     <disable_collisions link1="crichton_right_palm_link" link2="crichton_right_thumb_2_link" reason="Never" />
     <disable_collisions link1="crichton_right_palm_link" link2="crichton_right_thumb_3_link" reason="Never" />
+    <disable_collisions link1="crichton_right_palm_link" link2="crichton_vertical_support" reason="Never" />
     <disable_collisions link1="crichton_right_thumb_1_link" link2="crichton_right_thumb_2_link" reason="Adjacent" />
     <disable_collisions link1="crichton_right_thumb_1_link" link2="crichton_right_thumb_3_link" reason="Never" />
+    <disable_collisions link1="crichton_right_thumb_1_link" link2="crichton_vertical_support" reason="Never" />
     <disable_collisions link1="crichton_right_thumb_2_link" link2="crichton_right_thumb_3_link" reason="Adjacent" />
     <disable_collisions link1="crichton_right_thumb_2_link" link2="crichton_vertical_support" reason="Never" />
     <disable_collisions link1="crichton_right_thumb_3_link" link2="crichton_vertical_support" reason="Never" />
+    <disable_collisions link1="crichton_top_kinect" link2="crichton_vertical_support" reason="Never" />
 </robot>
