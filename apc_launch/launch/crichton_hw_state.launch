@@ -3,6 +3,16 @@
     <!-- Crichton description -->
     <param name="robot_description" command="$(find xacro)/xacro.py '$(find apc_description)/urdf/crichton/crichton.urdf.xacro'"/>
 
+    <!-- Load the URDF, SRDF and other .yaml configuration files on the param server -->
+    <include file="$(find apc_moveit_config)/launch/planning_context.launch">
+        <arg name="load_robot_description" value="true"/>
+    </include>
+
+    <!-- If needed, broadcast static tf for robot root -->
+
+    <!-- Given the published joint states, publish tf for the robot links -->
+    <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" respawn="true" output="screen" />
+
     <!-- State accumulator -->
     <node name="crichton_hw_state" pkg="joint_state_publisher" type="joint_state_publisher">
         <param name="/use_gui" value="false"/>

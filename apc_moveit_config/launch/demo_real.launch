@@ -13,12 +13,6 @@
 
   <!-- If needed, broadcast static tf for robot root -->
 
-  <!-- We have a robot connected, so publish real joint states -->
-  <include file="$(find apc_launch)/launch/crichton_hw_state.launch" />
-
-  <!-- Given the published joint states, publish tf for the robot links -->
-  <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" respawn="true" output="screen" />
-
   <!-- Run the main MoveIt executable without trajectory execution (we do not have controllers configured by default) -->
   <include file="$(find apc_moveit_config)/launch/move_group.launch">
     <arg name="allow_trajectory_execution" value="true"/>  
