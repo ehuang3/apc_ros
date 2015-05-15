@@ -59,6 +59,8 @@ CHANNELS="$CHANNELS ft-left ft-right ft-bias-left ft-bias-right"
 # Tactile sensor channels.
 CHANNELS="$CHANNELS ts-left ts-right"
 # CHANNELS="$CHANNELS pir-ctrl pir-state pir-complete joystick pir-config"
+# Debug channels.
+CHANNELS="$CHANNELS track-torso-dbg feedback-torso-dbg track-left-dbg feedback-left-dbg track-right-dbg feedback-right-dbg sdhtrack-left-dbg sdhfeedback-left-dbg sdhtrack-right-dbg sdhfeedback-right-dbg"
 
 apc_ach_mk() {
     for c in $CHANNELS; do
