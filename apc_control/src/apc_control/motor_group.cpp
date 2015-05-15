@@ -464,8 +464,8 @@ namespace apc_control
 
         struct timespec timeout;
 
-        timeout.tv_sec = 0;
-        timeout.tv_nsec = ms * 1e6;
+        timeout.tv_sec = ms / 1000;
+        timeout.tv_nsec = (ms % 1000) * 1e6;
 
         return readState(_state.state, &timeout);
     }
@@ -482,7 +482,12 @@ namespace apc_control
         void* buf;
 
         // We will get the latest message with timeout.
-        int opt = ACH_O_LAST | (time_out ? ACH_O_WAIT : 0);
+	int opt = 0;
+	if (time_out)
+		opt = ACH_O_WAIT | ACH_O_LAST | ACH_O_RELTIME;
+	else
+		opt = ACH_O_LAST | ACH_O_NONBLOCK;
+        //int opt = ACH_O_LAST | (time_out ? ACH_O_WAIT : 0);
 
         // Get the motor state message.
         ach_status_t s = sns_msg_local_get( &_params.chan_state, &buf, &frame_size, time_out, opt );
@@ -585,9 +590,8 @@ namespace apc_control
     {
         if (!(_params.allow_execution && _params.enabled))
             return false;
-        if (_state.dirty_state)
-            if (readState(0))
-                return false;
+	if (readState(0))
+            return false;
         for (int i = 0; i < _state.state->header.n; i++)
             if (std::abs(_state.state->X[i].vel) > 0.000001)
                 return true;
