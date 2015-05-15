@@ -311,6 +311,7 @@ namespace apc_control
         READ_PARAM(_track,     name_track);
         READ_PARAM(_k_p,       k_p);
         READ_PARAM(_feedback,  name_feedback_state);
+        READ_PARAM(_max_gain,  max_gain);
 
 #undef READ_PARAM
 
@@ -814,6 +815,14 @@ namespace apc_control
         return ret;
     }
 
+    void clamp(double& a, const double max)
+    {
+        double sign = 1;
+        if (a < 0)
+            sign = -1;
+        a = sign * std::min(std::abs(a), max);
+    }
+
     MotorGroupError MotorGroup::sendCommand(struct sns_msg_motor_ref* cmd)
     {
         MotorGroupError r;
@@ -822,10 +831,12 @@ namespace apc_control
         if (r = readState(0))
             return r;
 
-        // for (size_t i = 0; i < cmd->header.n; i++) {
-        //     double p = _state.state->X[i].pos - _state.track->X[i].pos;
-        //     cmd->u[i] = cmd->u[i] + k_p * p;
-        // }
+        for (size_t i = 0; i < cmd->header.n; i++) {
+            double p   = _state.state->X[i].pos - _state.track->X[i].pos;
+            double k_p = _params.k_p * p;
+            clamp(k_p, _params.max_gain);
+            cmd->u[i] = cmd->u[i] + k_p;
+        }
 
         // The ACH return status.
         ach_status_t status = ACH_OK;

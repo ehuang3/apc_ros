@@ -27,7 +27,8 @@ torso_map:
   {
   crichton_torso_joint: 0
   }
-torso_k_p: 0.002
+torso_k_p: 0.5
+torso_max_gain: 0.01
 torso_log: true
 torso_track: "track-torso-dbg"
 torso_feedback: "feedback-torso-dbg"
@@ -51,7 +52,8 @@ left_arm_map:
   crichton_left_6_joint: 5,
   crichton_left_7_joint: 6
   }
-left_arm_k_p: 0.002
+left_arm_k_p: 0.5
+left_arm_max_gain: 0.01
 left_arm_log: true
 left_arm_track: "track-left-dbg"
 left_arm_feedback: "feedback-left-dbg"
@@ -75,7 +77,8 @@ right_arm_map:
   crichton_right_6_joint: 5,
   crichton_right_7_joint: 6
   }
-right_arm_k_p: 0.002
+right_arm_k_p: 0.5
+right_arm_max_gain: 0.01
 right_arm_log: true
 right_arm_track: "track-right-dbg"
 right_arm_feedback: "feedback-right-dbg"
@@ -99,7 +102,8 @@ left_hand_map:
   crichton_left_finger_12_joint: 5,
   crichton_left_finger_13_joint: 6
   }
-left_hand_k_p: 0.002
+left_hand_k_p: 0.5
+left_hand_max_gain: 0.01
 left_hand_log: true
 left_hand_track: "sdhtrack-left-dbg"
 left_hand_feedback: "sdhfeedback-left-dbg"
@@ -123,7 +127,8 @@ right_hand_map:
   crichton_right_finger_12_joint: 5,
   crichton_right_finger_13_joint: 6
   }
-right_hand_k_p: 0.002
+right_hand_k_p: 0.5
+right_hand_max_gain: 0.01
 right_hand_log: true
 right_hand_track: "sdhtrack-right-dbg"
 right_hand_feedback: "sdhfeedback-right-dbg"

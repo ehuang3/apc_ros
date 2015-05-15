@@ -200,6 +200,7 @@ namespace apc_control
             bool enabled;                        // If true, execute commands on real hardware. ^Both must be true.
 
             double k_p;                          // Position error gain.
+            double max_gain;                     // Maximum gain to apply.
 
             bool log;                            // If true, output logging messages to the logging channels.
             std::string name_track;              // Name of the debug command channel.
