@@ -8,11 +8,15 @@ function [sets] = manual_train(image, object_name, attempts, existing_sets)
     sets = cell(1, attempts);
 
     figure, imshow(image)
+    title(['Highlight ', object_name])
     for k = 1: attempts
         sub_struct.name = object_name
         [x, y, train_section, rect] = imcrop();
+        if isequal(train_section, [])
+            break;
+        end
         sub_struct.image = train_section;
-        sub_struct.distributions = apc_get_distributions(train_section);
+        % sub_struct.distributions = apc_get_distributions(train_section);
         sets{k} = sub_struct;
     end
 
