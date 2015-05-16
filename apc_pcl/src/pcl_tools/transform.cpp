@@ -21,6 +21,13 @@ void affine_cloud(Eigen::Vector3f axis, float theta, Eigen::Vector3f translation
     pcl::transformPointCloud(input_cloud, destination_cloud, transform);
 }
 
+void affine_cloud(Eigen::Affine3d transform, pcl::PointCloud<pcl::PointXYZ>& input_cloud, pcl::PointCloud<pcl::PointXYZ>& destination_cloud) {
+    pcl::transformPointCloud(input_cloud, destination_cloud, transform);
+}
+void affine_cloud(Eigen::Affine3d transform, pcl::PointCloud<pcl::PointXYZRGBA>& input_cloud, pcl::PointCloud<pcl::PointXYZRGBA>& destination_cloud) {
+    pcl::transformPointCloud(input_cloud, destination_cloud, transform);
+}
+
 void discard_halfspace(Eigen::Vector3f plane_normal, Eigen::Vector3f plane_origin,
     pcl::PointCloud<pcl::PointXYZ>& input_cloud, pcl::PointCloud<pcl::PointXYZ>& destination_cloud) {
     /* 

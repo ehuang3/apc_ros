@@ -80,6 +80,7 @@ bool APC_Frust_Cull::cull_frustum(apc_msgs::GetCloudFrustum::Request &req, apc_m
         pcl_tools::visualize(output_cloud, "frustum culled");
         pcl::toROSMsg(*output_cloud, resp.sub_cloud);
         std::cout << "Completed frustum cull" << std::endl;
+        // pcl::io::savePCDFile ("/home/apc/repos/apc/src/apc_ros/niko_file.pcd", *output_cloud, true);
         return true;
     } else {
         std::cout << "Culling using region growing method" << std::endl;
@@ -89,7 +90,7 @@ bool APC_Frust_Cull::cull_frustum(apc_msgs::GetCloudFrustum::Request &req, apc_m
         centroid_y = (req.height / 2) + req.y;
         int seed_index = xyToLinear(centroid_x, centroid_y, req.cloud.width);
         pcl_tools::segment_region_growing(input_cloud, seed_index, output_cloud);
-        pcl_tools::visualize(output_cloud, "Culled with region growing");
+        // pcl_tools::visualize(output_cloud, "Culled with region growing");
         std::cout << "Culled" << std::endl;
         // pcl::io::savePCDFile ("/home/apc/repos/apc/src/apc_ros/niko_file.pcd", *output_cloud, true);
         pcl::toROSMsg(*output_cloud, resp.sub_cloud);
@@ -102,15 +103,26 @@ bool APC_Frust_Cull::cull_background(apc_msgs::CullCloudBackground::Request &req
     /* Remove background service */
     std::cout << "Culling Background" << std::endl;
 
-    pcl::PointCloud<pcl::PointXYZRGBA>::Ptr cloud_to_clean_rgba(new pcl::PointCloud<pcl::PointXYZRGBA>);
     pcl::PointCloud<pcl::PointXYZRGBA>::Ptr cloud_to_clean(new pcl::PointCloud<pcl::PointXYZRGBA>);
     pcl::PointCloud<pcl::PointXYZRGBA>::Ptr cloud_cleaned(new pcl::PointCloud<pcl::PointXYZRGBA>);
     pcl::fromROSMsg(req.cloud, *cloud_to_clean);
 
+    Eigen::Affine3d shelf_to_world;
+    tf::poseMsgToEigen(req.shelf_world, shelf_to_world);
+
+    Eigen::Affine3d background_to_world;
+    tf::poseMsgToEigen(req.background_world, background_to_world);
+
+    Eigen::Affine3d background_to_shelf = shelf_to_world * background_to_world.inverse();
+
     pcl::PointCloud<pcl::PointXYZRGBA>::Ptr background_cloud(new pcl::PointCloud<pcl::PointXYZRGBA>);
+    pcl::PointCloud<pcl::PointXYZRGBA>::Ptr affined_background(new pcl::PointCloud<pcl::PointXYZRGBA>);
     pcl::fromROSMsg(req.cloud_background, *background_cloud);
-    // pcl_tools::visualize(background_cloud, cloud_to_clean, "Background image");
-    pcl_functions::removeBackground(cloud_to_clean, background_cloud, cloud_cleaned);
+    pcl_tools::affine_cloud(background_to_shelf, *background_cloud, *affined_background);
+    pcl_tools::visualize(background_cloud, affined_background, "Background shifted");
+    pcl_tools::visualize(affined_background, cloud_to_clean, "Background vs input");
+
+    pcl_functions::removeBackground(cloud_to_clean, affined_background, cloud_cleaned);
     // pcl_tools::visualize(cloud_cleaned, "Cloud after cleaning");
 
     pcl::toROSMsg(*cloud_cleaned, resp.cloud);
