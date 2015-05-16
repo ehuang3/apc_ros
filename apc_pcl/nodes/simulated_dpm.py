@@ -16,8 +16,8 @@ class Simulated_DPM(object):
             rospy.set_param("/kinect2/serial_number", '503233542542')
             rospy.logerr("SETTING A FAKE KINECT SERIAL")
 
-        rospy.init_node('simulated_dpm')
-        rospy.Service('/run_dpm_simulated', SegmentImage, self.run_dpm)
+        rospy.init_node('simulated_segmentation')
+        rospy.Service('/simulate_segment_image', SegmentImage, self.run_dpm)
 
         cv2.namedWindow("kinect_view")
         cv2.setMouseCallback("kinect_view", self.mouse_call)

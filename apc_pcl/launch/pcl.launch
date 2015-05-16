@@ -1,11 +1,12 @@
 <launch>
 
     <arg name="simulate" default="false" />
+    <arg name="train" default="false" />
 
     <param name="stlpath" value="$(find apc_description)/objects" />
     <param name="meshpath" value="$(find apc_ros)/../amazon_picking_challenge/" />
-    <!-- <param name="simulate_segmentation" value="false" type="bool" /> -->
     <param name="simulate_segmentation" value="$(arg simulate)" type="bool" />
+    <param name="train_segmentation" value="$(arg train)" type="bool" />
 
     <node name="vision_server" pkg="apc_pcl" type="vision_server.py" 
         output="screen" />   
@@ -14,7 +15,6 @@
         <node name="simulated_segmentation" pkg="apc_pcl" type="simulated_dpm.py"
             output="screen" />
     </group>
-    
     <group unless="$(arg simulate)" >
         <node name="segmentation_server" pkg="apc_pcl" type="segmentation_server.py"
             output="screen" />
