@@ -5,6 +5,7 @@ from apc_msgs.srv import *
 import threading
 import os
 import cv2
+from datetime import datetime
 
 lock = threading.Lock()
 
@@ -15,6 +16,31 @@ def thread_lock(func):
         lock.release()
         return result
     return locked_function
+
+
+class Matlabber(object):
+    def __init__(self, logging=False):
+        self.logging = logging
+        self.matlab = pymatlab.session_factory()
+
+    def log(self, func):
+        def logged_func(_string):
+            if self.logging:
+                print '>> Matlabbing:', _string
+            if _string.strip()[-1] != ';':
+                _string += ';'
+            assert _string.count('(') == _string.count(')'), "() mismatch in matlab call"
+            assert _string.count('{') == _string.count('}'), "{} mismatch in matlab call"
+            return func(_string)
+        return logged_func
+
+    def __getattr__(self, name):
+        func = getattr(self.matlab, name)
+        if name == 'run':
+            return self.log(func)
+        else:
+            return func
+
 
 class Object_Segment(object):
     # I made this list by going into the meshes folder and running 
@@ -65,18 +91,26 @@ class Object_Segment(object):
             f = session.getvalue('f')
         '''
 
-        self.matlab = pymatlab.session_factory()  # This is blocking until we have initialized the session
+        # Check if we are in training mode
+        self.training = rospy.get_param('train_segmentation')
+        self.matlab = Matlabber(logging=True)
+        # self.matlab = pymatlab.session_factory()  # This is blocking until we have initialized the session
         from apc_tools import path_to_root
         # We have to do this AFTER we create the matlab instance.
 
         print "Adding to path"
-        apc_matlab = os.path.join(path_to_root(), 'apc_pcl', 'matsrc')
-        self.matlab.run("addpath('{}');".format(apc_matlab))
+        self.apc_matlab = os.path.join(path_to_root(), 'apc_pcl', 'matsrc')
+        print "addpath(genpath('{}'));".format(self.apc_matlab)
+        self.matlab.run("addpath(genpath('{}'));".format(self.apc_matlab))
 
         # places 'sets', which contains the training data, in the workspace
         print 'loading sets'
-        training_data = os.path.join(apc_matlab, "train_data.mat")
-        self.matlab.run("load('{}');".format(training_data))
+        if self.training:
+            # Create an empty sets
+            self.matlab.run('sets = {}')
+        else:
+            training_data = os.path.join(self.apc_matlab, "train_data.mat")
+            self.matlab.run("load('{}');".format(training_data))
 
         print 'loaded'
         rospy.init_node('segmentation_server')
@@ -85,22 +119,22 @@ class Object_Segment(object):
     def list_to_cellarray(self, _list):
         return str(_list).replace('[', '{').replace(']', '}')
 
+    def train_on_image(self, image, object_name, object_list):
+        rgb_image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        self.matlab.putvalue("image", rgb_image)
+        self.matlab.putvalue("object_name", object_name)
+        self.matlab.run("object_list = {};".format(self.list_to_cellarray(object_list)))
+        self.matlab.run("sets = apc_manual_train_histo(image, object_name, 10, sets)")
+        print "Done with training segmentation run on {}".format(object_name)
+
     def segment_image(self, image, object_name, object_list):
         rgb_image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-        print 'putting image'
         self.matlab.putvalue("image", rgb_image)
-        print 'putting object name'
         self.matlab.putvalue("object_name", object_name)
-
-        print 'putting object list', self.list_to_cellarray(object_list)
-        print "object_list = {};".format(self.list_to_cellarray(object_list))
         self.matlab.run("object_list = {};".format(self.list_to_cellarray(object_list)))
-
-        print 'running command'
-        self.matlab.run("bb = apc_bounding_box(image, object_name, object_list, sets);")
-        print 'gettinb bounding box'
+        self.matlab.run("use_sets = apc_pre_train(sets, object_list);")
+        self.matlab.run("bb = apc_bounding_box(image, object_name, object_list, use_sets);")
         bounding_box = self.matlab.getvalue("bb")
-        print 'cleaning up'
         self.matlab.run("clear image bb object_name object_list")
         # x, y, w, h = bounding_box  # Split it all out
         return bounding_box  # x, y, w, h
@@ -108,17 +142,39 @@ class Object_Segment(object):
     @thread_lock
     def segment_service(self, srv):
         from apc_tools import get_image_msg  # I know this is weird. I promise it was necessary.
+
         image = get_image_msg(srv.image)
         object_name = srv.object_id
-        object_list = srv.bin_objects
-        x, y, w, h = self.segment_image(image, object_name, object_list)
+
+        # Ensure that all of our items are valid
         assert object_name in self.valid_objects, "Object {} is unknown".format(object_name)
+        object_list = srv.bin_objects
+        for name in object_list:
+            assert name in self.valid_objects, "Object {} is unknown".format(name)
+
+        # Check if we're in training mode
+        if self.training:
+            self.train_on_image(image, object_name, object_list)
+            return SegmentImageResponse()
+
+        x, y, w, h = self.segment_image(image, object_name, object_list)
         return SegmentImageResponse(
             x=x, y=y, height=h, width=w,
             success=True
         )
 
+    @thread_lock
+    def cleanup(self):
+        rospy.logwarn("Killing segmentation server")
+        def timestamp():
+            now = datetime.now()
+            return "{}_{}_{}_{}".format(now.month, now.day, now.hour, now.minute)
+        if self.training:
+            savepath = os.path.join(self.apc_matlab, 'images', 'training_data_{}.mat'.format(timestamp()))
+            self.matlab.run("if (length(sets) > 0)\nsave('{}', 'sets');\nend".format(savepath))
+
 
 if __name__ == '__main__':
     objseg = Object_Segment()
+    rospy.on_shutdown(objseg.cleanup)
     rospy.spin()
