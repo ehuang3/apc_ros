@@ -1,0 +1,37 @@
+<?xml version="1.0" ?>
+<launch>
+  <arg name="job_file" default="kinect_bottom_job.yaml" />
+  <arg name="setup_file" default="camera_calib.yaml" />
+  <arg name="delete_job" default="false" />
+  <arg name="load_job" default="true" />
+  <arg name="debug" default="true" />
+  <arg unless="$(arg debug)" name="launch_prefix" value="" />
+  <arg     if="$(arg debug)" name="launch_prefix" value="gdb -i=mi --args" />
+
+  <!--
+  <node pkg="tf" type="static_transform_publisher" name="kinect_front_depth_tf_pub" 
+    args="-0.025 0.0 0.0 0.0 0.0 0.0 kinect_front_rgb_optical_frame kinect_front_depth_optical_frame 100" />
+  <node pkg="tf" type="static_transform_publisher" name="kinect_back_depth_tf_pub" 
+    args="-0.025 0.0 0.0 0.0 0.0 0.0 kinect_back_rgb_optical_frame kinect_back_depth_optical_frame 100" />
+  -->
+
+  <group ns="excel_calib_srv">
+    <group if="$(arg delete_job)">
+      <rosparam command="delete" param="calibration_job"/>
+    </group>
+    <group unless="$(arg delete_job)">
+      <rosparam if="$(arg load_job)"
+                command="load" 
+                file="$(find apc_extrinsic_calibration)/$(arg job_file)"
+                param="calibration_job" /> 
+    </group>
+  </group>
+
+
+  <node pkg="extrinsic_calibration" launch-prefix="$(arg launch_prefix)" type="ros_calibration_server" name="excel_calib_srv" 
+        output="screen">
+    <rosparam command="load" 
+              file="$(find apc_extrinsic_calibration)/$(arg setup_file)" 
+              param="calibration_setup" />
+  </node>
+</launch>

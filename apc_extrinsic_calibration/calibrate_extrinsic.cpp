@@ -2,18 +2,22 @@
 #include <std_srvs/Empty.h>
 #include <iostream>
 
-void run(ros::ServiceClient &detect,ros::ServiceClient &calibrate)
+void detect(ros::ServiceClient &detect)
 {
     std_srvs::Empty empty_srv;
     detect.call(empty_srv);
-    calibrate.call(empty_srv);
-
 }
+
+void calib(ros::ServiceClient &calibrate)
+{
+    std_srvs::Empty empty_srv;
+    calibrate.call(empty_srv);
+}
+
 void save(ros::ServiceClient &save){
     std_srvs::Empty empty_srv;
     save.call(empty_srv);
 }
-
 
 int main( int argc,char** argv)
 {
@@ -23,20 +27,24 @@ int main( int argc,char** argv)
     ros::ServiceClient detect_srv = nh.serviceClient<std_srvs::Empty>("/excel_calib_srv/detect_targets");
     ros::ServiceClient calibrate_srv = nh.serviceClient<std_srvs::Empty>("/excel_calib_srv/calibrate");
     ros::ServiceClient save_srv = nh.serviceClient<std_srvs::Empty>("/excel_calib_srv/save");
-    ros::spin();
-    int num=3;
+
+    int num=4;
     while(num!=0)
     {
-        num=3;
+        num=4;
         std::cerr << "Please enter number" << std::endl;
         std::cin>> num;
         if(num==1)
         {
-            run;
+            detect(detect_srv);
         }
         else if(num==2)
         {
-            save;
+            calib(calibrate_srv);
+        }
+        else if(num==3)
+        {
+            save(save_srv);
         }
     }
     std::cerr << "ending proram" << std::endl;

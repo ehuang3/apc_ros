@@ -1,16 +1,15 @@
-world_frame: /table_link
-ee_frame: /ee_link
+world_frame: /crichton_origin
+ee_frame: /crichton_left_7_link
 
 
 cameras:
-
-- frame: /kinect2/rgb_rect/image
-  image_topic: /kinect_front/rgb/image_rect_color
+- frame: /kinect2_bottom_rgb_optical_frame
+  image_topic: /kinect2_bottom/rgb_rect/image
   guess_cam:
-    calibration: {fx: 1.0458557400637853e+03, fy: 1.0481342812101645e+03, skew: 0.0, u0: 9.3580000745008272e+02, v0: 5.3540198086537112e+02}
+    calibration: {fx: 1100.032174, fy: 1105.629058, skew: 0.0, u0: 999.761529, v0: 531.916747}
     pose:
-      translation: {x: -0.135, y: 0.065, z: -0.105}
-      rotation: {x: 0.99962, y: 0.0274, z: 0.0007, w: -0.00002}
+      translation: {x: 0, y: 0, z: 0}
+      rotation: {x: 0, y: 0, z: 0, w: 1.0}
   calibrated_cam:
     calibration: {fx: 1.0458557400637853e+03, fy: 1.0481342812101645e+03, skew: 0.0, u0: 9.3580000745008272e+02, v0: 5.3540198086537112e+02}
     pose:
@@ -19,14 +18,14 @@ cameras:
 
 
 targets:
-- frame: /target_frame
-  type: 1
-  pt_spacing: 0.1158
-  rows: 4
-  cols: 5
+- frame: /crichton_left_palm_link
+  type: 0                       # CHESSBOARD
+  pt_spacing: 0.0118
+  rows: 6
+  cols: 9
   guess_pose:
     translation: {x: 0.2, y: 0.0, z: 0.2}
-    rotation: {x: 0.5, y: 0.5, z: -0.5, w: 0.5}
+    rotation: {x: 0, y: 0, z: 0, w: 1.0}
   calibrated_pose:
     translation: {x: 0.0, y: 0.0, z: 0.0}
     rotation: {x: 0.0, y: 0.0, z: 0.0, w: 0.0}
