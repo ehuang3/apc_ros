@@ -9,7 +9,7 @@
 #include <pcl/filters/extract_indices.h>
 #include <pcl/filters/passthrough.h>
 #include <pcl/filters/voxel_grid.h>
-
+#include "pcl_tools.h"
 #include <stdlib.h>
 #include <Eigen/Core>
 
@@ -42,18 +42,26 @@ void removeBackground(pcl::PointCloud<PointType2>::Ptr scene, pcl::PointCloud<Po
     de_nanned->is_dense = true;  // NEXT: NOT DENSE!
     de_nanned->points.resize(de_nanned->width * de_nanned->height);
 
+    // pcl_tools::visualize(scene, background, "BOTHGROUND");
+    std::cout << "frnak llodys " << std::endl;
     for (int k = 0; k < indices.size(); k++) {
         de_nanned->points[indices[k]] = scene->points[indices[k]];
     }
+    // pcl_tools::visualize(de_nanned, "De nanned");
+    std::cout << "frnak llodys2 " << std::endl;
+
 
     std::vector<int> indexes;
     //  Iterate through pc and compare to points in the kdtree
 
+    std::cout << "denanning difference " << scene->points.size() - indices.size() << std::endl;
     for (size_t i = 0; i < de_nanned->size (); ++i)
     {
         std::vector<int> neigh_indices (1);
         std::vector<float> neigh_sqr_dists (1);
+
         if ((de_nanned->at(i).x == 0.0) && (de_nanned->at(i).y == 0.0) && (de_nanned->at(i).z == 0.0)) {
+            // std::cout << "frnak llodys ew5345w" << std::endl;
             continue;
         }
         int found_neighs = kdtree.nearestKSearch (de_nanned->at (i), 1, neigh_indices, neigh_sqr_dists);
@@ -61,8 +69,8 @@ void removeBackground(pcl::PointCloud<PointType2>::Ptr scene, pcl::PointCloud<Po
         {
             indexes.push_back(i);
         }
-
     }
+    std::cout << "frnak llodys4 " << std::endl;
 
     pcl::PointIndices::Ptr inliers (new pcl::PointIndices ());
     inliers->indices=indexes;

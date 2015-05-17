@@ -10,6 +10,7 @@
 #include <pcl/io/io.h>
 #include <pcl/console/time.h>   // TicToc
 #include "pcl_tools.h"
+
 namespace pcl_tools {
 void visualize_cloud(pcl::PointCloud<pcl::PointXYZ>::Ptr pointCloud) {
     /* Run pcl visualize on an XYZ point cloud
@@ -124,6 +125,15 @@ void visualize(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_1, pcl::PointCloud<pcl:
         boost::this_thread::sleep (boost::posix_time::microseconds (100000)); 
     }
     viewer.close();
+}
+
+typedef pcl::visualization::PointCloudColorHandlerCustom<pcl::PointNormal> ColorHandlerT;
+
+void visualize(PointCloudT::Ptr scene, PointCloudT::Ptr object) {
+    pcl::visualization::PCLVisualizer visu("Alignment");
+    visu.addPointCloud (scene, ColorHandlerT (scene, 0.0, 255.0, 0.0), "scene");
+    visu.addPointCloud (object, ColorHandlerT (object, 0.0, 0.0, 255.0), "object_aligned");
+    visu.spin ();
 }
 
 int pcl_color(float r, float g, float b) {
