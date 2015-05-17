@@ -1,0 +1,8 @@
+<?xml version="1.0" ?><KinBody name="dr_browns_bottle_brush_6">
+  <Body name="dr_browns_bottle_brush" type="static">
+    <Geom type="trimesh">
+      <Render>../reduced_meshes/dr_browns_bottle_brush.stl</Render>
+      <Data>../reduced_meshes/dr_browns_bottle_brush.stl</Data>
+    </Geom>
+  </Body>
+</KinBody>

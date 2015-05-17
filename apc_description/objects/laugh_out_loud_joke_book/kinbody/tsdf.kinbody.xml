@@ -1,0 +1,8 @@
+<KinBody name="laugh_out_loud_joke_book">
+  <Body type="static" name="laugh_out_loud_joke_book">
+    <Geom type="trimesh">
+      <Render>../meshes/tsdf.stl</Render>
+      <Data>../meshes/tsdf.stl</Data>
+    </Geom>
+  </Body>
+</KinBody>
