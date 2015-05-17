@@ -109,7 +109,7 @@ class Object_Segment(object):
             # Create an empty sets
             self.matlab.run('sets = {}')
         else:
-            training_data = os.path.join(self.apc_matlab, "train_data.mat")
+            training_data = os.path.join(self.apc_matlab, "train_data_2.mat")
             self.matlab.run("load('{}');".format(training_data))
 
         rospy.init_node('segmentation_server')
@@ -123,7 +123,8 @@ class Object_Segment(object):
         self.matlab.putvalue("image", rgb_image)
         self.matlab.putvalue("object_name", object_name)
         self.matlab.run("object_list = {};".format(self.list_to_cellarray(object_list)))
-        self.matlab.run("sets = apc_manual_train_histo(image, object_name, 10, sets)")
+        # self.matlab.run("sets = apc_manual_train_histo(image, object_name, 10, sets)")
+        self.matlab.run("sets = apc_record_image(image, object_name, sets)")
         print "Done with training segmentation run on {}".format(object_name)
 
     def segment_image(self, image, object_name, object_list):
@@ -134,15 +135,22 @@ class Object_Segment(object):
         self.matlab.run("use_sets = apc_pre_train(sets, [object_list, 'background']);")  # Train with background
 
         try:
-            self.matlab.run("eval('bounding_boxes = apc_bounding_box(image, object_name, object_list, use_sets, 1)');")
-
+            self.matlab.run("eval('[bounding_boxes, success] = apc_bounding_box(image, object_name, object_list, use_sets, 1)');")
         except RuntimeError as e:
             print e
             return None
+
+        success = self.matlab.getvalue("success")
+
+        if (not success):
+            rospy.logerr("Histo-Seg reported acceptability threshhold failure for object  {}".format(object_name))
+            return None
+
         bounding_boxes = self.matlab.getvalue("bounding_boxes")
+
         if len(bounding_boxes.shape) == 1:
             bounding_boxes = np.array([bounding_boxes])  # If we get back a one-dimensional array
-        self.matlab.run("clear image bounding_boxes object_name object_list use_sets")
+        self.matlab.run("clear image bounding_boxes object_name object_list use_sets success")
         # x, y, w, h = bounding_box  # Split it all out
 
         return bounding_boxes  # x, y, w, h
@@ -193,7 +201,7 @@ class Object_Segment(object):
             now = datetime.now()
             return "{}_{}_{}_{}".format(now.month, now.day, now.hour, now.minute)
         if self.training:
-            savepath = os.path.join(self.apc_matlab, 'images', 'training_data_{}.mat'.format(timestamp()))
+            savepath = os.path.join(self.apc_matlab, 'images', 'rec_training_data_{}.mat'.format(timestamp()))
             self.matlab.run("if (length(sets) > 0)\nsave('{}', 'sets');\nend".format(savepath))
 
         self.matlab.run('close all')
