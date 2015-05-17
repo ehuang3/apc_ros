@@ -8,4 +8,4 @@ int64 height
 int64 width
 
 # viewing angle
-geometry_msgs/Transform pose
+geometry_msgs/Pose pose

@@ -2,9 +2,12 @@
 import rospy
 import pymatlab
 from apc_msgs.srv import *
+from apc_msgs.msg import DPMObject
+from geometry_msgs.msg import Pose
 import threading
 import os
 import cv2
+import numpy as np
 from datetime import datetime
 
 lock = threading.Lock()
@@ -98,13 +101,10 @@ class Object_Segment(object):
         from apc_tools import path_to_root
         # We have to do this AFTER we create the matlab instance.
 
-        print "Adding to path"
         self.apc_matlab = os.path.join(path_to_root(), 'apc_pcl', 'matsrc')
-        print "addpath(genpath('{}'));".format(self.apc_matlab)
         self.matlab.run("addpath(genpath('{}'));".format(self.apc_matlab))
 
         # places 'sets', which contains the training data, in the workspace
-        print 'loading sets'
         if self.training:
             # Create an empty sets
             self.matlab.run('sets = {}')
@@ -112,7 +112,6 @@ class Object_Segment(object):
             training_data = os.path.join(self.apc_matlab, "train_data.mat")
             self.matlab.run("load('{}');".format(training_data))
 
-        print 'loaded'
         rospy.init_node('segmentation_server')
         rospy.Service('/segment_image', SegmentImage, self.segment_service)
 
@@ -132,17 +131,26 @@ class Object_Segment(object):
         self.matlab.putvalue("image", rgb_image)
         self.matlab.putvalue("object_name", object_name)
         self.matlab.run("object_list = {};".format(self.list_to_cellarray(object_list)))
-        self.matlab.run("use_sets = apc_pre_train(sets, object_list);")
-        self.matlab.run("bb = apc_bounding_box(image, object_name, object_list, use_sets);")
-        bounding_box = self.matlab.getvalue("bb")
-        self.matlab.run("clear image bb object_name object_list")
+        self.matlab.run("use_sets = apc_pre_train(sets, [object_list, 'background']);")  # Train with background
+
+        try:
+            self.matlab.run("eval('bounding_boxes = apc_bounding_box(image, object_name, object_list, use_sets, 1)');")
+
+        except RuntimeError as e:
+            print e
+            return None
+        bounding_boxes = self.matlab.getvalue("bounding_boxes")
+        if len(bounding_boxes.shape) == 1:
+            bounding_boxes = np.array([bounding_boxes])  # If we get back a one-dimensional array
+        self.matlab.run("clear image bounding_boxes object_name object_list use_sets")
         # x, y, w, h = bounding_box  # Split it all out
-        return bounding_box  # x, y, w, h
+
+        return bounding_boxes  # x, y, w, h
 
     @thread_lock
     def segment_service(self, srv):
+        self.matlab.run("if length(findall(0, 'type', 'figure')) > 15\nclose all\n end")
         from apc_tools import get_image_msg  # I know this is weird. I promise it was necessary.
-
         image = get_image_msg(srv.image)
         object_name = srv.object_id
 
@@ -157,9 +165,24 @@ class Object_Segment(object):
             self.train_on_image(image, object_name, object_list)
             return SegmentImageResponse()
 
-        x, y, w, h = self.segment_image(image, object_name, object_list)
+        bounding_boxes = self.segment_image(image, object_name, object_list)
+        if bounding_boxes is None:
+            return SegmentImageResponse(success=False)
+
+        dpm_objects = []
+        for bounding_box in bounding_boxes:
+            print bounding_box
+            x, y, w, h = bounding_box 
+            dpm_objects.append(
+                DPMObject(
+                    x=x, y=y, height=h, width=w,
+                    pose=Pose(),
+                    object_id=object_name,
+                )
+            )
+
         return SegmentImageResponse(
-            x=x, y=y, height=h, width=w,
+            found_objects=dpm_objects,
             success=True
         )
 
@@ -172,6 +195,8 @@ class Object_Segment(object):
         if self.training:
             savepath = os.path.join(self.apc_matlab, 'images', 'training_data_{}.mat'.format(timestamp()))
             self.matlab.run("if (length(sets) > 0)\nsave('{}', 'sets');\nend".format(savepath))
+
+        self.matlab.run('close all')
 
 
 if __name__ == '__main__':

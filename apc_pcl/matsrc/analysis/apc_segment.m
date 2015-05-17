@@ -3,6 +3,7 @@ function [segmented] = apc_segment(image, target_object, sets, show)
     % Options that work :
     % Take the bounding box of all of the objects in the 99th percentile
     % Take the 98th percentile -> take the largest region -> take the bounding box
+    % --> Handle multiple objects
 
     if nargin < 4
         show = false;
@@ -16,6 +17,8 @@ function [segmented] = apc_segment(image, target_object, sets, show)
 
     compared = compared_1 + compared_2 + compared_3;
 
+    % This is always a super-tiny region on very small crops. Change this to region-size based?
+    % or do some kind of goofy knn clustering
     acceptability_thresh = prctile(compared(:), 98)  % 99th percentile
     segmented = compared > acceptability_thresh;
 
@@ -32,7 +35,7 @@ end
 
 function [B] = compare_to(image, sets, target_object)
     distributions = apc_get_distributions(image);
-    [name, distance] = apc_compare_distributions(distributions, sets, 'js');
+    [name, distance] = apc_compare_distributions(distributions, sets, 'cdf');
     sz = size(image);
     if strcmp(name, target_object)
         % B = true(sz(1:2));

@@ -4,7 +4,7 @@ from sensor_msgs.msg import PointCloud2, Image, CameraInfo
 from std_msgs.msg import Header
 from geometry_msgs.msg import PointStamped, Point, Pose, PoseStamped
 from apc_msgs.srv import *
-from apc_msgs.msg import BinState, ObjectState
+from apc_msgs.msg import BinState, ObjectState, DPMObject
 import cv2
 from cv_bridge import CvBridge, CvBridgeError
 import numpy as np
@@ -31,6 +31,7 @@ class Vision_Server(object):
         self.segmented = None
 
         self.cloud_sub = rospy.Subscriber('/kinect2_bottom/depth_highres/points/', PointCloud2, self.got_cloud)
+        self.cloud = None
 
         ## TF
         self.Listener = tf.TransformListener()
@@ -59,8 +60,14 @@ class Vision_Server(object):
         # self.registration_proxy = rospy.ServiceProxy('/shot_detector', shot_detector_srv)
         self.registration_proxy = rospy.ServiceProxy('/apc_object_detection/Shot_detector', shot_detector_srv)
 
-        while(self.camera_matrix is None):
-            rospy.loginfo("Have not yet found camera matrix")
+        need_list = [self.image, self.camera_matrix, self.cloud]
+        while(any([item is None for item in need_list])):
+            if self.image is None:
+                rospy.loginfo("Have not cached image yet, are you running the cloud to image converter?")
+            if self.cloud is None:
+                rospy.loginfo("Have not cached cloud yet, are you running the kinect?")
+            if self.camera_matrix is None:
+                rospy.loginfo("Have not yet found camera matrix")
             rospy.sleep(1)
 
         self.Bin_Seg = Bin_Segmenter(camera_matrix=self.camera_matrix)
@@ -85,7 +92,12 @@ class Vision_Server(object):
         while(not rospy.is_shutdown()):
             if self.show_image is None:
                 continue
-            # cv2.imshow("display", self.show_image)
+            cv2.imshow("display", 
+                cv2.resize(
+                    self.show_image, 
+                    (self.show_image.shape[1] // 2, self.show_image.shape[0] // 2)
+                )
+            )
 
             if self.segmented is not None:
                 cv2.imshow("sub_segment", self.segmented)
@@ -125,55 +137,66 @@ class Vision_Server(object):
 
     def find_object(self, object_name, object_list, bin_segmented, _bin, x, y):
         print "Running segmentation"
-        return None
-        obj = self.segmentation_proxy(
+        segmentation_result = self.segmentation_proxy(
             make_image_msg(bin_segmented), 
             object_name,
             object_list,
         )
-
-        print 'Detected {}, box x: {}, y: {}, width: {}, height: {}'.format(
-            object_name, obj.x,
-            obj.y, obj.height, obj.width
-        )
-
-        cv2.rectangle(bin_segmented, (obj.x, obj.y), (obj.x + obj.width, obj.y + obj.height), (0, 255, 0), 2)
-        self.segmented = bin_segmented
-
-        # If we are in training mode, we are just a proxy for sending the image to matlab
-        if self.train_segmentation:
+        if segmentation_result.success is False:
+            rospy.logwarn("Could not find {} in the image".format(object_name))
             return None
 
-        print "Culling background"
-        background_culled = self.background_cull_proxy(self.cloud, self.backgr_cloud, _bin.pose_shelf_frame, self.backgr_pose)
-        print "Culled background"
+        object_poses = []  # Object poses
+        for obj in segmentation_result.found_objects:
+            print 'Detected {}, box x: {}, y: {}, width: {}, height: {}'.format(
+                object_name, obj.x,
+                obj.y, obj.height, obj.width
+            )
 
-        print 'Sending image of size {} for frustum culling'.format(self.image.shape)
-        object_alone = self.frustum_proxy(
-            background_culled.cloud,
-            make_image_msg(self.image),
-            obj.x + x,
-            obj.y + y,
-            obj.height,
-            obj.width,
-            not self.simulate_segmentation,
-        )
-        print 'Frustum culled'
+            cv2.rectangle(bin_segmented, 
+                (obj.x, obj.y), 
+                (obj.x + obj.width, obj.y + obj.height), 
+                (0, 255, 0), 
+                2
+            )
+            
+            self.segmented = bin_segmented
 
-        print 'Getting target cloud'
-        target_cloud = self.target_cloud_proxy(object_name)
-        print 'Got target cloud'
+            # If we are in training mode, we are just a proxy for sending the image to matlab
+            if self.train_segmentation:
+                return None
 
-        print 'Attempting to register'
-        registration = self.registration_proxy(
-            object_alone.sub_cloud, 
-            target_cloud.cloud,
-            object_name
-        )
+            print "Culling background"
+            background_culled = self.background_cull_proxy(self.cloud, self.backgr_cloud, _bin.pose_shelf_frame, self.backgr_pose)
+            print "Culled background"
 
-        print "Registered object"
-        object_pose = registration.pose
-        return object_pose
+            print 'Sending image of size {} for frustum culling'.format(self.image.shape)
+            object_alone = self.frustum_proxy(
+                background_culled.cloud,
+                make_image_msg(self.image),
+                obj.x + x,
+                obj.y + y,
+                obj.height,
+                obj.width,
+                not self.simulate_segmentation,
+            )
+            print 'Frustum culled'
+
+            print 'Getting target cloud'
+            target_cloud = self.target_cloud_proxy(object_name)
+            print 'Got target cloud'
+
+            print 'Attempting to register'
+            registration = self.registration_proxy(
+                object_alone.sub_cloud, 
+                target_cloud.cloud,
+                object_name
+            )
+
+            print "Registered object"
+            object_pose = registration.pose
+            object_poses.append(object_pose)
+        return object_poses
 
     def run_vision(self, srv):
         assert self.image is not None, "Have not yet cached an image"
@@ -183,7 +206,7 @@ class Vision_Server(object):
         source_frame = "crichton_origin";
         now = rospy.Time.now()
         rospy.sleep(0.1)
-        m = self.Listener.lookupTransform(target_frame, source_frame, rospy.Time(0))
+        m = self.Listener.lookupTransform(target_frame, source_frame, now)
         transform = self.Transformer.fromTranslationRotation(*m)
 
         rospy.loginfo('Running vision')
@@ -213,35 +236,35 @@ class Vision_Server(object):
 
 
             if len(object_names) > 0:
-
+                # This NEEDS refactor
                 assert bin_segmented.shape != (0, 0, 1), "Bin region out of bounds"
 
                 for object_name in object_names:
                     print "Looking for {}".format(object_name)
                     # Core operation -- finding the object, segmenting it, extracting pose
                     ## --
-                    object_pose = self.find_object(object_name, object_names, bin_segmented, _bin, x, y)
-                    if object_pose is None:
+                    object_poses = self.find_object(object_name, object_names, bin_segmented, _bin, x, y)
+                    if object_poses is None:
                         print "Could not find object pose"
                         continue
-                    ## --
 
-                    self.publish_pt(xyzarray(object_pose.position), frame='kinect2_bottom_rgb_optical_frame')
-                    print 'Object pose kinect2_bottom_rgb_optical_frame', object_pose
+                    for object_pose in object_poses:
+                        self.publish_pt(xyzarray(object_pose.position), frame='kinect2_bottom_rgb_optical_frame')
+                        print 'Object pose kinect2_bottom_rgb_optical_frame', object_pose
 
-                    pq = pqfrompose(object_pose)  # Position, quaternion
-                    object_pose_kinect = self.Transformer.fromTranslationRotation(*pq)
-                    kinect_world_tf = np.linalg.inv(transform)
-                    object_pose_world = np.dot(kinect_world_tf, object_pose_kinect)  # Matrix
-                    object_pose_world_msg = pose_from_matrix(object_pose_world)
-                    print object_pose_world_msg
+                        pq = pqfrompose(object_pose)  # Position, quaternion
+                        object_pose_kinect = self.Transformer.fromTranslationRotation(*pq)
+                        kinect_world_tf = np.linalg.inv(transform)
+                        object_pose_world = np.dot(kinect_world_tf, object_pose_kinect)  # Matrix
+                        object_pose_world_msg = pose_from_matrix(object_pose_world)
+                        print object_pose_world_msg
 
-                    object_state = ObjectState(
-                        object_id=object_name,
-                        object_key='',
-                        object_pose=object_pose_world_msg,
-                    )
-                    object_states.append(object_state)
+                        object_state = ObjectState(
+                            object_id=object_name,
+                            object_key='',
+                            object_pose=object_pose_world_msg,
+                        )
+                        object_states.append(object_state)
 
             bin_state.object_list = object_states
             bin_states.append(bin_state)

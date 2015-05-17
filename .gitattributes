@@ -1,0 +1,8 @@
+*.png binary
+*.jpg binary
+*.tif binary
+*.STL binary
+*.stl binary
+*.ply binary
+*.pcd binary
+*.dae binary
