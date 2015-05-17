@@ -65,7 +65,7 @@ class Vision_Server(object):
             self.registration_proxy = rospy.ServiceProxy('/apc_object_detection/Shot_detector', shot_detector_srv)
 
         need_list = [self.image, self.camera_matrix, self.cloud]
-        while(any([item is None for item in need_list])):
+        while(any([item is None for item in need_list]) and not rospy.is_shutdown()):
             if self.image is None:
                 rospy.loginfo("Have not cached image yet, are you running the cloud to image converter?")
             if self.cloud is None:

@@ -6,6 +6,8 @@
 #include <pcl/console/time.h>   // TicToc
 #include <pcl/registration/icp.h>
 #include <pcl/common/transforms.h>
+#include <pcl/common/time.h>
+#include <pcl/console/print.h>
 #include <pcl/visualization/cloud_viewer.h>
 #include <pcl/visualization/pcl_visualizer.h>
 #include <pcl/PointIndices.h>
@@ -56,7 +58,7 @@ bool APC_ICP::run_icp(apc_msgs::shot_detector_srv::Request &req, apc_msgs::shot_
     pcl::removeNaNFromPointCloud(*object, *object, indices);
 
     // Downsample
-    pcl::console::print_highlight ("Downsampling...\n");
+    pcl::console::print_highlight ("Downsampling for registration\n");
     pcl::VoxelGrid<pcl::PointNormal> grid;
     const float leaf = 0.005f;
     grid.setLeafSize (leaf, leaf, leaf);
@@ -64,6 +66,9 @@ bool APC_ICP::run_icp(apc_msgs::shot_detector_srv::Request &req, apc_msgs::shot_
     grid.filter (*object);
     grid.setInputCloud (scene);
     grid.filter (*scene);
+
+    // alp_align(PointCloudT::Ptr object, PointCloudT::Ptr scene, PointCloudT::Ptr object_aligned,
+        // int max_iterations, int num_samples, float similarity_thresh, float max_corresp_dist, float inlier_frac)
 
     pcl_tools::icp_result result1 = pcl_tools::alp_align(object, scene, object_aligned, 50000, 3, 0.9f, 5.5f * leaf, 0.7f);
     pcl_tools::icp_result result2 = pcl_tools::alp_align(object_aligned, scene, object_aligned, 50000, 3, 0.9f, 7.5f * leaf, 0.4f);
@@ -81,17 +86,14 @@ bool APC_ICP::run_icp(apc_msgs::shot_detector_srv::Request &req, apc_msgs::shot_
 }
 
 APC_ICP::APC_ICP(){
-    std::cout << "Initializing icp server" << std::endl;
+    pcl::console::print_highlight ("Initializing ICP Server\n");
     nh.getParam("meshpath", meshpath);
-    std::cout << "meshpath: " << meshpath << std::endl;
     service = nh.advertiseService("/shot_detector", run_icp);
-    std::cout << "advertised icp server" << std::endl;
+    pcl::console::print_highlight ("--ICP Server Initialized\n");
 }
 
 int main(int argc, char** argv) {
     ros::init(argc, argv, "icp_node");
-    std::cout << "doing anything" << std::endl;
     APC_ICP *apc_icp(new APC_ICP());
-
     ros::spin();
 }

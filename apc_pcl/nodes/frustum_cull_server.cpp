@@ -2,6 +2,7 @@
 #include <iostream>
 #include <pcl/point_types.h>
 #include <pcl/console/time.h>   // TicToc
+#include <pcl/console/print.h>
 #include <pcl/registration/icp.h>
 #include <pcl/common/transforms.h>
 #include <pcl/visualization/cloud_viewer.h>
@@ -48,20 +49,19 @@ void APC_Frust_Cull::recolor(pcl::PointCloud<pcl::PointXYZRGBA> &mycloud, int x,
             }
         }
     }
-    std::cout << "filcom" << std::endl;
 }
 
 bool APC_Frust_Cull::cull_frustum(apc_msgs::GetCloudFrustum::Request &req, apc_msgs::GetCloudFrustum::Response &resp) {
     /* Make this use x, y, w, h 
     It is half-resolution
     */
-    std::cout << "Width " << req.cloud.width << " height " << req.cloud.height << std::endl;
+    // std::cout << "Width " << req.cloud.width << " height " << req.cloud.height << std::endl;
     pcl::PointCloud<pcl::PointXYZRGBA>::Ptr input_cloud(new pcl::PointCloud<pcl::PointXYZRGBA>);
     pcl::PointCloud<pcl::PointXYZRGBA>::Ptr output_cloud(new pcl::PointCloud<pcl::PointXYZRGBA>);
 
     pcl::fromROSMsg(req.cloud, *input_cloud);
     if (!req.region_growing) {
-        std::cout << "Culling Frustum" << std::endl;
+        pcl::console::print_highlight ("Culling Frustum...\n");
         pcl::ExtractIndices<pcl::PointXYZRGBA> extract;
 
         std::vector<int> pointIndices;
@@ -79,19 +79,19 @@ bool APC_Frust_Cull::cull_frustum(apc_msgs::GetCloudFrustum::Request &req, apc_m
         extract.filter(*output_cloud);
         pcl_tools::visualize(output_cloud, "frustum culled");
         pcl::toROSMsg(*output_cloud, resp.sub_cloud);
-        std::cout << "Completed frustum cull" << std::endl;
+        pcl::console::print_highlight ("Completed frustum cull\n");
+
         // pcl::io::savePCDFile ("/home/apc/repos/apc/src/apc_ros/niko_file.pcd", *output_cloud, true);
         return true;
     } else {
-        std::cout << "Culling using region growing method" << std::endl;
-
+        pcl::console::print_highlight ("Culling using region growing method\n");
         int centroid_x, centroid_y;
         centroid_x = (req.width / 2) + req.x;
         centroid_y = (req.height / 2) + req.y;
         int seed_index = xyToLinear(centroid_x, centroid_y, req.cloud.width);
         pcl_tools::segment_region_growing(input_cloud, seed_index, output_cloud);
         // pcl_tools::visualize(output_cloud, "Culled with region growing");
-        std::cout << "Culled" << std::endl;
+        pcl::console::print_highlight ("Region-Culling complete\n");
         // pcl::io::savePCDFile ("/home/apc/repos/apc/src/apc_ros/niko_file.pcd", *output_cloud, true);
         pcl::toROSMsg(*output_cloud, resp.sub_cloud);
 
@@ -101,7 +101,7 @@ bool APC_Frust_Cull::cull_frustum(apc_msgs::GetCloudFrustum::Request &req, apc_m
 
 bool APC_Frust_Cull::cull_background(apc_msgs::CullCloudBackground::Request &req, apc_msgs::CullCloudBackground::Response &resp) {
     /* Remove background service */
-    std::cout << "Culling Background" << std::endl;
+    pcl::console::print_highlight ("Culling background\n");
 
     pcl::PointCloud<pcl::PointXYZRGBA>::Ptr cloud_to_clean(new pcl::PointCloud<pcl::PointXYZRGBA>);
     pcl::PointCloud<pcl::PointXYZRGBA>::Ptr cloud_cleaned(new pcl::PointCloud<pcl::PointXYZRGBA>);
@@ -118,30 +118,28 @@ bool APC_Frust_Cull::cull_background(apc_msgs::CullCloudBackground::Request &req
     pcl::PointCloud<pcl::PointXYZRGBA>::Ptr background_cloud(new pcl::PointCloud<pcl::PointXYZRGBA>);
     pcl::PointCloud<pcl::PointXYZRGBA>::Ptr affined_background(new pcl::PointCloud<pcl::PointXYZRGBA>);
     pcl::fromROSMsg(req.cloud_background, *background_cloud);
-    pcl_tools::affine_cloud(background_to_shelf, *background_cloud, *affined_background);
-    pcl_tools::visualize(background_cloud, affined_background, "Background shifted");
-    pcl_tools::visualize(affined_background, cloud_to_clean, "Background vs input");
 
-    pcl_functions::removeBackground(cloud_to_clean, affined_background, cloud_cleaned);
-    // pcl_tools::visualize(cloud_cleaned, "Cloud after cleaning");
+    // pcl_tools::affine_cloud(background_to_shelf, *background_cloud, *affined_background);
+
+    // pcl_functions::removeBackground(cloud_to_clean, affined_background, cloud_cleaned);
+    pcl_functions::removeBackground(cloud_to_clean, background_cloud, cloud_cleaned);
+
+    pcl_tools::visualize(cloud_cleaned, "Cloud after cleaning");
 
     pcl::toROSMsg(*cloud_cleaned, resp.cloud);
-    std::cout << "Culled Background" << std::endl;
+    pcl::console::print_highlight ("Culled Background\n");
     return true;
 }
 
 APC_Frust_Cull::APC_Frust_Cull() {
-    std::cout << "Initializing" << std::endl;
+    pcl::console::print_highlight ("Initializing Frustum-Culling Server\n");
     frust_cull_service = nh.advertiseService("/cull_frustum", cull_frustum);
     background_cull_service = nh.advertiseService("/cull_background", cull_background);
-    std::cout << "advertised" << std::endl;
+    pcl::console::print_highlight ("--Frustum-Culling Server Initialized\n");
 }
-
 
 int main(int argc, char** argv) {
     ros::init(argc, argv, "frustum_cull_node");
-    std::cout << "doing anything" << std::endl;
-    
     APC_Frust_Cull *apc_frust_cull(new APC_Frust_Cull());
     ros::spin();
 }
