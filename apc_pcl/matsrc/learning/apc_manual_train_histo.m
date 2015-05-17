@@ -5,7 +5,8 @@ function [sets] = manual_train(image, object_name, attempts, existing_sets)
     if nargin < 3
         attempts = 1;
     end
-    sets = cell(1, attempts);
+    % sets = cell(1, attempts);
+    sets = {};
 
     figure, imshow(image)
     title(['Highlight ', object_name])
@@ -16,8 +17,9 @@ function [sets] = manual_train(image, object_name, attempts, existing_sets)
             break;
         end
         sub_struct.image = train_section;
-        % sub_struct.distributions = apc_get_distributions(train_section);
-        sets{k} = sub_struct;
+        sub_struct.distributions = apc_get_distributions(train_section);
+        % sets{k} = sub_struct;
+        sets = [sets, sub_struct];
     end
 
     if nargin == 4

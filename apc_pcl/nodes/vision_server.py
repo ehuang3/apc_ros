@@ -57,8 +57,12 @@ class Vision_Server(object):
         self.backgr_cloud, _, self.backgr_pose = load_background()
 
         self.target_cloud_proxy = rospy.ServiceProxy('/get_mesh', GetMesh)
-        # self.registration_proxy = rospy.ServiceProxy('/shot_detector', shot_detector_srv)
-        self.registration_proxy = rospy.ServiceProxy('/apc_object_detection/Shot_detector', shot_detector_srv)
+
+        # Check if we are running lone ICP instead of full SHOT detector
+        if rospy.get_param('run_icp'):
+            self.registration_proxy = rospy.ServiceProxy('/shot_detector', shot_detector_srv)
+        else:
+            self.registration_proxy = rospy.ServiceProxy('/apc_object_detection/Shot_detector', shot_detector_srv)
 
         need_list = [self.image, self.camera_matrix, self.cloud]
         while(any([item is None for item in need_list])):
@@ -78,7 +82,6 @@ class Vision_Server(object):
         self.view_loop()
 
     def got_image(self, msg):
-        '''Temporary, while we are getting images ourselves'''
         self.image = msg
 
     def got_cloud(self, msg):
@@ -136,7 +139,7 @@ class Vision_Server(object):
             self.publish_bin_pt(bin_transformed, frame=transform_frame)
 
     def find_object(self, object_name, object_list, bin_segmented, _bin, x, y):
-        print "Running segmentation"
+        print "Running segmentation for {}".format(_bin.bin_name)
         segmentation_result = self.segmentation_proxy(
             make_image_msg(bin_segmented), 
             object_name,
@@ -290,7 +293,12 @@ class Vision_Server(object):
         rospy.loginfo(info)
 
         # Then call DPM (Or simulated DPM)
-        print 'Sending bin states of length {}'.format(len(bin_states))
+        print 'Found {} bins'.format(len(bin_states))
+        if len(bin_states) < 12:
+            for k in range(len(bin_states), 12):
+                bin_states.append(BinState())
+        print 'sending', len(bin_states)
+
         return RunVisionResponse(
             bin_contents=bin_states
         )
