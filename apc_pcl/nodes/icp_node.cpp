@@ -11,6 +11,7 @@
 #include <pcl/PointIndices.h>
 #include <pcl/conversions.h>
 #include <pcl/PCLPointCloud2.h>
+#include <pcl/filters/voxel_grid.h>
 #include <pcl_conversions/pcl_conversions.h>
 #include <vector>
 #include <eigen_conversions/eigen_msg.h>
@@ -38,17 +39,43 @@ bool APC_ICP::run_icp(apc_msgs::shot_detector_srv::Request &req, apc_msgs::shot_
     /* Run the Amazon Picking Challenge IPC object pose refinement method */
 
     std::cout << "Attempting to ICP!" << std::endl;
-    pcl::PointCloud<pcl::PointXYZ>::Ptr target_cloud(new pcl::PointCloud<pcl::PointXYZ>);
-    pcl::fromROSMsg(req.pointcloud, *target_cloud);
+    PointCloudT::Ptr scene(new PointCloudT);
+    pcl::fromROSMsg(req.pointcloud, *scene);
 
-    pcl::PointCloud<pcl::PointXYZ>::Ptr input_cloud(new pcl::PointCloud<pcl::PointXYZ>);
-    pcl::fromROSMsg(req.targetcloud, *target_cloud);
+    PointCloudT::Ptr object(new PointCloudT);
+    pcl::fromROSMsg(req.targetcloud, *object);
+
+    PointCloudT::Ptr object_aligned(new PointCloudT);
 
     pcl_tools::icp_result result;
-    result = pcl_tools::apply_icp(input_cloud, target_cloud, 45);
-    // pcl_tools::visualize_cloud(input_cloud);
-    pcl_tools::visualize(input_cloud, target_cloud);
-    tf::poseEigenToMsg(result.affine, resp.pose);
+    // pcl_tools::visualize(scene, object);
+    // result = pcl_tools::apply_icp(scene, object, 45);
+
+    std::vector<int> indices;
+    pcl::removeNaNFromPointCloud(*scene, *scene, indices);
+    pcl::removeNaNFromPointCloud(*object, *object, indices);
+
+    // Downsample
+    pcl::console::print_highlight ("Downsampling...\n");
+    pcl::VoxelGrid<pcl::PointNormal> grid;
+    const float leaf = 0.005f;
+    grid.setLeafSize (leaf, leaf, leaf);
+    grid.setInputCloud (object);
+    grid.filter (*object);
+    grid.setInputCloud (scene);
+    grid.filter (*scene);
+
+    pcl_tools::icp_result result1 = pcl_tools::alp_align(object, scene, object_aligned, 50000, 3, 0.9f, 5.5f * leaf, 0.7f);
+    pcl_tools::icp_result result2 = pcl_tools::alp_align(object_aligned, scene, object_aligned, 50000, 3, 0.9f, 7.5f * leaf, 0.4f);
+    pcl_tools::icp_result result3 = pcl_tools::alp_align(object_aligned, scene, object_aligned, 50000, 3, 0.9f, 2.5f * leaf, 0.2f);
+
+    Eigen::Affine3d final_affine = result1.affine * result2.affine * result3.affine;
+
+    pcl_tools::visualize(scene, object);
+    // pcl_tools::visualize_cloud(scene);
+    // tf::poseEigenToMsg(result.affine, resp.pose);
+    tf::poseEigenToMsg(final_affine, resp.pose);
+
 
     return true;
 }
