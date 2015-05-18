@@ -123,6 +123,78 @@ def reset_target_item_collision_properties(action, problem, env):
                     cc.IncludeCollisionPair(item_link2, item_link)
                     cc.IncludeCollisionPair(item_link, item_link2)
 
+
+def set_openrave_collision_properties(action, bins, env, reset = False):
+    """
+    Set enabled collisions based on action type.
+
+    """
+    if is_action_transit(action):
+        # Turn on collisions for all objects.
+        enable = True
+        for bin in bins:
+            for item in bin.object_list:
+                object_key = item.object_key
+                kinbody = env.GetKinBody(object_key)
+                kinbody.Enable(enable)
+
+    if is_action_pregrasp(action) and not is_action_linear(action):
+        # Turn off collisions for the other objects in the shelf.
+        enable = False or reset
+        for bin in bins:
+            for item in bin.object_list:
+                object_key = item.object_key
+                if action.object_key != object_key:
+                    kinbody = env.GetKinBody(object_key)
+                    kinbody.Enable(enable)
+
+    if is_action_pregrasp(action) and is_action_linear(action):
+        # Turn off collisions for the item to grasp.
+        enable = False or reset
+        kinbody = env.GetKinBody(object_key)
+        kinbody.Enable(enable)
+
+    if is_action_grasp(action) or is_action_postgrasp(action) or is_action_nonprehensile(action):
+        # Turn off collisions for other objects in the shelf.
+        enable = False or reset
+        for bin in bins:
+            for item in bin.object_list:
+                object_key = item.object_key
+                if action.object_key != object_key:
+                    kinbody = env.GetKinBody(object_key)
+                    kinbody.Enable(enable)
+
+
+def check_for_end_collision(action, bins, env):
+    """
+    Check for collision at end of trajectory.
+
+    """
+    set_openrave_collision_properties(action, bins, env, False)
+
+    # Set robot to goal position.
+    robot = env.GetRobot('crichton')
+    joint_names = action.joint_trajectory.joint_names
+    p_end = action.joint_trajectory.points[-1].positions
+    T = numpy.zeros((29))
+    T[:] = robot.GetDOFValues()
+    for joint in robot.GetJoints():
+        for i in range(len(joint_names)):
+            if joint.GetName() == joint_names[i]:
+                T[joint.GetDOFIndex()] = p_end[i]
+    robot.SetActiveDOFValues(T)
+
+    # Only check to see if the arm joints are in collision with
+    # the shelf.
+    report = openravepy.CollisionReport()
+    for robot_link in robot.GetLinks():
+        collision = env.CheckCollision(robot_link, report)
+        if collision:
+            return False
+
+    set_openrave_collision_properties(action, bins, env, True)
+
+
 def check_for_impossible_grasp(action, env):
     # A grasp is impossible if it is in collision with the kiva pod!
     # Check the pregrasp end pose to see if it is in collision with the shelf.

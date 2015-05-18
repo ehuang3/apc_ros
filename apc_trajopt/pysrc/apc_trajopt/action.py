@@ -61,12 +61,6 @@ def __action_type__(action):
     grasp      = bool(not robot_moving and grasping and not object_moving and action.object_id)
     postgrasp  = bool(robot_moving and grasping and action.object_id)
     nonprehensile = bool(robot_moving and not grasping and object_moving and action.object_id)
-    # print
-    # print "robot_moving", robot_moving
-    # print "grasping", grasping
-    # print "object_moving", object_moving
-    # print "action.object_id", action.object_id
-    # print action
     apc_assert(transit ^ pregrasp ^ grasp ^ postgrasp ^ nonprehensile,
                ("Failed to get a single action type:\n"
                 "   transit: %d\n"

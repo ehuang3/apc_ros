@@ -72,10 +72,20 @@ def motion_planning_service(request):
 
     print "--------------------             START             --------------------"
 
+    # If the grasp pose is in collision with the shelf, 
     if request.check_for_impossible_grasp:
         response = apc_msgs.srv.ComputeDenseMotionResponse()
         response.valid = not check_for_impossible_grasp(request.action, env)
-        print "impossible :", response.valid
+        print "impos. grasp :", response.valid
+        response.action = request.action
+        print "--------------------              END              --------------------"
+        return response
+
+    # If the last action state is in collision, do not even bother
+    # planning.
+    if check_for_end_collision(request.action, request.bins, env):
+        response = apc_msgs.srv.ComputeDenseMotionResponse()
+        response.valid = False
         response.action = request.action
         print "--------------------              END              --------------------"
         return response
@@ -98,11 +108,17 @@ def motion_planning_service(request):
     # Create object that stores optimization problem.
     trajopt_problem = trajoptpy.ConstructProblem(trajopt_string, env)
 
-    # Set collision matrix information and grabbed bodies.
-    set_target_item_collision_properties(request.action, trajopt_problem, env)
-
     # Reload objects and positions in case an object is "ungrabbed".
     load_and_set_items_to_openrave(request, env)
+
+    # Do optimization.
+    trajopt_result = None
+    trajectory = None
+    do_trajopt = (not no_optimization and not is_action_stationary(request.action)
+                  and not is_action_linear(request.action))
+
+    # Set collision matrix information and grabbed bodies.
+    set_target_item_collision_properties(request.action, trajopt_problem, env)
 
     # Print collision pairs if debugging.
     if debug and not is_action_transit(request.action):
@@ -111,10 +127,6 @@ def motion_planning_service(request):
     # Start a timer.
     t_start = time.time()
 
-    # Do optimization.
-    trajopt_result = None
-    trajectory = None
-    do_trajopt = not no_optimization and not is_action_stationary(request.action) and not is_action_linear(request.action)
     if do_trajopt:
         trajopt_result = trajoptpy.OptimizeProblem(trajopt_problem)
         trajectory = trajopt_result.GetTraj()
@@ -123,15 +135,13 @@ def motion_planning_service(request):
 
     # Compute elapsed time.
     t_elapsed = time.time() - t_start
-    # print "optimization took %.3f seconds"%t_elapsed
+    print "optimization took %.3f seconds"%t_elapsed
 
     # Get the robot.
     robot = env.GetRobot('crichton')
 
     # Set robot DOFs to DOFs in optimization problem.
     trajopt_problem.SetRobotActiveDOFs()
-    # if debug:
-    #     print result.GetTraj()
 
     # Create motion plan response.
     response = apc_msgs.srv.ComputeDenseMotionResponse()
