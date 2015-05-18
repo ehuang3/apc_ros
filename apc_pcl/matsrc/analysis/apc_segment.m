@@ -1,4 +1,4 @@
-function [segmented] = apc_segment(image, target_object, sets, show)
+function [segmented, acceptability_thresh] = apc_segment(image, target_object, sets, show)
     % Run the segmentation algorithm on an image and get the results
     % Options that work :
     % Take the bounding box of all of the objects in the 99th percentile

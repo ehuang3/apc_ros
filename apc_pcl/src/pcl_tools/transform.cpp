@@ -94,4 +94,44 @@ void discard_halfspace(Eigen::Vector3f plane_normal, Eigen::Vector3f plane_origi
     }
 }
 
+int closest_point_line(pcl::PointCloud<pcl::PointXYZ>& cloud, Eigen::Vector3f direction, Eigen::Vector3f line_pt) {
+    double min_distance = 10;
+    int min_index = 0;
+    pcl::PointXYZ point;
+    for (int index = 0; index < cloud.points.size(); index++) {
+        point = cloud.points[index];
+
+        Eigen::Vector3f cloud_pt(point.x, point.y, point.z);
+        double projection = (cloud_pt - line_pt).dot(direction);
+        double hypotenuseSq = (cloud_pt - line_pt).squaredNorm();
+        double distance = sqrt(hypotenuseSq - pow(projection, 2));
+
+        if (distance < min_distance) {
+            min_distance = distance;
+            min_index = index;
+        }
+    }
+    return(min_index);
+}
+
+int closest_point_line(pcl::PointCloud<pcl::PointXYZRGBA>& cloud, Eigen::Vector3f direction, Eigen::Vector3f line_pt) {
+    double min_distance = 10;
+    int min_index = 0;
+    pcl::PointXYZRGBA point;
+    for (int index = 0; index < cloud.points.size(); index++) {
+        point = cloud.points[index];
+
+        Eigen::Vector3f cloud_pt(point.x, point.y, point.z);
+        double projection = (cloud_pt - line_pt).dot(direction);
+        double hypotenuseSq = (cloud_pt - line_pt).squaredNorm();
+        double distance = sqrt(hypotenuseSq - pow(projection, 2));
+
+        if (distance < min_distance) {
+            min_distance = distance;
+            min_index = index;
+        }
+    }
+    return(min_index);
+}
+
 }

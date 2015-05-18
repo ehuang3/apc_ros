@@ -47,16 +47,14 @@ bool APC_MeshFinder::get_mesh(apc_msgs::GetMesh::Request &req, apc_msgs::GetMesh
 }
 
 APC_MeshFinder::APC_MeshFinder(){
-    std::cout << "Initializing Mesh Server" << std::endl;
+    pcl::console::print_highlight ("Initializing Mesh Server\n");
     nh.getParam("stlpath", stlpath);
-    std::cout << "stlpath: " << stlpath << std::endl;
     service = nh.advertiseService("/get_mesh", get_mesh);
-    std::cout << "advertised mesh server" << std::endl;
+    pcl::console::print_highlight ("--Mesh Server Initialized\n");
 }
 
 int main(int argc, char** argv) {
     ros::init(argc, argv, "mesh_node");
-    std::cout << "doing anything" << std::endl;
     APC_MeshFinder *apc_meshfinder(new APC_MeshFinder());
 
     ros::spin();

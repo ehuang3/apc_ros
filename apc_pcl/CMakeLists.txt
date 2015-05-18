@@ -59,6 +59,7 @@ add_executable(icp_server nodes/icp_node.cpp
     ./src/pcl_tools/transform.cpp
     ./src/pcl_tools/loading.cpp
     ./src/pcl_tools/registration.cpp
+    ./src/pcl_tools/adv_registration.cpp
     ./src/pcl_tools/visualization.cpp
     ./src/backward.cpp
 )
