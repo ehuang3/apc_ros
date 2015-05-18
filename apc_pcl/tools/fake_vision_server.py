@@ -19,12 +19,12 @@ import rosbag
 class Fake_Vision(object):
     def __init__(self):
         rospy.init_node('fake_vision')
-        rospy.Service('run_vision', RunVision, self.run_vision)
+        rospy.Service('fake_run_vision', RunVision, self.run_vision)
 
     def run_vision(self, srv):
         rospy.loginfo("Resending fake ground truth")
         return RunVisionResponse(srv.ground_truth_bins)
-        
+
 
 if __name__ == '__main__':
     fv = Fake_Vision()
