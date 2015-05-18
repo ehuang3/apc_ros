@@ -36,7 +36,9 @@ import numpy
 import pdb
 from apc_msgs.msg import PrimitiveAction
 import trajectory_msgs
+import trajoptpy.math_utils as mu
 from .apc_assert import ApcError, apc_assert
+from IPython.core.debugger import Tracer
 
 
 def __action_type__(action):
@@ -59,13 +61,20 @@ def __action_type__(action):
     grasp      = bool(not robot_moving and grasping and not object_moving and action.object_id)
     postgrasp  = bool(robot_moving and grasping and action.object_id)
     nonprehensile = bool(robot_moving and not grasping and object_moving and action.object_id)
+    # print
+    # print "robot_moving", robot_moving
+    # print "grasping", grasping
+    # print "object_moving", object_moving
+    # print "action.object_id", action.object_id
+    # print action
     apc_assert(transit ^ pregrasp ^ grasp ^ postgrasp ^ nonprehensile,
                ("Failed to get a single action type:\n"
                 "   transit: %d\n"
                 "  pregrasp: %d\n"
                 "     grasp: %d\n"
                 " postgrasp: %d\n"
-                "prehensile: %d\n") % (transit, pregrasp, grasp, postgrasp, nonprehensile))
+                "prehensile: %d\n"
+                "    action: %s\n") % (transit, pregrasp, grasp, postgrasp, nonprehensile, action))
     if transit:
         return 'transit'
     if pregrasp:
@@ -100,6 +109,10 @@ def is_action_stationary(action):
     end = action.joint_trajectory.points[-1].positions
     return numpy.allclose(start, end)
 
+def is_action_linear(action):
+    return (action.interpolate_cartesian or action.group_id == 'crichton_left_hand' or
+            action.group_id == 'crichton_right_hand')
+
 def print_action_summary(action):
     # action = PrimitiveAction()
     print "action name   :", action.action_name
@@ -125,7 +138,7 @@ def check_for_nonactive_joint_motion(action, problem, result, env):
     # return numpy.allclose(start, end)
     return False
 
-def fill_response_action(action, problem, result, env):
+def fill_response_action(action, problem, trajectory, env):
     robot = env.GetRobot('crichton')
     disabled = compute_disabled_dof_indexes(action, env)
     M = [0 for name in action.joint_trajectory.joint_names]
@@ -133,13 +146,27 @@ def fill_response_action(action, problem, result, env):
         if joint.GetDOFIndex() in disabled:
             continue
         M[action.joint_trajectory.joint_names.index(joint.GetName())] = joint.GetDOFIndex()
-    trajectory = result.GetTraj()
     action.joint_trajectory.points = []
     for p in trajectory:
         q = trajectory_msgs.msg.JointTrajectoryPoint()
         for i in range(len(M)):
             q.positions.append(p[M[i]])
         action.joint_trajectory.points.append(q)
+
+def compute_linear_trajectory(action, problem, env):
+    robot = env.GetRobot('crichton')
+    joint_names = action.joint_trajectory.joint_names
+    p_start = action.joint_trajectory.points[0].positions
+    p_end = action.joint_trajectory.points[-1].positions
+    T = numpy.zeros((2,29))
+    T[0,:] = robot.GetDOFValues()
+    T[1,:] = robot.GetDOFValues()
+    for joint in robot.GetJoints():
+        for i in range(len(joint_names)):
+            if joint.GetName() == joint_names[i]:
+                T[1,joint.GetDOFIndex()] = p_end[i]
+    T = mu.interp2d(numpy.linspace(0,1,20), numpy.linspace(0,1,len(T)), T)
+    return T
 
 if __name__=='__main__':
     action = apc_msgs.msg.PrimitiveAction()

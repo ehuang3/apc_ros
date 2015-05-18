@@ -72,6 +72,14 @@ def motion_planning_service(request):
 
     print "--------------------             START             --------------------"
 
+    if request.check_for_impossible_grasp:
+        response = apc_msgs.srv.ComputeDenseMotionResponse()
+        response.valid = not check_for_impossible_grasp(request.action, env)
+        print "impossible :", response.valid
+        response.action = request.action
+        print "--------------------              END              --------------------"
+        return response
+
     if debug:
         print_action_summary(request.action)
 
@@ -105,9 +113,13 @@ def motion_planning_service(request):
 
     # Do optimization.
     trajopt_result = None
-    do_opt = not no_optimization and not is_action_stationary(request.action)
-    if do_opt:
+    trajectory = None
+    do_trajopt = not no_optimization and not is_action_stationary(request.action) and not is_action_linear(request.action)
+    if do_trajopt:
         trajopt_result = trajoptpy.OptimizeProblem(trajopt_problem)
+        trajectory = trajopt_result.GetTraj()
+    else:
+        trajectory = compute_linear_trajectory(request.action, trajopt_problem, env)
 
     # Compute elapsed time.
     t_elapsed = time.time() - t_start
@@ -128,32 +140,21 @@ def motion_planning_service(request):
     reset_target_item_collision_properties(request.action, trajopt_problem, env)
 
     # Exit early if we did not run the optimization.
-    if not do_opt:
+    if no_optimization:
         response.action = request.action
         response.valid = True
         response.collision_free = True
     else:
         # Is the trajectory collision free.
-        response.collision_free = check_for_collisions_interp(request.action, trajopt_problem, trajopt_result, env)
+        response.collision_free = check_for_collisions_interp(request.action, trajopt_problem, trajectory, env)
 
         # Does the trajectory only move the joint names requested.
-        response.valid = not check_for_nonactive_joint_motion(request.action, trajopt_problem, trajopt_result, env)
+        response.valid = not check_for_nonactive_joint_motion(request.action, trajopt_problem, trajectory, env)
 
         # Fill response.
         action = request.action
-        fill_response_action(action, trajopt_problem, trajopt_result, env)
+        fill_response_action(action, trajopt_problem, trajectory, env)
         response.action = action
-        # trajectory = trajopt_result.GetTraj()
-        # action = request.action
-        # action.joint_trajectory.points = []
-        # for i in range(len(trajectory)):
-        #     action.joint_trajectory.joint_names = [joint.GetName() for joint in robot.GetJoints()]
-        #     point = trajectory_msgs.msg.JointTrajectoryPoint()
-        #     point.positions = trajectory[i]
-        #     action.joint_trajectory.points.append(point)
-        # response.action = action
-
-        is_action_grasp(response.action)
 
         print "collsion:", not response.collision_free
 

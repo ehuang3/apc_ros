@@ -39,7 +39,7 @@ import rospkg
 import tf.transformations
 import openravepy
 import pdb
-
+from IPython.core.debugger import Tracer
 
 def init_openrave():
     """Initialize OpenRAVE and load models"""
@@ -119,6 +119,7 @@ def load_and_set_items_to_openrave(request, env):
         for obj_key in dirty.keys():
             # Remove from the openrave environment.
             if dirty[obj_key] == 1:
+                Tracer()()
                 env.RemoveBody(obj_key)
 
 
