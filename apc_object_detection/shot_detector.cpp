@@ -194,10 +194,6 @@ bool shot_detector::processCloud(apc_msgs::shot_detector_srv::Request &req, apc_
     pcl::PointCloud<PointType>::Ptr scene_filter (new pcl::PointCloud<PointType> ());
     pcl_functions::voxelFilter(scene,scene_filter,voxel_sample_);
     scene=scene_filter;
-    std::cerr << "AFter filter" << std::endl;
-    std::cerr << scene->points[1].x << std::endl;
-    std::cerr << scene->points[1].y << std::endl;
-    std::cerr << scene->points[1].z << std::endl;
     pcl::PointCloud<PointType>::Ptr model_filter (new pcl::PointCloud<PointType> ());
     pcl_functions::voxelFilter(model,model_filter,voxel_sample_);
     model=model_filter;
@@ -877,7 +873,7 @@ main (int argc, char** argv)
     //detector.processImage();
     // Spin
     std::cerr << "ros start" << std::endl;
-        detector.processImage();
+        //detector.processImage();
     ros::spin();
     std::cerr << "End" << std::endl;
     return 0;
