@@ -21,6 +21,8 @@ namespace pcl_tools {
     bool cloud_from_stl(std::string filename, pcl::PCLPointCloud2& cloud);
     bool cloud_from_stl(std::string filename, pcl::PointCloud<pcl::PointXYZRGBA>& cloud);
     bool cloud_from_stl(std::string filename, pcl::PointCloud<pcl::PointNormal>& cloud);
+    bool cloud_from_stl(std::string filename, pcl::PointCloud<pcl::PointXYZ>& cloud);
+
     
     /* Registration */
     struct icp_result {
@@ -68,7 +70,8 @@ namespace pcl_tools {
     void affine_cloud(Eigen::Affine3d transform, pcl::PointCloud<pcl::PointXYZ>& input_cloud, pcl::PointCloud<pcl::PointXYZ>& destination_cloud);
     void affine_cloud(Eigen::Affine3d transform, pcl::PointCloud<pcl::PointXYZRGBA>& input_cloud, pcl::PointCloud<pcl::PointXYZRGBA>& destination_cloud);
 
-
+    int closest_point_line(pcl::PointCloud<pcl::PointXYZ>& cloud, Eigen::Vector3f direction, Eigen::Vector3f line_pt);
+    int closest_point_line(pcl::PointCloud<pcl::PointXYZRGBA>& cloud, Eigen::Vector3f direction, Eigen::Vector3f line_pt);
 
     /* Segmentation */
     void extract_indices(pcl::PointCloud<pcl::PointXYZRGBA>::Ptr input_cloud, pcl::PointCloud<pcl::PointXYZRGBA>::Ptr output_cloud, pcl::PointIndices::Ptr &cluster);

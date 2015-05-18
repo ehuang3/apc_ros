@@ -67,4 +67,13 @@ namespace pcl_tools {
         pcl::fromPCLPointCloud2(mesh.cloud, cloud);
         return true;
     }
+
+    bool cloud_from_stl(std::string filename, pcl::PointCloud<pcl::PointXYZ>& cloud) {
+        pcl::PolygonMesh mesh;
+        pcl::io::loadPolygonFileSTL(filename, mesh);
+        // pcl::PointCloud2 temp_cloud = mesh.cloud;
+        pcl::fromPCLPointCloud2(mesh.cloud, cloud);
+        return true;
+    }
+
 }
