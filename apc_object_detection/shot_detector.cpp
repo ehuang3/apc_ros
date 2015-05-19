@@ -10,6 +10,7 @@
 #include <vtkRenderWindowInteractor.h>
 #include <pcl/io/vtk_io.h>
 #include <pcl/io/vtk_lib_io.h>
+#include <pcl/io/obj_io.h>
 #include <pcl/visualization/pcl_visualizer.h>
 #include <pcl/visualization/cloud_viewer.h>
 #include <pcl/point_types.h>
@@ -28,6 +29,7 @@
 #include <pcl/segmentation/extract_polygonal_prism_data.h>
 #include <pcl/registration/sample_consensus_prerejective.h>
 #include "../apc_pcl/src/pcl_tools/pcl_functions.h"
+#include <pcl/visualization/cloud_viewer.h>
 #include <string>
 
 shot_detector::shot_detector()
@@ -80,7 +82,7 @@ shot_detector::shot_detector()
 void shot_detector::processImage()
 {
     std::cerr << "Processing" << std::endl;
-    std::string file="/home/niko/projects/apc/catkin/src/apc_ros/apc_object_detection/optimized_poisson_textured_mesh.ply";
+    std::string file="/home/niko/projects/apc/catkin/src/apc_ros/apc_object_detection/visual_hull_refined_smoothed.obj";
     loadModel(model,file);
     pcl::io::loadPCDFile("/home/niko/projects/apc/catkin/src/apc_ros/apc_object_detection/niko_file.pcd",*scene);
     //Downsample the model and the scene so they have rougly the same resolution
@@ -96,6 +98,11 @@ void shot_detector::processImage()
     //Calculate the Normals
     calcNormals(model,model_normals);
     calcNormals(scene,scene_normals);
+    pcl::visualization::PCLVisualizer viewer("Alignment");
+    viewer.setBackgroundColor (0, 0, 0);
+    viewer.addPointCloud (scene, "sample cloud");
+    viewer.addPointCloudNormals<PointType,NormalType >(scene, scene_normals, 10, 0.05, "normals");;
+    viewer.spin();
     //Calculate the shot descriptors at each keypoint in the scene
     calcSHOTDescriptors(model,model_keypoints,model_normals,model_descriptors);
     calcSHOTDescriptors(scene,scene_keypoints,scene_normals,scene_descriptors);
@@ -119,13 +126,20 @@ void shot_detector::processImage()
 void shot_detector::loadModel(pcl::PointCloud<PointType>::Ptr model, std::string model_name)
 {
     std::string filename=model_name;
-    vtkSmartPointer<vtkPLYReader> reader = vtkSmartPointer<vtkPLYReader>::New();
+    /*vtkSmartPointer<vtkPLYReader> reader = vtkSmartPointer<vtkPLYReader>::New();
     vtkSmartPointer<vtkPolyData> data=vtkSmartPointer<vtkPolyData>::New();
     reader->SetFileName ( filename.c_str() );
     reader->Update();
     data=reader->GetOutput();
     std::cerr << "model loaded" << std::endl;
-    pcl::io::vtkPolyDataToPointCloud(data,*model);
+    pcl::io::vtkPolyDataToPointCloud(data,*model);*/
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr model_ (new pcl::PointCloud<pcl::PointXYZRGB> ());
+    pcl::io::loadOBJFile(filename,*model_);
+    pcl::visualization::CloudViewer viewer ("Simple Cloud Viewer");
+    viewer.showCloud (model_);
+    while (!viewer.wasStopped ())
+    {
+    }
 }
 
 void shot_detector::ransac(std::vector<Eigen::Matrix4f, Eigen::aligned_allocator<Eigen::Matrix4f> >& transforms, pcl::PointCloud<PointType>::Ptr model, pcl::PointCloud<PointType>::Ptr scene)
@@ -870,7 +884,7 @@ main (int argc, char** argv)
     // Initialize ROS
     ros::init (argc, argv, "apc_object_detection");
     shot_detector detector;
-    //detector.processImage();
+   // detector.processImage();
     // Spin
     std::cerr << "ros start" << std::endl;
         //detector.processImage();
