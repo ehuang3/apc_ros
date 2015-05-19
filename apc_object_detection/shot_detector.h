@@ -27,8 +27,7 @@ typedef pcl::Normal NormalType;
 typedef pcl::ReferenceFrame RFType;
 typedef pcl::SHOT352 DescriptorType;
 //typedef pcl::PFHRGBSignature250 DescriptorType;
-struct CloudStyle
-{
+struct CloudStyle {
     double r;
     double g;
     double b;
@@ -60,8 +59,7 @@ float hv_regularizer_ (3.0f);
 float hv_rad_normals_ (0.05);
 bool hv_detect_clutter_ (true);
 
-class shot_detector
-{
+class shot_detector {
 public:
     shot_detector();
 
@@ -89,23 +87,23 @@ private:
 
     bool processCloud(apc_msgs::shot_detector_srv::Request &req, apc_msgs::shot_detector_srv::Response &res);
     Eigen::Matrix4f refinePose(std::vector<Eigen::Matrix4f, Eigen::aligned_allocator<Eigen::Matrix4f> > transforms,
-                                   pcl::PointCloud<PointType>::Ptr model,pcl::PointCloud<PointType>::Ptr scene);
+                               pcl::PointCloud<PointType>::Ptr model, pcl::PointCloud<PointType>::Ptr scene);
     void loadModel(pcl::PointCloud<PointType>::Ptr model, std::string model_name);
     void ransac(std::vector<Eigen::Matrix4f, Eigen::aligned_allocator<Eigen::Matrix4f> > &transforms,
-                pcl::PointCloud<PointType>::Ptr model,pcl::PointCloud<PointType>::Ptr scene);
+                pcl::PointCloud<PointType>::Ptr model, pcl::PointCloud<PointType>::Ptr scene);
     //Processing functions
     void findCorrespondences (typename pcl::PointCloud<DescriptorType>::Ptr source,
                               typename pcl::PointCloud<DescriptorType>::Ptr target, std::vector<int>& correspondences);
     void filterCorrespondences ();
-    void filter(pcl::PointCloud<PointType>::Ptr scene,pcl::PointCloud<PointType>::Ptr filtered_scene);
+    void filter(pcl::PointCloud<PointType>::Ptr scene, pcl::PointCloud<PointType>::Ptr filtered_scene);
 
-    void calcNormals(pcl::PointCloud<PointType>::Ptr cloud,pcl::PointCloud<NormalType>::Ptr normals);
-    void calcSHOTDescriptors(pcl::PointCloud<PointType>::Ptr cloud,pcl::PointCloud<PointType>::Ptr keypoints
-                             ,pcl::PointCloud<NormalType>::Ptr normals,pcl::PointCloud<DescriptorType>::Ptr descriptors);
+    void calcNormals(pcl::PointCloud<PointType>::Ptr cloud, pcl::PointCloud<NormalType>::Ptr normals);
+    void calcSHOTDescriptors(pcl::PointCloud<PointType>::Ptr cloud, pcl::PointCloud<PointType>::Ptr keypoints
+                             , pcl::PointCloud<NormalType>::Ptr normals, pcl::PointCloud<DescriptorType>::Ptr descriptors);
     /*void calcPFHRGBDescriptors(pcl::PointCloud<PointType>::Ptr cloud,pcl::PointCloud<PointType>::Ptr keypoints
                                ,pcl::PointCloud<NormalType>::Ptr normals,pcl::PointCloud<DescriptorType>::Ptr descriptors);*/
 
-    void sampleKeypoints(pcl::PointCloud<PointType>::Ptr cloud,pcl::PointCloud<PointType>::Ptr keypoints, float sample_size);
+    void sampleKeypoints(pcl::PointCloud<PointType>::Ptr cloud, pcl::PointCloud<PointType>::Ptr keypoints, float sample_size);
     void compare(pcl::PointCloud<DescriptorType>::Ptr model_descriptions,
                  pcl::PointCloud<DescriptorType>::Ptr scene_descriptions);
     void groupCorrespondences();
