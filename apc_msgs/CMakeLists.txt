@@ -82,6 +82,7 @@ add_service_files(
   FILES
   GetMotionPlan.srv
   ComputeDenseMotion.srv
+  ComputePreGrasps.srv
 
   # Vision
   RunDPM.srv
