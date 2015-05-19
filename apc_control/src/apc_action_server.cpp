@@ -122,8 +122,8 @@ MotorGroupError execute_trajectory(const Action& action,
     const trajectory_msgs::JointTrajectoryPoint& point = action.joint_trajectory.points[0];
     for (int i = 0; i < n_dof; i++)
         start_position[i] = point.positions[i];
-    if (ret = motors->checkStartState(start_position, joint_names))
-        return ret;
+    // if (ret = motors->checkStartState(start_position, joint_names))
+    //     return ret;
 
     // Get start state from robot encoders. If we are not executing,
     // the motors will not fill out the state.
@@ -259,8 +259,18 @@ void execute(const GoalConstPtr& goal,
     // For each primitive action in the primitive plan...
     for (int i = 0; i < goal->plan.actions.size(); i++)
     {
+        ROS_INFO("--------------------            EXECUTE            --------------------");
+
         // Get the primitive action to execute.
         const Action& action = goal->plan.actions[i];
+
+        ROS_INFO( "action name   : %s", action.action_name.c_str());
+        ROS_INFO( "action group  : %s", action.group_id.c_str());
+        ROS_INFO( "action frame  : %s", action.frame_id.c_str());
+        ROS_INFO( "action object : %s", action.object_id.c_str());
+        ROS_INFO( "action objkey : %s", action.object_key.c_str());
+        ROS_INFO( "action T.size : %ld", action.joint_trajectory.points.size());
+        // ROS_INFO( "action type   :", __action_type__(action)c_str());
 
         // Execute the trajectory.
         r = execute_trajectory(action, action_server, motors);
@@ -268,6 +278,9 @@ void execute(const GoalConstPtr& goal,
         // If something erred, stop further execution.
         if (r)
             break;
+
+
+        ROS_INFO("--------------------             STOP              --------------------");
 
         // Provide feedback.
         {

@@ -1,0 +1,15 @@
+board_size: {x: 8, y: 9}
+depth_scale_factor: 0.0001
+export_time: '2015-04-02 03:11:10.165086'
+failure: false
+has_depth_integrated_mesh: false
+has_poisson_mesh: true
+has_tsdf_complete_mesh: false
+has_tsdf_mesh: true
+has_visual_hull_mesh: true
+id: 26
+name: laugh_out_loud_joke_book
+recommended_mesh: poisson
+set: set_03_19_02_53PM
+square_size: 0.018923
+version: 1

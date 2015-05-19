@@ -1,0 +1,8 @@
+<?xml version="1.0" ?><KinBody name="laugh_out_loud_joke_book_3">
+  <Body name="laugh_out_loud_joke_book" type="static">
+    <Geom type="trimesh">
+      <Render>../reduced_meshes/laugh_out_loud_joke_book.stl</Render>
+      <Data>../reduced_meshes/laugh_out_loud_joke_book.stl</Data>
+    </Geom>
+  </Body>
+</KinBody>

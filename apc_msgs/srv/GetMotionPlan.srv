@@ -11,6 +11,9 @@ moveit_msgs/RobotState start_state
 # Goal state
 moveit_msgs/RobotState goal_state
 
+# Bin states
+BinState[] bin_states
+
 # The goal states to plan for.
 Constraints[] goal_constraints
 

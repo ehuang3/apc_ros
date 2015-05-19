@@ -679,7 +679,7 @@ namespace apc_control
             {
                 usleep( (useconds_t) 10 * 1e3 ); // Based on can402 control loop frequency
                 t += 0.010;
-                if (t > 0.5)
+                if (t > 1.0)
                 {
                     ret.error_code = MotorGroupError::INVALID_JOINTS;
                     ret.error_string = std::string("Failed to satisfy non-moving pre-condition for ") + _params.name_group;
@@ -689,33 +689,33 @@ namespace apc_control
         }
 
         // Get the start configuration.
-        Eigen::VectorXd start = _state.T->getPosition(0);
+        // Eigen::VectorXd start = _state.T->getPosition(0);
 
         // Check start state.
-        for (JointMap::iterator iter = _state.map.begin(); iter != _state.map.end(); ++iter)
-        {
-            double error = _state.state->X[_params.map[iter->first]].pos - start[iter->second];
-            if (std::abs(error) > 0.017453) // 1 degree in radians.
-            {
-                MotorGroupError e;
-                e.error_code = MotorGroupError::PATH_TOLERANCE_VIOLATED;
-                e.error_string = "Joint differs by more than 1 degrees: " + iter->first;
-                ret += e;
-            }
-        }
+        // for (JointMap::iterator iter = _state.map.begin(); iter != _state.map.end(); ++iter)
+        // {
+        //     double error = _state.state->X[_params.map[iter->first]].pos - start[iter->second];
+        //     if (std::abs(error) > 0.017453) // 1 degree in radians.
+        //     {
+        //         MotorGroupError e;
+        //         e.error_code = MotorGroupError::PATH_TOLERANCE_VIOLATED;
+        //         e.error_string = "Joint differs by more than 1 degrees: " + iter->first;
+        //         ret += e;
+        //     }
+        // }
 
         // On error, print out all desired and actual joint states.
-        if (ret.error_code)
-            for (int i = 0; i < _params.joint_names.size(); i++)
-            {
-                int j = _params.map[_params.joint_names[i]];
-                ROS_ERROR("%s desired[%d]: %+.6f actual[%d]: %+.6f",
-                          _params.joint_names[i].c_str(),
-                          i,
-                          start[_state.map[_params.joint_names[i]]],
-                          j,
-                          _state.state->X[j].pos);
-            }
+        // if (ret.error_code)
+        //     for (int i = 0; i < _params.joint_names.size(); i++)
+        //     {
+        //         int j = _params.map[_params.joint_names[i]];
+        //         ROS_ERROR("%s desired[%d]: %+.6f actual[%d]: %+.6f",
+        //                   _params.joint_names[i].c_str(),
+        //                   i,
+        //                   start[_state.map[_params.joint_names[i]]],
+        //                   j,
+        //                   _state.state->X[j].pos);
+        //     }
 
         return ret;
     }
@@ -938,6 +938,12 @@ namespace apc_control
         }
 
         return ret;
+    }
+
+    MotorGroupError SDHGroup::checkStartState(const Eigen::VectorXd& start,
+                                              const JointNames&      joints)
+    {
+        return MotorGroupError();
     }
 
     MotorGroupError LWA4Group::setVelocityToZero()

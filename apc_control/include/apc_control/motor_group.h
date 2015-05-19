@@ -286,8 +286,8 @@ namespace apc_control
         bool isMoving();
 
         // Check desired start state against current motor encoder readings.
-        MotorGroupError checkStartState(const Eigen::VectorXd& start,
-                                        const JointNames&      joints);
+        virtual MotorGroupError checkStartState(const Eigen::VectorXd& start,
+                                                const JointNames&      joints);
 
         // Apply general pre-conditions at the beginning of a trajectory.
         MotorGroupError applyGeneralPreConditions();
@@ -324,6 +324,10 @@ namespace apc_control
         // command position. No interpolation between distinct
         // positions.
         virtual MotorGroupError sendCommand(double t);
+
+        // We disable checking start states for the SDH.
+        virtual MotorGroupError checkStartState(const Eigen::VectorXd& start,
+                                                const JointNames&      joints);
     };
 
     class LWA4Group : public MotorGroup

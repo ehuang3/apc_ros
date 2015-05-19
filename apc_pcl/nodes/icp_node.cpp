@@ -6,11 +6,14 @@
 #include <pcl/console/time.h>   // TicToc
 #include <pcl/registration/icp.h>
 #include <pcl/common/transforms.h>
+#include <pcl/common/time.h>
+#include <pcl/console/print.h>
 #include <pcl/visualization/cloud_viewer.h>
 #include <pcl/visualization/pcl_visualizer.h>
 #include <pcl/PointIndices.h>
 #include <pcl/conversions.h>
 #include <pcl/PCLPointCloud2.h>
+#include <pcl/filters/voxel_grid.h>
 #include <pcl_conversions/pcl_conversions.h>
 #include <vector>
 #include <eigen_conversions/eigen_msg.h>
@@ -38,33 +41,59 @@ bool APC_ICP::run_icp(apc_msgs::shot_detector_srv::Request &req, apc_msgs::shot_
     /* Run the Amazon Picking Challenge IPC object pose refinement method */
 
     std::cout << "Attempting to ICP!" << std::endl;
-    pcl::PointCloud<pcl::PointXYZ>::Ptr target_cloud(new pcl::PointCloud<pcl::PointXYZ>);
-    pcl::fromROSMsg(req.pointcloud, *target_cloud);
+    PointCloudT::Ptr scene(new PointCloudT);
+    pcl::fromROSMsg(req.pointcloud, *scene);
 
-    pcl::PointCloud<pcl::PointXYZ>::Ptr input_cloud(new pcl::PointCloud<pcl::PointXYZ>);
-    pcl::fromROSMsg(req.targetcloud, *target_cloud);
+    PointCloudT::Ptr object(new PointCloudT);
+    pcl::fromROSMsg(req.targetcloud, *object);
+
+    PointCloudT::Ptr object_aligned(new PointCloudT);
 
     pcl_tools::icp_result result;
-    result = pcl_tools::apply_icp(input_cloud, target_cloud, 45);
-    // pcl_tools::visualize_cloud(input_cloud);
-    pcl_tools::visualize(input_cloud, target_cloud);
-    tf::poseEigenToMsg(result.affine, resp.pose);
+    // pcl_tools::visualize(scene, object);
+    // result = pcl_tools::apply_icp(scene, object, 45);
+
+    std::vector<int> indices;
+    pcl::removeNaNFromPointCloud(*scene, *scene, indices);
+    pcl::removeNaNFromPointCloud(*object, *object, indices);
+
+    // Downsample
+    pcl::console::print_highlight ("Downsampling for registration\n");
+    pcl::VoxelGrid<pcl::PointNormal> grid;
+    const float leaf = 0.005f;
+    grid.setLeafSize (leaf, leaf, leaf);
+    grid.setInputCloud (object);
+    grid.filter (*object);
+    grid.setInputCloud (scene);
+    grid.filter (*scene);
+
+    // alp_align(PointCloudT::Ptr object, PointCloudT::Ptr scene, PointCloudT::Ptr object_aligned,
+        // int max_iterations, int num_samples, float similarity_thresh, float max_corresp_dist, float inlier_frac)
+
+    pcl_tools::icp_result result1 = pcl_tools::alp_align(object, scene, object_aligned, 50000, 3, 0.9f, 5.5f * leaf, 0.7f);
+    pcl_tools::icp_result result2 = pcl_tools::alp_align(object_aligned, scene, object_aligned, 50000, 3, 0.9f, 7.5f * leaf, 0.4f);
+    pcl_tools::icp_result result3 = pcl_tools::alp_align(object_aligned, scene, object_aligned, 50000, 3, 0.9f, 2.5f * leaf, 0.2f);
+
+    Eigen::Affine3d final_affine = result1.affine * result2.affine * result3.affine;
+
+    pcl_tools::visualize(scene, object);
+    // pcl_tools::visualize_cloud(scene);
+    // tf::poseEigenToMsg(result.affine, resp.pose);
+    tf::poseEigenToMsg(final_affine, resp.pose);
+
 
     return true;
 }
 
 APC_ICP::APC_ICP(){
-    std::cout << "Initializing icp server" << std::endl;
+    pcl::console::print_highlight ("Initializing ICP Server\n");
     nh.getParam("meshpath", meshpath);
-    std::cout << "meshpath: " << meshpath << std::endl;
     service = nh.advertiseService("/shot_detector", run_icp);
-    std::cout << "advertised icp server" << std::endl;
+    pcl::console::print_highlight ("--ICP Server Initialized\n");
 }
 
 int main(int argc, char** argv) {
     ros::init(argc, argv, "icp_node");
-    std::cout << "doing anything" << std::endl;
     APC_ICP *apc_icp(new APC_ICP());
-
     ros::spin();
 }

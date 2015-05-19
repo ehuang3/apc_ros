@@ -1,0 +1,8 @@
+<KinBody name="dr_browns_bottle_brush">
+  <Body type="static" name="dr_browns_bottle_brush">
+    <Geom type="trimesh">
+      <Render>../meshes/visual_hull.stl</Render>
+      <Data>../meshes/visual_hull.stl</Data>
+    </Geom>
+  </Body>
+</KinBody>

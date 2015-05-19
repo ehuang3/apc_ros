@@ -22,8 +22,8 @@ class Background_Recorder(object):
         '''
         rospy.init_node('background_recorder')
         self.store_path = os.path.join(path_to_root(), 'apc_pcl', 'calibration')
-        self.pcl_sub = rospy.Subscriber('/kinect2/depth_highres/points', PointCloud2, self.got_pcl)
-        self.image_sub = rospy.Subscriber('/camera/depth/cloud_image', Image, self.got_image)
+        self.pcl_sub = rospy.Subscriber('/kinect2_bottom/depth_highres/points', PointCloud2, self.got_pcl)
+        self.image_sub = rospy.Subscriber('/kinect2_bottom/depth/cloud_image', Image, self.got_image)
         self.Listener = tf.TransformListener()
         self.Transformer = tf.TransformerROS(True, rospy.Duration(10.0))
 
@@ -52,7 +52,7 @@ class Background_Recorder(object):
                 r.sleep()
 
     def get_transform(self):
-        target_frame = "kinect2_rgb_optical_frame";
+        target_frame = "kinect2_bottom_rgb_optical_frame";
         source_frame = "crichton_origin";
         m = self.Listener.lookupTransform(target_frame, source_frame, rospy.Time.now())
         transform = self.Transformer.fromTranslationRotation(*m)
