@@ -40,8 +40,10 @@ from IPython.core.debugger import Tracer
 from .action import *
 from .openrave import *
 from .apc_assert import apc_colors
+from copy import deepcopy
 
-import apc_msgs.srv 
+import apc_msgs.srv
+import re
 
 
 class PreGrasp(object):
@@ -53,8 +55,6 @@ class PreGrasp(object):
         # Set the robot to be in collision with the grasped item.
         enable = True and not reset
         item_key = action.object_key
-
-        Tracer()()
 
         env.GetKinBody(item_key).Enable(enable)
 
@@ -100,8 +100,9 @@ class PreGrasp(object):
         apc_assert(is_action_grasp(action),
                    "Input action to pregrasp finger shaping is invalid")
 
-        # Get the robot.
+        # Get the robot and item.
         robot = env.GetRobot('crichton')
+        item = env.GetKinBody(action.object_key)
 
         # Set the robot to be in collision with the grasped item, but not
         # in collision with the other items or the shelf.
@@ -114,12 +115,114 @@ class PreGrasp(object):
         # object. Only open the fingers that are in collision with the
         # object.
         report = openravepy.CollisionReport()
-        
+        collision = env.CheckCollision(robot, report)
+        moved_joints = set()
+        while collision:
+            l1 = report.plink1
+            l2 = report.plink2
+            # Determine which link belongs to the robot.
+            if l1.GetParent() == item:
+                l3 = l1
+                l1 = l2
+                l2 = l3
+            if not l1.GetParent() == robot and not l2.GetParent() == item:
+                print "Grasp in collision with something else" + str(report)
+                return None
+            # Figure out which finger is above the colliding link.
+            # Tracer()()
+            link_name = l1.GetName()
+            m = re.match("crichton_(\w+_)(finger_[0-9]|thumb_)([0-9])_link", link_name)
+            if not m:
+                return None
+            j2 = robot.GetJoint("crichton_" + m.group(1) + m.group(2) + "2_joint")
+            j3 = robot.GetJoint("crichton_" + m.group(1) + m.group(2) + "3_joint")
+            moved_joints.add("crichton_" + m.group(1) + m.group(2) + "2_joint")
+            moved_joints.add("crichton_" + m.group(1) + m.group(2) + "3_joint")
+            # Open the fingers slightly.
+            q = robot.GetActiveDOFValues()
+            dt = -0.02
+            i2 = j2.GetDOFIndex()
+            i3 = j3.GetDOFIndex()
+            q2 = q[i2] + dt
+            q3 = q[i3] + 0.5*dt
 
-        Tracer()()
+            l = robot.GetActiveDOFLimits()[0]
+            u = robot.GetActiveDOFLimits()[1]
+            if q2 < l[i2] or u[i2] < q2:
+                return None
+            if q3 < l[i3] or u[i3] < q3:
+                return None
+
+            q[i2] = q2
+            q[i3] = q3
+
+            robot.SetActiveDOFValues(q, True)
+            # Check for collisions again.
+            collision = env.CheckCollision(robot, report)
+
+        # Open the fingers slightly more.
+        for joint_name in moved_joints:
+            # Open the fingers slightly.
+            j = robot.GetJoint(joint_name)
+            q = robot.GetActiveDOFValues()
+            dt = -0.08
+            i = j.GetDOFIndex()
+            qi = q[i] + dt
+            l = robot.GetActiveDOFLimits()[0]
+            u = robot.GetActiveDOFLimits()[1]
+            if qi < l[i] or u[i] < qi:
+                return None
+            q[i] = qi
+            robot.SetActiveDOFValues(q, True)
+            # Check for collisions again.
+            collision = env.CheckCollision(robot, report)
+            if collision:
+                return None
 
         # Reset the environment collision properties.
         self.set_preshaping_collision_properties(action, bins, env, True)
+
+        # HACK Remove frame from input grasp so that I can visual the
+        # generating grasp.
+        action.frame_id = ""
+        action.frame_key = ""
+
+        # Fill out a pregrasp action for this new pose.
+        pregrasp = apc_msgs.msg.PrimitiveAction
+        pregrasp = deepcopy(action)
+        pregrasp.grasp = False
+        pregrasp.frame_id = ""
+        pregrasp.frame_key = ""
+        for i in range(len(action.joint_trajectory.points)):
+            set_robot_state_to_action(robot, pregrasp, i)
+
+        return pregrasp
+
+
+    def compute_pregrasps_service(self, request):
+        print "--------------------             START             --------------------"
+
+        # Load and set objects to correct location.
+        load_and_set_items_to_openrave(request, self.env)
+
+        # Set robot to correct joint angles and positions.
+        set_robot_state_to_openrave(request, self.env)
+
+        # Compute a pregrasp for each input grasp.
+        pregrasps = []
+        for grasp in request.grasps:
+            # set_robot_state_to_action(grasp, self.env)
+            pregrasp = self.compute_pregrasp_finger_shapes(grasp, request.bin_states, self.env)
+            if pregrasp:
+                pregrasps.append(grasp)
+                pregrasps.append(pregrasp)
+
+        response = apc_msgs.srv.ComputePreGraspsResponse()
+        response.pregrasps = pregrasps
+
+        print "--------------------              END              --------------------"
+
+        return response
 
 
     def init_ros(self):
@@ -139,28 +242,4 @@ class PreGrasp(object):
         service_topic = rospy.get_param('~topic', 'compute_pregrasps')
         service = rospy.Service(service_topic, apc_msgs.srv.ComputePreGrasps, self.compute_pregrasps_service)
 
-        
 
-
-    def compute_pregrasps_service(self, request):
-        print "--------------------             START             --------------------"
-
-        # Load and set objects to correct location.
-        load_and_set_items_to_openrave(request, self.env)
-
-        # Set robot to correct joint angles and positions.
-        set_robot_state_to_openrave(request, self.env)
-
-        # Compute a pregrasp for each input grasp.
-        pregrasps = []
-        for grasp in request.grasps:
-            # set_robot_state_to_action(grasp, self.env)
-            pregrasp = self.compute_pregrasp_finger_shapes(grasp, request.bin_states, self.env)
-            pregrasps.append(pregrasp)
-
-        response = apc_msgs.srv.ComputePreGraspsResponse()
-        response.pregrasps = pregrasps
-
-        print "--------------------              END              --------------------"
-
-        return response

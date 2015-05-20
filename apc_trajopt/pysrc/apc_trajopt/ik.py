@@ -32,32 +32,18 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
 # OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import os
-import json
-import time
-import cProfile
-import roslib
-import rospy
-import rospkg
 import numpy as np
 import openravepy
 import trajoptpy
-roslib.load_manifest('apc_trajopt')
-import apc_msgs.msg
-import apc_msgs.srv
-import trajectory_msgs
-import tf.transformations
-from trajoptpy.check_traj import traj_is_safe
 import trajoptpy.math_utils as mu
 from IPython.core.debugger import Tracer
-import argparse
+from .action import *
+from .openrave import *
+from .apc_assert import apc_colors
+from copy import deepcopy
 
-from apc_trajopt import *
+import apc_msgs.srv
+import re
 
-def grasping_main():
-    pregrasp_service = PreGrasp()
-    pregrasp_service.init_ros()
-    rospy.spin()
-
-if __name__ == "__main__":
-    grasping_main()
+class ik(object):
+    

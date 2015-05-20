@@ -39,6 +39,7 @@ import trajectory_msgs
 import trajoptpy.math_utils as mu
 from .apc_assert import ApcError, apc_assert
 from IPython.core.debugger import Tracer
+import openravepy
 
 
 def __action_type__(action):
@@ -161,6 +162,15 @@ def compute_linear_trajectory(action, problem, env):
                 T[1,joint.GetDOFIndex()] = p_end[i]
     T = mu.interp2d(numpy.linspace(0,1,20), numpy.linspace(0,1,len(T)), T)
     return T
+
+def set_robot_state_to_action(robot, action, index):
+    joint_names = action.joint_trajectory.joint_names
+    q = robot.GetActiveDOFValues()
+    p = trajectory_msgs.msg.JointTrajectoryPoint()
+    for jn in joint_names:
+        joint = robot.GetJoint(jn)
+        p.positions.append(q[joint.GetDOFIndex()])
+    action.joint_trajectory.points[index] = p
 
 if __name__=='__main__':
     action = apc_msgs.msg.PrimitiveAction()
