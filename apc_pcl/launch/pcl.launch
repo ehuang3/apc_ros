@@ -3,6 +3,7 @@
     <arg name="simulate" default="false" />
     <arg name="train" default="false" />
     <arg name="icp" default="false" />
+    <arg name="visualize" default="false" />
 
 
     <param name="stlpath" value="$(find apc_description)/objects" />
@@ -10,6 +11,8 @@
     <param name="simulate_segmentation" value="$(arg simulate)" type="bool" />
     <param name="train_segmentation" value="$(arg train)" type="bool" />
     <param name="run_icp" value="$(arg icp)" type="bool" />
+    <param name="visualize" value="$(arg visualize)" type="bool" />
+
 
     <node name="vision_server" pkg="apc_pcl" type="vision_server.py" 
         output="screen" />   
