@@ -2,7 +2,7 @@
 import rospy
 from sensor_msgs.msg import PointCloud2, Image, CameraInfo
 from std_msgs.msg import Header
-from geometry_msgs.msg import PointStamped, Point, Pose, PoseStamped
+from geometry_msgs.msg import PointStamped, Point, Pose, PoseStamped, Vector3
 from apc_msgs.srv import *
 from apc_msgs.msg import BinState, ObjectState, DPMObject
 import cv2
@@ -23,6 +23,8 @@ class Vision_Server(object):
 
         self.simulate_segmentation = rospy.get_param('simulate_segmentation')
         self.train_segmentation = rospy.get_param('train_segmentation')
+        self.visualize = rospy.get_param('visualize')
+
         ## Image and cloud
         self.im_sub = Image_Subscriber('/kinect2_bottom/depth/cloud_image', self.got_image)        
         self.camera_info_sub = rospy.Subscriber('/kinect2_bottom/rgb_rect/camera_info', numpy_msg(CameraInfo), self.got_camera_info)
@@ -37,7 +39,7 @@ class Vision_Server(object):
         self.Listener = tf.TransformListener()
         self.Transformer = tf.TransformerROS(True, rospy.Duration(10.0))        
 
-        self.point_pub = rospy.Publisher('test_points', PointStamped, queue_size=20)
+        self.point_pub = rospy.Publisher('test_poses', PoseStamped, queue_size=20)
         self.bin_pub = rospy.Publisher('bin_points', PointStamped, queue_size=40)
 
         # Service inits
@@ -65,7 +67,7 @@ class Vision_Server(object):
             self.registration_proxy = rospy.ServiceProxy('/apc_object_detection/Shot_detector', shot_detector_srv)
 
         need_list = [self.image, self.camera_matrix, self.cloud]
-        while(any([item is None for item in need_list]) and not rospy.is_shutdown()):
+        while(((self.image is None) or (self.camera_matrix is None) or (self.cloud is None)) and not rospy.is_shutdown()):
             if self.image is None:
                 rospy.loginfo("Have not cached image yet, are you running the cloud to image converter?")
             if self.cloud is None:
@@ -79,7 +81,8 @@ class Vision_Server(object):
         rospy.loginfo('----ready----')
 
         # Image viewing loop
-        self.view_loop()
+        if self.visualize:
+            self.view_loop()
 
     def got_image(self, msg):
         self.image = msg
@@ -110,15 +113,15 @@ class Vision_Server(object):
             if key == ord('q'):
                 break
 
-    def publish_pt(self, point, frame='crichton_origin'):
+    def publish_pt(self, pose, frame='crichton_origin'):
         print 'publishing a point'
-        point = point[:3]
+        # point = point[:3]
         self.point_pub.publish(
             header=Header(
                 stamp=rospy.Time.now(),
                 frame_id=frame,
             ),
-            point=Point(*point),
+            pose=pose,
         )
 
     def publish_bin_pt(self, point, frame='kinect2_bottom_rgb_optical_frame'):
@@ -141,10 +144,11 @@ class Vision_Server(object):
     def find_object(self, object_name, object_list, bin_segmented, _bin, x, y):
         print "Running segmentation for {}".format(_bin.bin_name)
         segmentation_result = self.segmentation_proxy(
-            make_image_msg(bin_segmented), 
+            make_image_msg(bin_segmented),
             object_name,
             object_list,
         )
+
         if segmentation_result.success is False:
             rospy.logwarn("Could not find {} in the image".format(object_name))
             return None
@@ -156,10 +160,11 @@ class Vision_Server(object):
                 obj.y, obj.height, obj.width
             )
 
-            cv2.rectangle(bin_segmented, 
-                (obj.x, obj.y), 
-                (obj.x + obj.width, obj.y + obj.height), 
-                (0, 255, 0), 
+            cv2.rectangle(
+                bin_segmented,
+                (obj.x, obj.y),
+                (obj.x + obj.width, obj.y + obj.height),
+                (0, 255, 0),
                 2
             )
             
@@ -169,14 +174,25 @@ class Vision_Server(object):
             if self.train_segmentation:
                 return None
 
-            print "Culling background"
+            print "Requesting background culling"
             background_culled = self.background_cull_proxy(self.cloud, self.backgr_cloud, _bin.pose_shelf_frame, self.backgr_pose)
-            print "Culled background"
+            print "Recieved culled background"
 
+            vector_to_target = self.Bin_Seg.get_unit_vector(
+                np.array(
+                    [x + obj.x + (obj.width / 2), y + obj.y + (obj.height / 2)]
+                )
+            )
+            # print 'Unit Vector to target', vector_to_target
+
+            # vector_to_target = np.array([0.0, 0.0, 1.0])
+
+            print 'Unit Vector to target', vector_to_target
             print 'Sending image of size {} for frustum culling'.format(self.image.shape)
             object_alone = self.frustum_proxy(
                 background_culled.cloud,
                 make_image_msg(self.image),
+                Vector3(*vector_to_target),
                 obj.x + x,
                 obj.y + y,
                 obj.height,
@@ -185,7 +201,7 @@ class Vision_Server(object):
             )
             print 'Frustum culled'
 
-            print 'Getting target cloud'
+            print 'Requesting target cloud'
             target_cloud = self.target_cloud_proxy(object_name)
             print 'Got target cloud'
 
@@ -208,7 +224,7 @@ class Vision_Server(object):
         target_frame = "kinect2_bottom_rgb_optical_frame";
         source_frame = "crichton_origin";
         now = rospy.Time.now()
-        rospy.sleep(0.1)
+        rospy.sleep(1.0)
         m = self.Listener.lookupTransform(target_frame, source_frame, now)
         transform = self.Transformer.fromTranslationRotation(*m)
 
@@ -226,6 +242,8 @@ class Vision_Server(object):
             bin_size = xyzarray(_bin.bin_size)
             shelf_position = xyzharray(_bin.pose_shelf_frame.position)
             object_names = [i.object_id for i in _bin.object_list]
+            if not ('oreo_mega_stuf' in object_names):
+                continue
 
             print "ANALYZING BIN {}".format(_bin.bin_name)
             self.publish_bin(_bin, transform=transform, transform_frame=target_frame)
@@ -252,7 +270,8 @@ class Vision_Server(object):
                         continue
 
                     for object_pose in object_poses:
-                        self.publish_pt(xyzarray(object_pose.position), frame='kinect2_bottom_rgb_optical_frame')
+                        # self.publish_pt(xyzarray(object_pose.position), frame='kinect2_bottom_rgb_optical_frame')
+                        self.publish_pt(object_pose, frame='kinect2_bottom_rgb_optical_frame')
                         print 'Object pose kinect2_bottom_rgb_optical_frame', object_pose
 
                         pq = pqfrompose(object_pose)  # Position, quaternion
