@@ -57,6 +57,7 @@ class Vision_Server(object):
         self.background_cull_proxy = rospy.ServiceProxy('cull_background', CullCloudBackground)
         print "Loading background cloud"
         self.backgr_cloud, _, self.backgr_pose = load_background()
+        self.background_culled = None
 
         self.target_cloud_proxy = rospy.ServiceProxy('/get_mesh', GetMesh)
 
@@ -175,7 +176,8 @@ class Vision_Server(object):
                 return None
 
             print "Requesting background culling"
-            background_culled = self.background_cull_proxy(self.cloud, self.backgr_cloud, _bin.pose_shelf_frame, self.backgr_pose)
+            if self.background_culled is None:
+                self.background_culled = self.background_cull_proxy(self.cloud, self.backgr_cloud, _bin.pose_shelf_frame, self.backgr_pose)
             print "Recieved culled background"
 
             vector_to_target = self.Bin_Seg.get_unit_vector(
@@ -190,7 +192,7 @@ class Vision_Server(object):
             print 'Unit Vector to target', vector_to_target
             print 'Sending image of size {} for frustum culling'.format(self.image.shape)
             object_alone = self.frustum_proxy(
-                background_culled.cloud,
+                self.background_culled.cloud,
                 make_image_msg(self.image),
                 Vector3(*vector_to_target),
                 obj.x + x,
