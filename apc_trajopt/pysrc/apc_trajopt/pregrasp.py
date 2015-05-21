@@ -32,6 +32,7 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
 # OF THE POSSIBILITY OF SUCH DAMAGE.
 
+import time
 import numpy as np
 import openravepy
 import trajoptpy
@@ -111,6 +112,8 @@ class PreGrasp(object):
         # Set robot to grasp joint angles.
         self.set_action_to_robot_state(action, robot, -1)
 
+        t_total = 0.0
+
         # Open the fingers until they are no longer in collision with the
         # object. Only open the fingers that are in collision with the
         # object.
@@ -157,8 +160,19 @@ class PreGrasp(object):
             q[i3] = q3
 
             robot.SetActiveDOFValues(q, True)
+
+            # Start a timer.
+            t_start = time.time()
+
             # Check for collisions again.
             collision = env.CheckCollision(robot, report)
+
+            # Compute elapsed time.
+            t_elapsed = time.time() - t_start
+            print "collision checking took %.7f seconds"%t_elapsed
+            t_total = t_total + t_elapsed
+
+        print "collision checking total %.7f seconds"%t_total
 
         # Open the fingers slightly more.
         for joint_name in moved_joints:

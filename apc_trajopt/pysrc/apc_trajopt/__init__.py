@@ -5,3 +5,4 @@ from .openrave import *
 from .collisions import *
 from .debug import *
 from .pregrasp import *
+from .ik import *
