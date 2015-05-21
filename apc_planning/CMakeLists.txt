@@ -1,18 +1,31 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(apc_msgs)
+project(apc_planning)
+
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -rdynamic -g")
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-  genmsg
-  control_msgs
-  geometry_msgs
-  moveit_msgs
-  std_msgs
-  trajectory_msgs
-  sensor_msgs
-  # schunk_sdh
+  actionlib
+  actionlib_msgs
+  apc_msgs
+  apc_path
+  class_loader
+  cmake_modules
+  eigen_conversions
+  geometric_shapes
+  interactive_markers
+  moveit_ros_perception
+  moveit_ros_planning_interface
+  moveit_ros_robot_interaction
+  moveit_ros_warehouse
+  object_recognition_msgs
+  robot_calibration
+  rosconsole
+  roscpp
+  rviz
+  tf
 )
 
 ## System dependencies are found with CMake's conventions
@@ -49,69 +62,31 @@ find_package(catkin REQUIRED COMPONENTS
 ##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
 
 ## Generate messages in the 'msg' folder
-add_message_files(
-  DIRECTORY
-  msg
-  FILES
-  PrimitiveAction.msg
-  PrimitivePlan.msg
-  TactileSensor.msg
-  TactileMatrix.msg
-  Constraints.msg
-  JointConstraint.msg
-  PositionConstraint.msg
-  OrientationConstraint.msg
-  VisibilityConstraint.msg
-  FrameState.msg
-  ObjectState.msg
-  WorldState.msg
-  DPMObject.msg
-  ItemSymmetry.msg
-
-  # Vision
-  BinInfo.msg
-  BinState.msg
-  Object.msg
-)
+# add_message_files(
+#   FILES
+#   Message1.msg
+#   Message2.msg
+# )
 
 ## Generate services in the 'srv' folder
-add_service_files(
-  DIRECTORY
-  srv
-  FILES
-  GetMotionPlan.srv
-  ComputeDenseMotion.srv
-  ComputePreGrasps.srv
-  ComputeIk.srv
-  CheckCollisions.srv
-
-  # Vision
-  RunDPM.srv
-  RunICP.srv
-  RunVision.srv
-  GetImage.srv
-  GetPointCloud.srv
-  GetCloudFrustum.srv
-  CullCloudBackground.srv
-  SegmentImage.srv
-  GetShelf.srv
-  GetMesh.srv
-  shot_detector_srv.srv
-)
+# add_service_files(
+#   FILES
+#   Service1.srv
+#   Service2.srv
+# )
 
 ## Generate actions in the 'action' folder
-add_action_files(
-  DIRECTORY
-  action
-  FILES
-  FollowPrimitivePlan.action
-)
+# add_action_files(
+#   FILES
+#   Action1.action
+#   Action2.action
+# )
 
 ## Generate added messages and services with any dependencies listed here
-generate_messages(
-  DEPENDENCIES
-  control_msgs   geometry_msgs   moveit_msgs   std_msgs   trajectory_msgs   sensor_msgs#   schunk_sdh
-)
+# generate_messages(
+#   DEPENDENCIES
+#   actionlib_msgs#   apc_msgs#   object_recognition_msgs
+# )
 
 ###################################
 ## catkin specific configuration ##
@@ -123,10 +98,10 @@ generate_messages(
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-#  INCLUDE_DIRS include
-#  LIBRARIES apc_msgs
- # CATKIN_DEPENDS control_msgs geometry_msgs moveit_msgs std_msgs trajectory_msgs schunk_sdh
- DEPENDS control_msgs geometry_msgs moveit_msgs std_msgs trajectory_msgs sensor_msgs # schunk_sdh
+ INCLUDE_DIRS include
+ LIBRARIES apc_planning
+ CATKIN_DEPENDS actionlib actionlib_msgs apc_msgs apc_path class_loader cmake_modules eigen_conversions geometric_shapes interactive_markers moveit_ros_perception moveit_ros_planning_interface moveit_ros_robot_interaction moveit_ros_warehouse object_recognition_msgs robot_calibration rosconsole roscpp rviz tf
+ DEPENDS system_lib
 )
 
 ###########
@@ -137,25 +112,34 @@ catkin_package(
 ## Your package locations should be listed before other locations
 # include_directories(include)
 include_directories(
+  include
   ${catkin_INCLUDE_DIRS}
 )
 
-## Declare a cpp library
-# add_library(apc_msgs
-#   src/${PROJECT_NAME}/apc_msgs.cpp
-# )
+# Declare a cpp library
+add_library(apc_planning
+  src/${PROJECT_NAME}/collision.cpp
+  src/${PROJECT_NAME}/ik.cpp
+  src/${PROJECT_NAME}/error.cpp
+  src/${PROJECT_NAME}/backward.cpp
+)
+
+## Specify libraries to link a library or executable target against
+target_link_libraries(apc_planning
+  ${catkin_LIBRARIES}
+)
 
 ## Declare a cpp executable
-# add_executable(apc_msgs_node src/apc_msgs_node.cpp)
+add_executable(apc_collision src/apc_collision.cpp)
+target_link_libraries(apc_collision apc_planning bfd dl ${catkin_LIBRARIES})
+
+add_executable(apc_ik src/apc_ik.cpp)
+target_link_libraries(apc_ik apc_planning bfd dl ${catkin_LIBRARIES})
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
-# add_dependencies(apc_msgs_node apc_msgs_generate_messages_cpp)
+# add_dependencies(apc_planning_node apc_planning_generate_messages_cpp)
 
-## Specify libraries to link a library or executable target against
-# target_link_libraries(apc_msgs_node
-#   ${catkin_LIBRARIES}
-# )
 
 #############
 ## Install ##
@@ -172,7 +156,7 @@ include_directories(
 # )
 
 ## Mark executables and/or libraries for installation
-# install(TARGETS apc_msgs apc_msgs_node
+# install(TARGETS apc_planning apc_planning_node
 #   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 #   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 #   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
@@ -197,7 +181,7 @@ include_directories(
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_apc_msgs.cpp)
+# catkin_add_gtest(${PROJECT_NAME}-test test/test_apc_planning.cpp)
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()

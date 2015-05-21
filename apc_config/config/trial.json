@@ -1,0 +1,55 @@
+{
+  "bin_contents":
+  {
+    "bin_A":
+    [
+    ],
+    "bin_B":
+    [
+    ],
+    "bin_C":
+    [
+    ],
+    "bin_D":
+    [
+      "crayola_64_ct"
+    ],
+    "bin_E":
+    [
+    ],
+    "bin_F":
+    [
+    ],
+    "bin_G":
+    [
+        "genuine_joe_plastic_stir_sticks"
+    ],
+    "bin_H":
+    [
+    ],
+    "bin_I":
+    [
+    ],
+    "bin_J":
+    [
+    ],
+    "bin_K":
+    [
+    ],
+    "bin_L":
+    [
+    ]
+  },
+
+  "work_order":
+  [
+    {
+      "bin": "bin_G",
+      "item":"genuine_joe_plastic_stir_sticks"
+    },
+    {
+      "bin": "bin_D",
+      "item":"crayola_64_ct"
+    }
+  ]
+}
