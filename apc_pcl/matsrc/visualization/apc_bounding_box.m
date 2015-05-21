@@ -11,6 +11,8 @@ function [xywh_list, success] = bounding_box(image, object_name, object_list, tr
     if acceptability < 0.5
         xywh_list = [];
         success = false;
+    else
+        success = true;
     end
     cc = bwconncomp(segmentation);
 
