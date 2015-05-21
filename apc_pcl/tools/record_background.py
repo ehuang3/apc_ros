@@ -21,7 +21,20 @@ class Background_Recorder(object):
         (Along with a proper transformation)
         '''
         rospy.init_node('background_recorder')
-        self.store_path = os.path.join(path_to_root(), 'apc_pcl', 'calibration')
+        path_arg =  rospy.get_param('~path', None)
+        print path_arg
+
+        self.store_name = 'backround.bag'
+        if path_arg is None:
+            self.store_path = os.path.join(path_to_root(), 'apc_pcl', 'calibration')
+
+        else:
+            cwd = os.getcwdu()
+            directory = os.path.join(cwd, path_arg)
+            if '.bag' in path_arg:
+                directory, self.store_name = os.path.split(directory)
+            self.store_path = os.path.realpath(directory)
+
         self.pcl_sub = rospy.Subscriber('/kinect2_bottom/depth_highres/points', PointCloud2, self.got_pcl)
         self.image_sub = rospy.Subscriber('/kinect2_bottom/depth/cloud_image', Image, self.got_image)
         self.Listener = tf.TransformListener()
@@ -40,7 +53,7 @@ class Background_Recorder(object):
             if ((self.pcl is not None) and (self.image is not None) and (self.shelf_pose is not None)):
                 self.pcl_sub.unregister()
                 self.image_sub.unregister()
-                path = os.path.join(self.store_path, 'background.bag')
+                path = os.path.join(self.store_path, self.store_name)
                 print 'Recording background to {}'.format(path)
                 bag = rosbag.Bag(path, 'w')
                 bag.write('background_cloud', self.pcl)

@@ -65,22 +65,26 @@ void visualize(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud, pcl::visualization::PC
 }
 
 void visualize(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud) {
+    /* Visualize with default arguments */
     visualize(cloud, "Cloud Visualization");
 }
 
 void visualize(pcl::PointCloud<pcl::PointXYZRGBA>::Ptr cloud) {
+    /* Visualize with default arguments */
     visualize(cloud, "Cloud Visualization");
 }
 
-
 void visualize(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_1, pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_2) {
+    /* Visualize with default arguments */
     visualize(cloud_1, cloud_2, "Cloud Visualization");
 }
 
 void visualize(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud, std::string window_name) {
+    /* Visualize XYZ with a single cloud */
     pcl::visualization::PCLVisualizer viewer(window_name);
     viewer.setSize(500, 500);
     pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZ> cloud_color_h (cloud, 255, 0, 0);
+    viewer.addCoordinateSystem (0.04, "View_1");
     viewer.addPointCloud(cloud, cloud_color_h, "cloud");
     while(!viewer.wasStopped()) {
         viewer.spinOnce();
@@ -91,9 +95,11 @@ void visualize(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud, std::string window_nam
 }
 
 void visualize(pcl::PointCloud<pcl::PointXYZRGBA>::Ptr cloud, std::string window_name) {
+    /* Visualize XYZRGBA with a single cloud */
     pcl::visualization::PCLVisualizer viewer(window_name);
     viewer.setSize(500, 500);
     viewer.addPointCloud(cloud, "cloud");
+    viewer.addCoordinateSystem (0.04, "View_1");
     while(!viewer.wasStopped()) {
         viewer.spinOnce();
         boost::this_thread::sleep (boost::posix_time::microseconds (100000)); 
@@ -102,6 +108,7 @@ void visualize(pcl::PointCloud<pcl::PointXYZRGBA>::Ptr cloud, std::string window
 }
 
 void visualize(pcl::PointCloud<pcl::PointXYZRGBA>::Ptr cloud_1, pcl::PointCloud<pcl::PointXYZRGBA>::Ptr cloud_2, std::string window_name) {
+    /* Visualize XYZRGBA with two clouds */
     pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_1_xyz(new pcl::PointCloud<pcl::PointXYZ>);
     pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_2_xyz(new pcl::PointCloud<pcl::PointXYZ>);
     pcl::copyPointCloud(*cloud_1, *cloud_1_xyz);
@@ -109,8 +116,8 @@ void visualize(pcl::PointCloud<pcl::PointXYZRGBA>::Ptr cloud_1, pcl::PointCloud<
     visualize(cloud_1_xyz, cloud_2_xyz, window_name);
 }
 
-
 void visualize(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_1, pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_2, std::string window_name) {
+    /* Visualize XYZ with two clouds */
     pcl::visualization::PCLVisualizer viewer(window_name);
     viewer.setSize(500, 500);
     pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZ> cloud_1_color_h (cloud_1, 255, 0, 0);
@@ -119,6 +126,7 @@ void visualize(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_1, pcl::PointCloud<pcl:
 
     pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZ> cloud_2_color_h (cloud_2, 0, 255, 0);
     viewer.addPointCloud(cloud_2, cloud_2_color_h, "cloud_2");
+    viewer.addCoordinateSystem (0.04, "View_1");
 
     while(!viewer.wasStopped()) {
         viewer.spinOnce();
@@ -130,9 +138,20 @@ void visualize(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_1, pcl::PointCloud<pcl:
 typedef pcl::visualization::PointCloudColorHandlerCustom<pcl::PointNormal> ColorHandlerT;
 
 void visualize(PointCloudT::Ptr scene, PointCloudT::Ptr object) {
+    /* Visualize PointCloudT with two clouds */
     pcl::visualization::PCLVisualizer visu("Alignment");
     visu.addPointCloud (scene, ColorHandlerT (scene, 0.0, 255.0, 0.0), "scene");
     visu.addPointCloud (object, ColorHandlerT (object, 0.0, 0.0, 255.0), "object_aligned");
+    visu.addCoordinateSystem (0.04, "View_1");
+
+    visu.spin ();
+}
+
+void visualize(PointCloudT::Ptr scene, std::string window_name) {
+    /* Visualize PointCloudT with one clouds */
+    pcl::visualization::PCLVisualizer visu(window_name);
+    visu.addPointCloud (scene, ColorHandlerT (scene, 0.0, 255.0, 0.0), "scene");
+    visu.addCoordinateSystem (0.04, "View_1");
     visu.spin ();
 }
 

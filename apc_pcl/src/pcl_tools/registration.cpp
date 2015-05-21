@@ -3,10 +3,11 @@
 #include "pcl_tools.h"
 // #include "transform.h"
 namespace pcl_tools {
-icp_result apply_icp(pcl::PointCloud<pcl::PointXYZ>::Ptr input_cloud, pcl::PointCloud<pcl::PointXYZ>::Ptr target_cloud, int iterations=1) {
+icp_result apply_icp(pcl::PointCloud<pcl::PointXYZ>::Ptr input_cloud, pcl::PointCloud<pcl::PointXYZ>::Ptr target_cloud, int iterations, float max_corr) {
     /* Attempts to align input_cloud to target_cloud, does so in-place */
     pcl::IterativeClosestPoint<pcl::PointXYZ, pcl::PointXYZ> icp;
     icp.setMaximumIterations (iterations);
+    icp.setMaxCorrespondenceDistance(max_corr);
     icp.setTransformationEpsilon (0.2);
     icp.setInputSource (input_cloud);
     icp.setInputTarget (target_cloud);
@@ -22,6 +23,7 @@ icp_result apply_icp(pcl::PointCloud<pcl::PointXYZ>::Ptr input_cloud, pcl::Point
     result.fitness = icp.getFitnessScore();
     result.affine = Eigen::Affine3d(icp.getFinalTransformation().cast<double>());
     std::cout << icp.getFinalTransformation() << std::endl;
+    std::cout << "Fitness: " << icp.getFitnessScore() << std::endl;
     return result;
 }
 
@@ -57,7 +59,7 @@ struct orientation {
 
 // icp_result sac_icp(pcl::PointCloud<pcl::PointXYZ>::Ptr input_cloud, pcl::PointCloud<pcl::PointXYZ>::Ptr target_cloud, int iterations=5) {
 //     /* There are 6 key orientations and 6 key positions, for a total of 36 total poses */
-// 
+
 //     Eigen::Vector3f origin(0.0, 0.0, 0.0);
 //     std::list<Eigen::Vector3f> seed_positions{
 //         Eigen::Vector3f(-1, 0, 0),
@@ -67,16 +69,16 @@ struct orientation {
 //         Eigen::Vector3f(0, 1, 0),
 //         Eigen::Vector3f(0, 0, 1)
 //     };
-// 
+
 //     for (std::list<Eigen::Vector3f>::iterator position = seed_positions.begin(); position != seed_positions.end(); position++){
 //         std::cout << "testing position " << *position << std::endl;
 //         apply_icp(input_cloud, target_cloud, Eigen::Vector3f::UnitZ(), 0.0, *position);
 //         // affine_cloud(Eigen::Vector3f::UnitZ(), 0.0, *position);
 //     }
-// 
+
 //     icp_result result;
 //     // result = apply_icp(current_cloud, target_cloud, 60);  // 60 iterations
-// 
+
 // }
 
 }

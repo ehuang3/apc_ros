@@ -1,6 +1,8 @@
 sensor_msgs/PointCloud2 cloud  # The post-isolation cloud
 sensor_msgs/Image image
 
+geometry_msgs/Vector3 direction
+
 # (x, y) is upper left corner
 int64 x
 int64 y
