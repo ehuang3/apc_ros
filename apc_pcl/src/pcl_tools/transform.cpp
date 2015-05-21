@@ -21,6 +21,18 @@ void affine_cloud(Eigen::Vector3f axis, float theta, Eigen::Vector3f translation
     pcl::transformPointCloud(input_cloud, destination_cloud, transform);
 }
 
+void affine_cloud(Eigen::Vector3f axis, float theta, Eigen::Vector3f translation, pcl::PointCloud<PointNT>& input_cloud, pcl::PointCloud<PointNT>& destination_cloud) {
+    /* Apply a 3D affine transformation to an arbitrary pcl::PointCloud
+
+    Rotate input_cloud by theta radians about axis, and then translate by the translation vector, placing the result in destination 
+        SLOW!
+    */
+    Eigen::Affine3f transform = Eigen::Affine3f::Identity();
+    transform.translation() = translation;
+    transform.rotate(Eigen::AngleAxisf(theta, axis));
+    pcl::transformPointCloud(input_cloud, destination_cloud, transform);
+}
+
 void affine_cloud(Eigen::Affine3d transform, pcl::PointCloud<pcl::PointXYZ>& input_cloud, pcl::PointCloud<pcl::PointXYZ>& destination_cloud) {
     pcl::transformPointCloud(input_cloud, destination_cloud, transform);
 }
