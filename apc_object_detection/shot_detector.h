@@ -20,6 +20,7 @@
 #include <eigen_conversions/eigen_msg.h>
 #include <geometry_msgs/Transform.h>
 #include "../../../devel/include/apc_msgs/shot_detector_srv.h"
+#include <pcl/features/our_cvfh.h>
 
 
 typedef pcl::PointXYZ PointType;
@@ -83,7 +84,8 @@ private:
     pcl::PointCloud<PointType>::Ptr model_good_kp;
     pcl::PointCloud<PointType>::Ptr scene_good_kp ;
     pcl::PointCloud<PointType>::Ptr objects ;
-
+    pcl::PointCloud<pcl::VFHSignature308> vfh_model_descriptors;
+    pcl::PointCloud<pcl::VFHSignature308> vfh_scene_descriptors;
 
     bool processCloud(apc_msgs::shot_detector_srv::Request &req, apc_msgs::shot_detector_srv::Response &res);
     Eigen::Matrix4f refinePose(std::vector<Eigen::Matrix4f, Eigen::aligned_allocator<Eigen::Matrix4f> > transforms,
@@ -131,6 +133,7 @@ private:
     pcl::NormalEstimationOMP<PointType, NormalType> norm_est;
     pcl::UniformSampling<PointType> uniform_sampling;
     pcl::SHOTEstimationOMP<PointType, NormalType, DescriptorType> descr_est;
+    pcl::OURCVFHEstimation<PointType, NormalType, pcl::VFHSignature308> ourcvfh;
     //pcl::PFHRGBEstimation<PointType, NormalType, DescriptorType> pfhrgbEstimation;
     pcl::GeometricConsistencyGrouping<PointType, PointType> gc_clusterer;
 

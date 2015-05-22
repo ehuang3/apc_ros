@@ -98,11 +98,20 @@ void shot_detector::processImage()
     //Calculate the Normals
     calcNormals(model, model_normals);
     calcNormals(scene, scene_normals);
-    pcl::visualization::PCLVisualizer viewer("Alignment");
-    viewer.setBackgroundColor (0, 0, 0);
-    viewer.addPointCloud (scene, "sample cloud");
-    viewer.addPointCloudNormals<PointType, NormalType >(scene, scene_normals, 10, 0.05, "normals");;
-    viewer.spin();
+    pcl::search::KdTree<pcl::PointXYZ>::Ptr kdtree(new pcl::search::KdTree<pcl::PointXYZ>);
+    ourcvfh.setInputCloud(scene);
+    ourcvfh.setInputNormals(scene_normals);
+    ourcvfh.setSearchMethod(kdtree);
+    ourcvfh.setEPSAngleThreshold(5.0 / 180.0 * M_PI); // 5 degrees.
+    ourcvfh.setCurvatureThreshold(1.0);
+    ourcvfh.setNormalizeBins(false);
+    // Set the minimum axis ratio between the SGURF axes. At the disambiguation phase,
+    // this will decide if additional Reference Frames need to be created, if ambiguous.
+    ourcvfh.setAxisRatio(0.8);
+    ourcvfh.compute(vfh_scene_descriptors);
+    ourcvfh.setInputCloud(model);
+    ourcvfh.setInputNormals(model_normals);
+    ourcvfh.compute(vfh_model_descriptors);
     //Calculate the shot descriptors at each keypoint in the scene
     calcSHOTDescriptors(model, model_keypoints, model_normals, model_descriptors);
     calcSHOTDescriptors(scene, scene_keypoints, scene_normals, scene_descriptors);

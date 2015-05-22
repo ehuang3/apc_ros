@@ -39,3 +39,12 @@ apc_pcl/src/pcl_tools/pcl_functions.h
 apc_pcl/nodes/frustum_cull_server.cpp
 apc_extrinsic_calibration/calibrate_extrinsic.h
 apc_extrinsic_calibration/calibrate_extrinsic.cpp
+excel-util/extrinsic_calibration/src/calibration_broadcaster.cpp
+excel-util/extrinsic_calibration/src/calibration_job.cpp
+excel-util/extrinsic_calibration/src/extrinsic_calibration.cpp
+excel-util/extrinsic_calibration/src/ros_calibration_server.cpp
+excel-util/extrinsic_calibration/src/test_calibration.cpp
+excel-util/extrinsic_calibration/include/extrinsic_calibration/calibration_broadcaster.h
+excel-util/extrinsic_calibration/include/extrinsic_calibration/calibration_job.h
+excel-util/extrinsic_calibration/include/extrinsic_calibration/extrinsic_calibration.h
+excel-util/extrinsic_calibration/include/extrinsic_calibration/factors.h
