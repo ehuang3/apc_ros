@@ -40,9 +40,11 @@ bool APC_MeshFinder::get_mesh(apc_msgs::GetMesh::Request &req, apc_msgs::GetMesh
     boost::filesystem::path rest_of_path("reduced_meshes");
 
     pcl::PCLPointCloud2 cloud;
-    pcl_tools::cloud_from_stl((path_to_mesh / object_name / rest_of_path / object_name).string() + ".stl", cloud);
+    bool success;
     std::cout << "Looking for a file at " << (path_to_mesh / object_name /rest_of_path / object_name).string() + ".stl" << std::endl;
+    success = pcl_tools::cloud_from_stl((path_to_mesh / object_name / rest_of_path / object_name).string() + ".stl", cloud);
     pcl_conversions::fromPCL(cloud, resp.cloud);
+    resp.success = success;
     return true;
 }
 
