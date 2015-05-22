@@ -114,7 +114,7 @@ class Vision_Server(object):
             if key == ord('q'):
                 break
 
-    def publish_pt(self, pose, frame='crichton_origin'):
+    def publish_pose(self, pose, frame='crichton_origin'):
         print 'publishing a point'
         # point = point[:3]
         self.point_pub.publish(
@@ -185,11 +185,7 @@ class Vision_Server(object):
                     [x + obj.x + (obj.width / 2), y + obj.y + (obj.height / 2)]
                 )
             )
-            # print 'Unit Vector to target', vector_to_target
 
-            # vector_to_target = np.array([0.0, 0.0, 1.0])
-
-            print 'Unit Vector to target', vector_to_target
             print 'Sending image of size {} for frustum culling'.format(self.image.shape)
             object_alone = self.frustum_proxy(
                 self.background_culled.cloud,
@@ -201,10 +197,14 @@ class Vision_Server(object):
                 obj.width,
                 not self.simulate_segmentation,
             )
-            print 'Frustum culled'
+            print 'Got frustum culled cloud'
 
             print 'Requesting target cloud'
             target_cloud = self.target_cloud_proxy(object_name)
+            if not target_cloud.success:
+                rospy.logerr("Failed to find .stl mesh for {}".format(object_name))
+                return None
+
             print 'Got target cloud'
 
             print 'Attempting to register'
@@ -214,7 +214,7 @@ class Vision_Server(object):
                 object_name
             )
 
-            print "Registered object"
+            print "Got registered object"
             object_pose = registration.pose
             object_poses.append(object_pose)
         return object_poses
@@ -253,7 +253,9 @@ class Vision_Server(object):
             self.Bin_Seg.draw_bin(self.show_image, _bin, transform)
 
             if bin_seg_response is None:
-                print "Bin not in view, skipping"
+                rospy.logerr("Bin {} not in full view, skipping".format(_bin.bin_name))
+                bin_state.found = False
+                bin_states.append(bin_state)
                 continue  # The bin is not entirely in the camera view
             bin_segmented, (x, y, w, h) = bin_seg_response
 
@@ -265,15 +267,21 @@ class Vision_Server(object):
                 for object_name in object_names:
                     print "Looking for {}".format(object_name)
                     # Core operation -- finding the object, segmenting it, extracting pose
-                    ## --
+                    # This is in the event that we find multiple of one object
                     object_poses = self.find_object(object_name, object_names, bin_segmented, _bin, x, y)
+                    ## ----------
                     if object_poses is None:
                         print "Could not find object pose"
+                        object_state = ObjectState(
+                            object_id=object_name,
+                            object_key='',
+                            object_pose=Pose(),
+                            found=False,
+                        )
                         continue
 
                     for object_pose in object_poses:
-                        # self.publish_pt(xyzarray(object_pose.position), frame='kinect2_bottom_rgb_optical_frame')
-                        self.publish_pt(object_pose, frame='kinect2_bottom_rgb_optical_frame')
+                        self.publish_pose(object_pose, frame='kinect2_bottom_rgb_optical_frame')
                         print 'Object pose kinect2_bottom_rgb_optical_frame', object_pose
 
                         pq = pqfrompose(object_pose)  # Position, quaternion
@@ -287,6 +295,7 @@ class Vision_Server(object):
                             object_id=object_name,
                             object_key='',
                             object_pose=object_pose_world_msg,
+                            found=True,
                         )
                         object_states.append(object_state)
 
@@ -318,7 +327,7 @@ class Vision_Server(object):
         if len(bin_states) < 12:
             for k in range(len(bin_states), 12):
                 bin_states.append(BinState())
-        print 'sending', len(bin_states)
+        print 'Sending', len(bin_states)
 
         return RunVisionResponse(
             bin_contents=bin_states
