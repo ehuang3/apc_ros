@@ -32,9 +32,19 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
 # OF THE POSSIBILITY OF SUCH DAMAGE.
 
+class apc_colors:
+    HEADER = '\033[95m'
+    OKBLUE = '\033[94m'
+    OKGREEN = '\033[92m'
+    WARNING = '\033[93m'
+    FAIL = '\033[91m'
+    ENDC = '\033[0m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
+
 class ApcError(Exception):
     def __init__(self, value):
-        self.value = value
+        self.value = apc_colors.FAIL + str(value) + apc_colors.ENDC
     def __str__(self):
         return repr(self.value)
 

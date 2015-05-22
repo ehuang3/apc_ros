@@ -1,7 +1,6 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(apc_msgs)
 
-
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
@@ -82,6 +81,9 @@ add_service_files(
   FILES
   GetMotionPlan.srv
   ComputeDenseMotion.srv
+  ComputePreGrasps.srv
+  ComputeIk.srv
+  CheckCollisions.srv
 
   # Vision
   RunDPM.srv

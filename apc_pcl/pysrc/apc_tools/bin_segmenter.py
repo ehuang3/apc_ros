@@ -15,11 +15,13 @@ class Bin_Segmenter(object):
         if camera_matrix is not None:
             self.cam_matrix = camera_matrix
         elif kinect_serial is not None:
+            raise(Exception("Bin segmenter was not given a camera matrix"))
             self.cam_matrix = self.get_cam_matrix(kinect_serial)
         else:
             raise(Exception("No kinect specified"))
 
         # self.shelf = self.get_shelf_urdf()
+        self.cam_matrix_inv = np.linalg.inv(self.cam_matrix)
         self.Transformer = tf.TransformerROS(True, Duration(10.0))        
 
     def get_cam_matrix(self, kinect_serial):
@@ -29,6 +31,18 @@ class Bin_Segmenter(object):
             cv2.cv.Load(calib_path)
         )
         return cam_matrix
+
+    def get_unit_vector(self, image_pt):
+        ''' get_unit_vector(image_pt, camera_matrix)
+        Given a pixel cordinate and a camera matrix, return a unit vector that defines the 
+        world-space direction toward that pixel in the focal plane
+        '''
+        h_image_pt = np.hstack([image_pt[:2], 1.0])
+        print h_image_pt
+        spatial_vec = np.dot(self.cam_matrix_inv, h_image_pt)
+        print spatial_vec
+        unit_vec = spatial_vec / np.linalg.norm(spatial_vec)
+        return unit_vec
 
     def optical_to_image(self, point, image_shape, rotation=np.array([0.0, 0.0, 0.0]), translation=np.array([0.0, 0.0, 0.0])):
         '''Convert a point in the camera optical frame to a pixel coordinate'''
@@ -166,4 +180,13 @@ class Bin_Segmenter(object):
 
 
 if __name__ == '__main__':
-    assert False, 'This is not to be run as main'
+    matrix = np.array([
+        [1045.8557400637853, 0.0, 935.8000074500827],
+        [0.0, 1048.1342812101645, 535.4019808653711],
+        [0.0, 0.0, 1.0],
+    ])
+
+    bs = Bin_Segmenter(camera_matrix=matrix)
+    # [1080.0, 1920.0]
+    print bs.get_unit_vector([0.0, 0.0])
+    # assert False, 'This is not to be run as main'

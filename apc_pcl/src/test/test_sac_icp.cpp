@@ -6,11 +6,11 @@
 #include <pcl/common/transforms.h>
 #include <pcl/visualization/cloud_viewer.h>
 #include <pcl/visualization/pcl_visualizer.h>
+#include <pcl/filters/filter.h>
+#include <pcl/filters/voxel_grid.h>
+#include <pcl/io/pcd_io.h>
 #include "../pcl_tools/pcl_tools.h"
-// #include "../pcl_tools/loading.cpp"
-// #include "../pcl_tools/transform.cpp"
-// #include "../pcl_tools/visualization.cpp"
-// #include "../pcl_tools/registration.cpp"
+
 
 typedef pcl::PointXYZ InPointType;
 
@@ -18,101 +18,70 @@ int main (int argc, char** argv)
 {
     typedef pcl::PointXYZ cloud_type;
 
-    char* filename = argv[1];
     pcl::console::TicToc time;
 
-    std::cout << "Opening polygon model at " << filename << std::endl;
-    pcl::PointCloud<cloud_type>::Ptr target_cloud(new pcl::PointCloud<cloud_type>);
-    pcl::PointCloud<cloud_type>::Ptr input_cloud(new pcl::PointCloud<cloud_type>);
+    PointCloudT::Ptr object(new PointCloudT);
+    PointCloudT::Ptr scene(new PointCloudT);
+    PointCloudT::Ptr object_aligned(new PointCloudT);
 
-    pcl_tools::cloud_from_ply(filename, *target_cloud);
-
-    Eigen::Vector3f origin, normal;
-    origin << 0, 0, 0;
-    normal << 1, 1, 0;
-
-    pcl_tools::discard_halfspace(normal, origin, *target_cloud, *input_cloud);
-    pcl_tools::affine_cloud(Eigen::Vector3f::UnitX(), 0.2, Eigen::Vector3f(-0.1, -0.3, 0.0), *input_cloud, *input_cloud);
-
-    pcl::PointCloud<cloud_type>::Ptr input_copy(new pcl::PointCloud<cloud_type>);
-    *input_copy = *input_cloud;
-
-    /* ***** ICP ***** */
-    pcl::visualization::PCLVisualizer viewer ("Point Cloud Visualization ENHANCED!");
-    viewer.setSize (1280, 1024);  // Visualiser window size
-
-    int v1 (0);
-    int v2 (1);
-    pcl::visualization::PointCloudColorHandlerCustom<InPointType> target_cloud_color_h (target_cloud, 255, 0, 0);
-    pcl::visualization::PointCloudColorHandlerCustom<InPointType> input_cloud_color_h (input_cloud, 0, 255, 0);
-
-    viewer.createViewPort (0.0, 0.0, 0.5, 1.0, v1);
-    viewer.createViewPort (0.5, 0.0, 1.0, 1.0, v2);
-
-    viewer.setBackgroundColor (0, 0, 0, v1);
-    viewer.setBackgroundColor (0, 0, 0, v2);
-
-    viewer.addPointCloud(input_cloud, input_cloud_color_h, "input_cloud", v1);
-    viewer.addPointCloud(target_cloud, target_cloud_color_h, "target_cloud", v1);
-    viewer.addPointCloud(input_copy, input_cloud_color_h, "input_cloud_copy", v2);
-
-    viewer.addText("0", 10, 10, 50, 1, 1, 1, "info", v2);
-
-    int frames, iterations = 0;
-    bool go_on = true;
-
-    // Eigen::Vector3f origin(0.0, 0.0, 0.0);
-     static const Eigen::Vector3f seed_position_arr[] = {
-        Eigen::Vector3f(-1, 0, 0),
-        Eigen::Vector3f(0, -1, 0),
-        Eigen::Vector3f(0, 0, -1),
-        Eigen::Vector3f(1, 0, 0),
-        Eigen::Vector3f(0, 1, 0),
-        Eigen::Vector3f(0, 0, 1)
-    };
-
-    std::vector<Eigen::Vector3f> seed_positions (seed_position_arr, seed_position_arr + sizeof(seed_position_arr) / sizeof(seed_position_arr[0]));
-    Eigen::ArrayXf fitnesses = Eigen::ArrayXf::Zero(36);
-    int position = 0;
-    int max_position = seed_positions.size();
-
-    // apply_icp(input_cloud, target_cloud, Eigen::Vector3f::UnitZ(), 0.0, *position)
-
-    pcl::PointCloud<pcl::PointXYZ>::Ptr offset_cloud(new pcl::PointCloud<pcl::PointXYZ>);
-    while(!viewer.wasStopped()) {
-        /* Block until done */
-        frames++;
-        viewer.spinOnce();
-        time.tic();
-
-        if ((frames % 30) == 0) {
-            iterations++;
-            std::stringstream ss;
-            ss << iterations;
-            std::string text = "Iteration: " + ss.str();
-
-            pcl_tools::icp_result result;
-            if (go_on) {
-                result = pcl_tools::apply_icp(input_cloud, target_cloud, offset_cloud, Eigen::Vector3f::UnitZ(), 0.0, seed_positions[position], 1);
-            } else {
-                if (position >= max_position) {
-                    continue;
-                }
-                iterations = 0;
-                position++;
-            }
-
-            std::cout << "Fitness: " << result.fitness << std::endl;
-            if (result.fitness < 1e-6) {
-                viewer.updateText(text, 10, 16, 60, 0, 1, 0, "info"); 
-                go_on = false;
-            } else {
-                viewer.updateText(text, 10, 16, 60, 1, 0, 0, "info");                
-            }
-        }
-
-        viewer.updatePointCloud(input_cloud, input_cloud_color_h, "input_cloud");
+    if (argc != 3)
+    {
+        pcl::console::print_error ("Syntax is: %s object.pcd scene.pcd\n", argv[0]);
+        return (1);
     }
+
+    // Load object and scene
+    pcl::console::print_highlight ("Loading point clouds...\n");
+
+    pcl_tools::cloud_from_stl(argv[2], *object);
+
+    if (pcl::io::loadPCDFile<PointNT> (argv[1], *scene) < 0)
+    {
+        pcl::console::print_error ("Error loading object/scene file!\n");
+        return (1);
+    }
+
+    // pcl::PointCloud<pcl::Normal>::Ptr normals (new pcl::PointCloud<pcl::Normal>);
+    std::vector<int> indices;
+    pcl::removeNaNFromPointCloud(*scene, *scene, indices);
+    pcl::removeNaNFromPointCloud(*object, *object, indices);
+
+    pcl::NormalEstimationOMP<PointNT, PointNT> nest;
+    nest.setRadiusSearch (0.04);
+    nest.setInputCloud (scene);
+    // nest.setKSearch (10);
+    nest.compute (*scene);
+    // visualize normals
+    pcl::visualization::PCLVisualizer viewer("PCL Viewer");
+    viewer.setBackgroundColor (0.0, 0.0, 0.5);
+    viewer.addPointCloud<PointNT>(scene, "scenenee");
+    viewer.addPointCloudNormals<PointNT>(scene, 10);
+
+    while (!viewer.wasStopped ())
+    {
+    viewer.spinOnce ();
+    }
+
+
+
+    pcl::console::print_highlight ("Downsampling for registration\n");
+    pcl::VoxelGrid<pcl::PointNormal> grid;
+    const float leaf = 0.005f;
+    grid.setLeafSize (leaf, leaf, leaf);
+    grid.setInputCloud (object);
+    grid.filter (*object);
+    grid.setInputCloud (scene);
+    grid.filter (*scene);
+
+    // alp_align(PointCloudT::Ptr object, PointCloudT::Ptr scene, PointCloudT::Ptr object_aligned,
+        // int max_iterations, int num_samples, float similarity_thresh, float max_corresp_dist, float inlier_frac)
+
+    pcl_tools::icp_result result1 = pcl_tools::alp_align(object, scene, object_aligned, 50000, 3, 0.9f, 5.5f * leaf, 0.7f);
+    pcl_tools::visualize(scene, object_aligned);
+
+    Eigen::IOFormat CleanFmt(4, 0, ", ", "\n", "[", "]");
+    std::cout << result1.affine.matrix().format(CleanFmt) << std::endl;
+    pcl_tools::icp_result result = pcl_tools::sac_icp(object, scene, result1.affine);
 
     return(0);
 }

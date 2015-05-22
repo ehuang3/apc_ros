@@ -34,51 +34,25 @@ void removeBackground(pcl::PointCloud<PointType2>::Ptr scene, pcl::PointCloud<Po
     std::vector<int> indices;
     //Remove NaN values
     pcl::PointCloud<PointType2>::Ptr nan_scene(new pcl::PointCloud<PointType2>());
-    pcl::removeNaNFromPointCloud(*scene, indices);
-
-    pcl::PointCloud<pcl::PointXYZRGBA>::Ptr de_nanned (new pcl::PointCloud<pcl::PointXYZRGBA>);
-    de_nanned->width = scene->width;
-    de_nanned->height = scene->height;
-    de_nanned->is_dense = true;  // NEXT: NOT DENSE!
-    de_nanned->points.resize(de_nanned->width * de_nanned->height);
-
-    // pcl_tools::visualize(scene, background, "BOTHGROUND");
-    std::cout << "frnak llodys " << std::endl;
-    for (int k = 0; k < indices.size(); k++) {
-        de_nanned->points[indices[k]] = scene->points[indices[k]];
-    }
-    // pcl_tools::visualize(de_nanned, "De nanned");
-    std::cout << "frnak llodys2 " << std::endl;
-
-
+    pcl::removeNaNFromPointCloud(*scene, *nan_scene, indices);
     std::vector<int> indexes;
     //  Iterate through pc and compare to points in the kdtree
-
-    std::cout << "denanning difference " << scene->points.size() - indices.size() << std::endl;
-    for (size_t i = 0; i < de_nanned->size (); ++i)
+    for (size_t i = 0; i < nan_scene->size (); ++i)
     {
         std::vector<int> neigh_indices (1);
         std::vector<float> neigh_sqr_dists (1);
-
-        if ((de_nanned->at(i).x == 0.0) && (de_nanned->at(i).y == 0.0) && (de_nanned->at(i).z == 0.0)) {
-            // std::cout << "frnak llodys ew5345w" << std::endl;
-            continue;
-        }
-        int found_neighs = kdtree.nearestKSearch (de_nanned->at (i), 1, neigh_indices, neigh_sqr_dists);
+        int found_neighs = kdtree.nearestKSearch (nan_scene->at (i), 1, neigh_indices, neigh_sqr_dists);
         if(found_neighs == 1 && neigh_sqr_dists[0] < dist)
         {
             indexes.push_back(i);
         }
     }
-    std::cout << "frnak llodys4 " << std::endl;
-
     pcl::PointIndices::Ptr inliers (new pcl::PointIndices ());
     inliers->indices=indexes;
     //Extract the indices that are not in the scene and the background(this is the pointcloud
     // with the background subtracted)
     pcl::ExtractIndices<PointType2> eifilter (false);
-    eifilter.setKeepOrganized(true);
-    eifilter.setInputCloud(scene);
+    eifilter.setInputCloud(nan_scene);
     eifilter.setIndices(inliers);
     eifilter.setNegative (true);
     eifilter.filter(*pc_back_subtracted);

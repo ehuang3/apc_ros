@@ -119,8 +119,7 @@ def load_and_set_items_to_openrave(request, env):
         for obj_key in dirty.keys():
             # Remove from the openrave environment.
             if dirty[obj_key] == 1:
-                Tracer()()
-                env.RemoveBody(obj_key)
+                env.RemoveKinBody(obj_key)
 
 
 def set_robot_state_to_openrave(request, env):

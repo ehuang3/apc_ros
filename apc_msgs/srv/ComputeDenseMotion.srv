@@ -9,9 +9,16 @@ WorldState world_state
 # The primitive action to create a dense joint trajectory for.
 PrimitiveAction action
 
+# Bin states
+BinState[] bin_states
+
 # If this flag is true, only check that the input action is collision
 # free.
 bool only_check_collisions
+
+# Only check end state to see if the grasp is impossible (i.e. in
+# collision with the shelf or non-items)
+bool check_for_impossible_grasp
 
 ---
 # Motion plan response

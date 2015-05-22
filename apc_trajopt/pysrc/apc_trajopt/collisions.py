@@ -38,6 +38,7 @@ import trajoptpy
 import trajoptpy.math_utils as mu
 from IPython.core.debugger import Tracer
 from .action import *
+from .apc_assert import apc_colors
 
 
 
@@ -151,7 +152,7 @@ def set_openrave_collision_properties(action, bins, env, reset = False):
     if is_action_pregrasp(action) and is_action_linear(action):
         # Turn off collisions for the item to grasp.
         enable = False or reset
-        kinbody = env.GetKinBody(object_key)
+        kinbody = env.GetKinBody(action.object_key)
         kinbody.Enable(enable)
 
     if is_action_grasp(action) or is_action_postgrasp(action) or is_action_nonprehensile(action):
@@ -190,9 +191,12 @@ def check_for_end_collision(action, bins, env):
     for robot_link in robot.GetLinks():
         collision = env.CheckCollision(robot_link, report)
         if collision:
-            return False
+            print apc_colors.FAIL +  "collision: " + str(report) + apc_colors.ENDC
+            return True
 
     set_openrave_collision_properties(action, bins, env, True)
+
+    return False
 
 
 def check_for_impossible_grasp(action, env):
@@ -274,7 +278,7 @@ def check_for_collisions_interp(action, problem, T, env, dn=10):
             for robot_link in robot.GetLinks():
                 collision = env.CheckCollision(robot_link, report)
                 if collision:
-                    print "collision:", report
+                    print apc_colors.FAIL +  "collision: " + str(report) + apc_colors.ENDC
                     return False
     # Re-enable collisions for items if the action is a pre-grasp. Grasp
     # and post-grasp actions have attached the object to the robot, so

@@ -1,0 +1,16 @@
+
+# Starting robot state.
+moveit_msgs/RobotState robot_state
+
+# Starting world state.
+WorldState world_state
+
+PrimitiveAction[] grasps
+
+BinState[] bin_states
+
+---
+
+bool[] collision_free
+
+PrimitiveAction[] pregrasps
