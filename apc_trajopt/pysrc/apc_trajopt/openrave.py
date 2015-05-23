@@ -118,7 +118,7 @@ def load_and_set_items_to_openrave(request, env):
     if dirty:
         for obj_key in dirty.keys():
             # Remove from the openrave environment.
-            if dirty[obj_key] == 1:
+            if dirty[obj_key] == 1 and obj_key:
                 env.RemoveKinBody(obj_key)
 
 
