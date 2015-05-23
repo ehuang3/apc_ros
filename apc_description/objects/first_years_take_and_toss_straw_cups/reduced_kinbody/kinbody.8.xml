@@ -1,8 +1,0 @@
-<?xml version="1.0" ?><KinBody name="first_years_take_and_toss_straw_cups_8">
-  <Body name="first_years_take_and_toss_straw_cups" type="static">
-    <Geom type="trimesh">
-      <Render>../reduced_meshes/first_years_take_and_toss_straw_cups.stl</Render>
-      <Data>../reduced_meshes/first_years_take_and_toss_straw_cups.stl</Data>
-    </Geom>
-  </Body>
-</KinBody>

@@ -1,8 +1,0 @@
-<?xml version="1.0" ?><KinBody name="rollodex_mesh_collection_jumbo_pencil_cup_7">
-  <Body name="rollodex_mesh_collection_jumbo_pencil_cup" type="static">
-    <Geom type="trimesh">
-      <Render>../reduced_meshes/rollodex_mesh_collection_jumbo_pencil_cup.stl</Render>
-      <Data>../reduced_meshes/rollodex_mesh_collection_jumbo_pencil_cup.stl</Data>
-    </Geom>
-  </Body>
-</KinBody>
