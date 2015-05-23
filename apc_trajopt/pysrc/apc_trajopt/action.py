@@ -58,7 +58,7 @@ def __action_type__(action):
                    ("Missing object key to match object id %s") % (action.object_id))
     # Compute the action type.
     transit    = bool(not action.object_id)
-    pregrasp   = bool(robot_moving and not grasping and not object_moving and action.object_id)
+    pregrasp   = bool(not grasping and not object_moving and action.object_id)
     grasp      = bool(not robot_moving and grasping and not object_moving and action.object_id)
     postgrasp  = bool(robot_moving and grasping and action.object_id)
     nonprehensile = bool(robot_moving and not grasping and object_moving and action.object_id)
@@ -105,7 +105,7 @@ def is_action_stationary(action):
     return numpy.allclose(start, end)
 
 def is_action_linear(action):
-    return (action.interpolate_cartesian or action.group_id == 'crichton_left_hand' or
+    return (action.group_id == 'crichton_left_hand' or
             action.group_id == 'crichton_right_hand')
 
 def print_action_summary(action):
@@ -116,6 +116,9 @@ def print_action_summary(action):
     print "action object :", action.object_id
     print "action objkey :", action.object_key
     print "action type   :", __action_type__(action)
+    print "action len    :", len(action.joint_trajectory.points)
+    print "stationary    :", is_action_stationary(action)
+    print "linear        :", is_action_linear(action)
 
 def compute_disabled_dof_indexes(action, env):
     robot = env.GetRobot('crichton')
@@ -147,6 +150,7 @@ def fill_response_action(action, problem, trajectory, env):
         for i in range(len(M)):
             q.positions.append(p[M[i]])
         action.joint_trajectory.points.append(q)
+    action.duration = 1.0
 
 def compute_linear_trajectory(action, problem, env):
     robot = env.GetRobot('crichton')

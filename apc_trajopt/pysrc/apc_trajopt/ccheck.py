@@ -50,6 +50,7 @@ import re
 
 class Collision(object):
 
+
     def __init__(self):
         self.env = None
 
@@ -89,7 +90,7 @@ class Collision(object):
         env.GetKinBody("kiva_pod").Enable(enable)
 
         # Disable collisions with the target item.
-        if is_action_grasping(action):
+        if action.object_key:
             enable = False or reset
             env.GetKinBody(action.object_key).Enable(enable)
 
@@ -137,14 +138,18 @@ class Collision(object):
 
         # Compute a pregrasp for each input grasp.
         collision_free = []
-        for action in request.actions:
-            # set_robot_state_to_action(grasp, self.env)
-            checked = self.check_collisions(action, request.bin_states, self.env)
-            if checked:
-                collision_free.append(checked)
+        for plan in request.plans:
+            cf = True
+            for action in plan.actions:
+                # set_robot_state_to_action(grasp, self.env)
+                checked = self.check_collisions(action, request.bin_states, self.env)
+                if not checked:
+                    cf = False
+            if cf:
+                collision_free.append(plan)
 
         response = apc_msgs.srv.CheckCollisionsResponse()
-        response.actions = collision_free
+        response.plans = collision_free
 
         print "--------------------              END              --------------------"
 

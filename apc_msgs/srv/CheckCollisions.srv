@@ -5,7 +5,7 @@ moveit_msgs/RobotState robot_state
 # Starting world state.
 WorldState world_state
 
-PrimitiveAction[] actions
+PrimitivePlan[] plans
 
 BinState[] bin_states
 
@@ -13,4 +13,4 @@ BinState[] bin_states
 
 bool[] collision
 
-PrimitiveAction[] actions
+PrimitivePlan[] plans

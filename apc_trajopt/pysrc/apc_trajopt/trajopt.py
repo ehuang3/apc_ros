@@ -81,13 +81,41 @@ def build_trajopt_request(srv_request, env):
         distance_penalty = 0.05 # 1 cm
     if is_action_pregrasp(srv_request.action):
         distance_penalty = 0.02 # 1 cm
+    if is_action_postgrasp(srv_request.action):
+        distance_penalty = 0.05
 
     disabled_dofs = compute_disabled_dof_indexes(srv_request.action, env)
+
+    n_steps = 10
+    starting_trajectory = {
+        "type" : "straight_line",
+        "endpoint" : joint_target
+    }
+
+    # if the action is cartesian, init with the cartesian trajectory.
+    action = srv_request.action
+    if action.interpolate_cartesian:
+        num_pts = len(action.joint_trajectory.points)
+        num_dofs = robot.GetActiveDOF()
+        T = numpy.zeros([num_pts, num_dofs])
+        for i in range(num_pts):
+            T[i,:] = robot.GetActiveDOFValues()
+        for i in range(num_pts):
+            J = action.joint_trajectory.joint_names
+            for j in range(len(J)):
+                d = robot.GetJoint(J[j]).GetDOFIndex()
+                T[i, d] = action.joint_trajectory.points[i].positions[j]
+        starting_trajectory = {
+            "type" : "given_traj",
+            "data" : T.tolist()
+        }
+        # Also disable distance penalty if cartesian (enter / exit bin).
+        distance_penalty = 0.0
 
     # Fill out trajopt request.
     trajopt_request = {
         "basic_info" : {
-            "n_steps" : 20,
+            "n_steps" : n_steps,
             "manip" : "active", # see below for valid values
             "start_fixed" : True, # i.e., DOF values at first timestep are fixed based on current robot state
             "dofs_fixed" : disabled_dofs
@@ -125,9 +153,6 @@ def build_trajopt_request(srv_request, env):
                 "params" : {"vals" : joint_target } # length of vals = # dofs of manip
             }
         ],
-        "init_info" : {
-            "type" : "straight_line", # straight line in joint space.
-            "endpoint" : joint_target
-        }
+        "init_info" : starting_trajectory
     }
     return trajopt_request

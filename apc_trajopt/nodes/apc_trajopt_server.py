@@ -89,12 +89,12 @@ def motion_planning_service(request):
 
     # If the last action state is in collision, do not even bother
     # planning.
-    if check_for_end_collision(request.action, request.bin_states, env):
-        response = apc_msgs.srv.ComputeDenseMotionResponse()
-        response.valid = False
-        response.action = request.action
-        print "--------------------              END              --------------------"
-        return response
+    # if check_for_end_collision(request.action, request.bin_states, env):
+    #     response = apc_msgs.srv.ComputeDenseMotionResponse()
+    #     response.valid = False
+    #     response.action = request.action
+    #     print "--------------------              END              --------------------"
+    #     return response
 
     # Set robot to correct joint angles and positions.
     set_robot_state_to_openrave(request, env)

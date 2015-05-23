@@ -226,10 +226,10 @@ class PreGrasp(object):
         pregrasps = []
         for grasp in request.grasps:
             # set_robot_state_to_action(grasp, self.env)
-            pregrasp = self.compute_pregrasp_finger_shapes(grasp, request.bin_states, self.env)
+            pregrasp = self.compute_pregrasp_finger_shapes(grasp.actions[0], request.bin_states, self.env)
             if pregrasp:
+                grasp.actions.insert(0, pregrasp)
                 pregrasps.append(grasp)
-                pregrasps.append(pregrasp)
 
         response = apc_msgs.srv.ComputePreGraspsResponse()
         response.pregrasps = pregrasps

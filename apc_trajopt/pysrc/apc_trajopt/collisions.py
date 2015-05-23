@@ -87,7 +87,7 @@ def set_target_item_collision_properties(action, problem, env):
         robot.ReleaseAllGrabbed()
     # If the action is a grasp or postgrasp, disable collisions between the
     # grabbed object and the robot.
-    if is_action_grasp(action) or is_action_postgrasp(action):
+    if is_action_pregrasp(action) or is_action_grasp(action) or is_action_postgrasp(action):
         robot = env.GetRobot('crichton')
         item = env.GetKinBody(action.object_key)
         collision_checkers = problem.GetCollisionCheckers()
