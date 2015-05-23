@@ -87,6 +87,7 @@ def build_trajopt_request(srv_request, env):
     disabled_dofs = compute_disabled_dof_indexes(srv_request.action, env)
 
     n_steps = 10
+
     starting_trajectory = {
         "type" : "straight_line",
         "endpoint" : joint_target
@@ -94,6 +95,7 @@ def build_trajopt_request(srv_request, env):
 
     # if the action is cartesian, init with the cartesian trajectory.
     action = srv_request.action
+
     if action.interpolate_cartesian:
         num_pts = len(action.joint_trajectory.points)
         num_dofs = robot.GetActiveDOF()
@@ -111,6 +113,10 @@ def build_trajopt_request(srv_request, env):
         }
         # Also disable distance penalty if cartesian (enter / exit bin).
         distance_penalty = 0.0
+        n_steps = len(action.joint_trajectory.points)
+
+    if n_steps < len(action.joint_trajectory.points):
+        n_steps = len(action.joint_trajectory.points)
 
     # Fill out trajopt request.
     trajopt_request = {
