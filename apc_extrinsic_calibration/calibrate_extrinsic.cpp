@@ -27,6 +27,8 @@ int main( int argc,char** argv)
     ros::ServiceClient detect_srv = nh.serviceClient<std_srvs::Empty>("/excel_calib_srv/detect_targets");
     ros::ServiceClient calibrate_srv = nh.serviceClient<std_srvs::Empty>("/excel_calib_srv/calibrate");
     ros::ServiceClient save_srv = nh.serviceClient<std_srvs::Empty>("/excel_calib_srv/save");
+ros::spinOnce();
+std::cerr << "HI please 2 to calibrate" << std::endl;
 
     int num=4;
     while(num!=0)

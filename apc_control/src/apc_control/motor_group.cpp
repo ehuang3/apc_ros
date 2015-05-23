@@ -143,6 +143,8 @@ namespace apc_control
         return moving;
     }
 
+
+
     MotorGroupError MotorGroupUnion::checkStartState(const Eigen::VectorXd& start,
                                                      const JointNames&      joints)
     {
@@ -204,6 +206,15 @@ namespace apc_control
             if (err = _state.groups[_state.active[i]]->applyGeneralPostConditions())
                 ret += err;
         }
+        return ret;
+    }
+
+    MotorGroupError MotorGroupUnion::checkFTExceeded()
+    {
+        MotorGroupError ret, err;
+        for (int i = 0; i < _state.groups.size(); i++)
+            if (err = _state.groups[i]->checkFT())
+                ret += err;
         return ret;
     }
 
@@ -312,6 +323,7 @@ namespace apc_control
         READ_PARAM(_k_p,       k_p);
         READ_PARAM(_feedback,  name_feedback_state);
         READ_PARAM(_max_gain,  max_gain);
+        READ_PARAM(_vector,    name_vector);
 
 #undef READ_PARAM
 
@@ -389,6 +401,7 @@ namespace apc_control
         success &= openChannel(_params.name_ref,   &_params.chan_ref);
         success &= openChannel(_params.name_track, &_params.chan_track);
         success &= openChannel(_params.name_feedback_state, &_params.chan_feedback_state);
+        success &= openChannel(_params.name_vector, &_params.chan_vector);
         return success;
     }
 
@@ -905,6 +918,103 @@ namespace apc_control
         return MotorGroupError();
     }
 
+    MotorGroupError MotorGroup::readVector(int64_t ms)
+    {
+        if (ms == 0)
+            return readVector(_state.vector, NULL);
+
+        struct timespec timeout;
+
+        timeout.tv_sec = ms / 1000;
+        timeout.tv_nsec = (ms % 1000) * 1e6;
+
+        return readVector(_state.vector, &timeout);
+    }
+
+    MotorGroupError MotorGroup::readVector(struct sns_msg_vector* msg,
+                                           struct timespec* time_out)
+    {
+        MotorGroupError ret;
+
+        // The frame size of the buffer.
+        size_t frame_size;
+
+        // Pointer to buffer that stores the message.
+        void* buf;
+
+        // We will get the latest message with timeout.
+        int opt = 0;
+        if (time_out)
+            opt = ACH_O_WAIT | ACH_O_LAST | ACH_O_RELTIME;
+        else
+            opt = ACH_O_LAST | ACH_O_NONBLOCK;
+        //int opt = ACH_O_LAST | (time_out ? ACH_O_WAIT : 0);
+
+        // Get the motor state message.
+        ach_status_t s = sns_msg_local_get( &_params.chan_vector, &buf, &frame_size, time_out, opt );
+
+        // Handle the return status. ach ok and missed frame are both
+        // acceptable as we only want the latest motor state.
+        switch (s)
+        {
+        case ACH_OK:
+        case ACH_MISSED_FRAME:
+        {
+            // Sanity check the size of the message.
+            if (frame_size != sns_msg_motor_state_size_n(_params.map.size()))
+            {
+                ret.error_code = MotorGroupError::INVALID_JOINTS;
+                ret.error_string = "Failed to get the correct motor states";
+                break;
+            }
+
+            // Convert raw buffer to motor state message.
+            memcpy(msg, buf, frame_size);
+
+            // Mark state as not dirty.
+            _state.dirty_vector = false;
+
+            break;
+        }
+        case ACH_STALE_FRAMES:
+        {
+            // If we are polling quickly..it's okay for stale frames
+            if (!time_out)
+                break;
+
+            ret.error_code = MotorGroupError::STALE_FRAMES;
+            ret.error_string = "No new data has been published to channel: " + _params.name_state;
+
+            break;
+        }
+        default:
+            // Log error on failure.
+            SNS_LOG(LOG_ERR, "Failed ach_get: %s\n", ach_result_to_string(s));
+
+            ret.error_code = MotorGroupError::INVALID_JOINTS;
+            ret.error_string = std::string("Failed ach_get: ") + ach_result_to_string(s);
+
+            break;
+        }
+
+        return ret;
+    }
+
+    MotorGroupError MotorGroup::checkFT()
+    {
+        MotorGroupError ret;
+
+        // Skip if not executing.
+        if (!(_params.allow_execution && _params.enabled))
+            return ret;
+
+        // Read in state.
+        if (ret = readState((int64_t) 100)) // 100 ms timeout.
+            return ret;
+
+
+    }
+
     MotorGroupError SDHGroup::sendCommand(double t)
     {
         MotorGroupError ret;
@@ -991,5 +1101,6 @@ namespace apc_control
         // Make sure nothing is moving anymore.
         return setVelocityToZero();
     }
+
 
 }

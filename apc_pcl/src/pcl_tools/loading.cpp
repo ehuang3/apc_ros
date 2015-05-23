@@ -56,32 +56,36 @@ namespace pcl_tools {
 
     bool cloud_from_stl(std::string filename, pcl::PCLPointCloud2& cloud) {
         pcl::PolygonMesh mesh;
-        pcl::io::loadPolygonFileSTL(filename, mesh);
+        if(pcl::io::loadPolygonFileSTL(filename, mesh) < 0) {
+            return false;
+        }
         cloud = mesh.cloud;
-        // pcl::fromPCLPointCloud2(mesh.cloud, cloud);
         return true;
     }
 
     bool cloud_from_stl(std::string filename, pcl::PointCloud<pcl::PointXYZRGBA>& cloud) {
         pcl::PolygonMesh mesh;
-        pcl::io::loadPolygonFileSTL(filename, mesh);
-        // pcl::PointCloud2 temp_cloud = mesh.cloud;
+        if(pcl::io::loadPolygonFileSTL(filename, mesh) < 0) {
+            return false;
+        }
         pcl::fromPCLPointCloud2(mesh.cloud, cloud);
         return true;
     }
 
     bool cloud_from_stl(std::string filename, pcl::PointCloud<pcl::PointNormal>& cloud) {
         pcl::PolygonMesh mesh;
-        pcl::io::loadPolygonFileSTL(filename, mesh);
-        // pcl::PointCloud2 temp_cloud = mesh.cloud;
+        if(pcl::io::loadPolygonFileSTL(filename, mesh) < 0) {
+            return false;
+        }
         pcl::fromPCLPointCloud2(mesh.cloud, cloud);
         return true;
     }
 
     bool cloud_from_stl(std::string filename, pcl::PointCloud<pcl::PointXYZ>& cloud) {
         pcl::PolygonMesh mesh;
-        pcl::io::loadPolygonFileSTL(filename, mesh);
-        // pcl::PointCloud2 temp_cloud = mesh.cloud;
+        if(pcl::io::loadPolygonFileSTL(filename, mesh) < 0) {
+            return false;
+        }
         pcl::fromPCLPointCloud2(mesh.cloud, cloud);
         return true;
     }
