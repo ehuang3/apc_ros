@@ -379,7 +379,8 @@ namespace apc_control
         }
         _state.state = sns_msg_motor_state_heap_alloc(_params.map.size());
         _state.ref   = sns_msg_motor_ref_heap_alloc(_params.map.size());
-        _state.track  = sns_msg_motor_state_heap_alloc(_params.map.size());
+        _state.track = sns_msg_motor_state_heap_alloc(_params.map.size());
+        _state.ft    = sns_msg_vector_heap_alloc(6);
 
         return true;
     }
@@ -414,6 +415,7 @@ namespace apc_control
         sns_msg_motor_state_init(_state.state, _params.map.size());
         sns_msg_motor_state_init(_state.track, _params.map.size());
         sns_msg_motor_ref_init(_state.ref, _params.map.size());
+        sns_msg_vector_init(_state.ft, 6);
 
         _state.dirty_state = true;
         _state.fresh_ref = false;
@@ -962,7 +964,7 @@ namespace apc_control
         case ACH_MISSED_FRAME:
         {
             // Sanity check the size of the message.
-            if (frame_size != sns_msg_motor_state_size_n(_params.map.size()))
+            if (frame_size != sns_msg_vector_size_n(6))
             {
                 ret.error_code = MotorGroupError::INVALID_JOINTS;
                 ret.error_string = "Failed to get the correct motor states";
@@ -1010,10 +1012,17 @@ namespace apc_control
             return ret;
 
         // Read in state.
-        if (ret = readState((int64_t) 100)) // 100 ms timeout.
+        if (ret = readFt((int64_t) 0)) // 0 ms timeout
             return ret;
 
+        Eigen::Matrix<double, 6, 1> ft;
+        for (int i = 0; i < ft.rows(); i++) {
+            ft[i] = _state.ft->x[i];
+        }
 
+        std::cout << ft.transpose() << std::endl;
+
+        return ret;
     }
 
     MotorGroupError SDHGroup::sendCommand(double t)

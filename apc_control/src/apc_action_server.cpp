@@ -233,6 +233,10 @@ MotorGroupError execute_trajectory(const Action& action,
         // Convert the current time to seconds.
         time = ((double) ts.tv_sec) + ts.tv_nsec / (double) 1e9;
 
+        // Check FT.
+        if (ret = motors->checkFTExceeded())
+            break;
+
         // Build reference command messages.
         if (ret = motors->buildCommands(time - start))
             // On failure, break to ensure post-conditions.
