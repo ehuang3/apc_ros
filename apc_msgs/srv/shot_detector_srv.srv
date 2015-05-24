@@ -3,3 +3,4 @@ sensor_msgs/PointCloud2 targetcloud
 string object_name
 ---
 geometry_msgs/Pose pose
+bool success
