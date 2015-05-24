@@ -32,6 +32,7 @@ torso_max_gain: 0.01
 torso_log: true
 torso_track: "track-torso-dbg"
 torso_feedback: "feedback-torso-dbg"
+torso_ft: ""
 
 # Left arm
 left_arm_state: "state-left"
@@ -57,6 +58,7 @@ left_arm_max_gain: 0.01
 left_arm_log: true
 left_arm_track: "track-left-dbg"
 left_arm_feedback: "feedback-left-dbg"
+left_arm_ft: "ft-left"
 
 # Right arm
 right_arm_state: "state-right"
@@ -82,6 +84,7 @@ right_arm_max_gain: 0.01
 right_arm_log: true
 right_arm_track: "track-right-dbg"
 right_arm_feedback: "feedback-right-dbg"
+right_arm_ft: "ft-right"
 
 # Left hand
 left_hand_state: "sdhstate-left"
@@ -107,6 +110,7 @@ left_hand_max_gain: 0.01
 left_hand_log: true
 left_hand_track: "sdhtrack-left-dbg"
 left_hand_feedback: "sdhfeedback-left-dbg"
+left_hand_ft: ""
 
 # Right hand
 right_hand_state: "sdhstate-right"
@@ -132,3 +136,4 @@ right_hand_max_gain: 0.01
 right_hand_log: true
 right_hand_track: "sdhtrack-right-dbg"
 right_hand_feedback: "sdhfeedback-right-dbg"
+right_hand_ft: ""
