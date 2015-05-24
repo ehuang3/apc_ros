@@ -1,0 +1,5 @@
+<launch>
+    <include file="$(find apc_launch)/launch/apc_trajopt_server.launch" />
+    <include file="$(find apc_launch)/launch/apc_collision_checker.launch" />
+    <include file="$(find apc_launch)/launch/apc_pregrasp.launch" />
+</launch>

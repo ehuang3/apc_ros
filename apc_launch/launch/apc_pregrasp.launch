@@ -1,0 +1,11 @@
+<launch>
+    <arg name="allow_execution" default="true"/>
+    <arg name="service_topic"    default="/check_collisions"/>
+    <arg name="debug" default="false" />
+    <arg unless="$(arg debug)" name="launch_prefix" value="" />
+    <arg     if="$(arg debug)" name="launch_prefix" value="gdb -i=mi --args" />
+
+    <node name="apc_pregrasp" pkg="apc_trajopt" type="apc_pregrasp.py" respawn="false"
+	      output="screen">
+    </node>
+</launch>
