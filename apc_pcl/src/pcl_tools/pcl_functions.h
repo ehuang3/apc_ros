@@ -28,15 +28,18 @@ void removeBackground(pcl::PointCloud<PointType2>::Ptr scene, pcl::PointCloud<Po
     // We use a kdtree to search for points that are close enough to the other pointcloud
     pcl::KdTreeFLANN<PointType2> kdtree;
 
+    std::vector<int> indices;
+    pcl::PointCloud<PointType2>::Ptr nan_scene(new pcl::PointCloud<PointType2>());
+    pcl::removeNaNFromPointCloud(*scene, *nan_scene, indices);
+    pcl::removeNaNFromPointCloud(*background, *background, indices);
+
     kdtree.setInputCloud (background);
     //The distance we use to compare if a point in one pc is the same as a point in the other pc
     float dist=.0005;
-    std::vector<int> indices;
     //Remove NaN values
-    pcl::PointCloud<PointType2>::Ptr nan_scene(new pcl::PointCloud<PointType2>());
-    pcl::removeNaNFromPointCloud(*scene, *nan_scene, indices);
-    std::vector<int> indexes;
-    //  Iterate through pc and compare to points in the kdtree
+
+    std::vector<int> removal_indices;
+    // Iterate through pc and compare to points in the kdtree
     for (size_t i = 0; i < nan_scene->size (); ++i)
     {
         std::vector<int> neigh_indices (1);
@@ -44,11 +47,30 @@ void removeBackground(pcl::PointCloud<PointType2>::Ptr scene, pcl::PointCloud<Po
         int found_neighs = kdtree.nearestKSearch (nan_scene->at (i), 1, neigh_indices, neigh_sqr_dists);
         if(found_neighs == 1 && neigh_sqr_dists[0] < dist)
         {
-            indexes.push_back(i);
+            removal_indices.push_back(i);
         }
     }
+
+    /*
+    for (size_t i = 0; i < nan_scene->size(); ++i) {
+        std::vector<int> pointIdxRadiusSearch;
+        std::vector<float> pointRadiusSquaredDistance;
+        PointType2 searchPoint = nan_scene->at(i);
+
+        if (kdtree.radiusSearch (searchPoint, dist, pointIdxRadiusSearch, pointRadiusSquaredDistance) > 0) {
+            for (size_t k = 0; k < pointIdxRadiusSearch.size(); ++k) {
+                if(std::find(removal_indices.begin(), removal_indices.end(), pointIdxRadiusSearch[k]) != removal_indices.end()) {
+                    // Already exists
+                } else {
+                    removal_indices.push_back(pointIdxRadiusSearch[k]);
+                }
+            }
+        }
+    }
+    */
+
     pcl::PointIndices::Ptr inliers (new pcl::PointIndices ());
-    inliers->indices=indexes;
+    inliers->indices = removal_indices;
     //Extract the indices that are not in the scene and the background(this is the pointcloud
     // with the background subtracted)
     pcl::ExtractIndices<PointType2> eifilter (false);
@@ -56,6 +78,7 @@ void removeBackground(pcl::PointCloud<PointType2>::Ptr scene, pcl::PointCloud<Po
     eifilter.setIndices(inliers);
     eifilter.setNegative (true);
     eifilter.filter(*pc_back_subtracted);
+
 }
 
 enum AXIS{X,Y,Z};

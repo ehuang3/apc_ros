@@ -24,7 +24,7 @@ class Background_Recorder(object):
         path_arg =  rospy.get_param('~path', None)
         print path_arg
 
-        self.store_name = 'backround.bag'
+        self.store_name = 'background.bag'
         if path_arg is None:
             self.store_path = os.path.join(path_to_root(), 'apc_pcl', 'calibration')
 

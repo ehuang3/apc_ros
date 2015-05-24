@@ -14,8 +14,7 @@ from apc_tools import (Image_Subscriber, Bin_Segmenter, xyzharray, xyzarray, xyz
 import tf
 import os
 import rosbag
-'''Show the current image, allow the user to draw a bounding box
-'''
+
 
 class Vision_Server(object):
     def __init__(self):
@@ -24,6 +23,8 @@ class Vision_Server(object):
         self.simulate_segmentation = rospy.get_param('simulate_segmentation')
         self.train_segmentation = rospy.get_param('train_segmentation')
         self.visualize = rospy.get_param('visualize')
+        # Record all of the data necessary to make a fake service call
+        self.record_data = rospy.get_param('record')
 
         ## Image and cloud
         self.im_sub = Image_Subscriber('/kinect2_bottom/depth/cloud_image', self.got_image)        
@@ -48,8 +49,9 @@ class Vision_Server(object):
         else:
             segmentation_server = 'segment_image'    
 
-        print "Waiting for segmentation server"
-        rospy.wait_for_service(segmentation_server)
+        if not self.record_data:
+            print "Waiting for segmentation server"
+            rospy.wait_for_service(segmentation_server)
 
         rospy.logwarn("Looking for DPM server {}".format(segmentation_server))
         self.segmentation_proxy = rospy.ServiceProxy(segmentation_server, SegmentImage)
@@ -93,6 +95,8 @@ class Vision_Server(object):
 
     def got_camera_info(self, msg):
         self.camera_matrix = msg.K.reshape(3, 3)
+        if self.record_data:
+            self.camera_info = msg
         self.camera_info_sub.unregister()
 
     def view_loop(self):
@@ -213,10 +217,15 @@ class Vision_Server(object):
                 target_cloud.cloud,
                 object_name
             )
+            if not registration.success:
+                rospy.logerr("Failed to register {}".format(object_name))
+                return None
 
             print "Got registered object"
             object_pose = registration.pose
             object_poses.append(object_pose)
+            break  # Only execute once
+            
         return object_poses
 
     def run_vision(self, srv):
@@ -229,6 +238,10 @@ class Vision_Server(object):
         rospy.sleep(1.0)
         m = self.Listener.lookupTransform(target_frame, source_frame, now)
         transform = self.Transformer.fromTranslationRotation(*m)
+
+        if self.record_data:
+            self.save_bag(srv, transform)
+            return RunVisionResponse()
 
         rospy.loginfo('Running vision')
         info = ""
@@ -244,60 +257,61 @@ class Vision_Server(object):
             bin_size = xyzarray(_bin.bin_size)
             shelf_position = xyzharray(_bin.pose_shelf_frame.position)
             object_names = [i.object_id for i in _bin.object_list]
-            if not ('oreo_mega_stuf' in object_names):
-                continue
+            object_name = _bin.target_item
 
-            print "ANALYZING BIN {}".format(_bin.bin_name)
+            print "Looking for {} in {}".format(object_name, _bin.bin_name)
             self.publish_bin(_bin, transform=transform, transform_frame=target_frame)
             bin_seg_response = self.Bin_Seg.segment_bin(self.image, _bin, transform)
             self.Bin_Seg.draw_bin(self.show_image, _bin, transform)
 
             if bin_seg_response is None:
-                rospy.logerr("Bin {} not in full view, skipping".format(_bin.bin_name))
+                rospy.logwarn("Bin {} not in full view, skipping".format(_bin.bin_name))
                 bin_state.found = False
                 bin_states.append(bin_state)
                 continue  # The bin is not entirely in the camera view
             bin_segmented, (x, y, w, h) = bin_seg_response
 
-
-            if len(object_names) > 0:
-                # This NEEDS refactor
-                assert bin_segmented.shape != (0, 0, 1), "Bin region out of bounds"
-
-                for object_name in object_names:
-                    print "Looking for {}".format(object_name)
-                    # Core operation -- finding the object, segmenting it, extracting pose
-                    # This is in the event that we find multiple of one object
-                    object_poses = self.find_object(object_name, object_names, bin_segmented, _bin, x, y)
-                    ## ----------
-                    if object_poses is None:
-                        print "Could not find object pose"
-                        object_state = ObjectState(
-                            object_id=object_name,
-                            object_key='',
-                            object_pose=Pose(),
-                            found=False,
+            print "Looking for {}".format(object_name)
+            # Core operation -- finding the object, segmenting it, extracting pose
+            # This is in the event that we find multiple of one object
+            object_poses = self.find_object(object_name, object_names, bin_segmented, _bin, x, y)
+            ## ----------
+            if object_poses is None:
+                print "Could not find object pose"
+                object_state = ObjectState(
+                    object_id=object_name,
+                    object_key='',
+                    object_pose=Pose(
+                        position=Point(
+                            x=1000,
+                            y=1000,
+                            z=1000,
                         )
-                        continue
+                    ),
+                    found=False,
+                )
+                object_states.append(object_state)
+                continue
 
-                    for object_pose in object_poses:
-                        self.publish_pose(object_pose, frame='kinect2_bottom_rgb_optical_frame')
-                        print 'Object pose kinect2_bottom_rgb_optical_frame', object_pose
+            for object_pose in object_poses:
+                self.publish_pose(object_pose, frame='kinect2_bottom_rgb_optical_frame')
+                print 'Object pose kinect2_bottom_rgb_optical_frame', object_pose
 
-                        pq = pqfrompose(object_pose)  # Position, quaternion
-                        object_pose_kinect = self.Transformer.fromTranslationRotation(*pq)
-                        kinect_world_tf = np.linalg.inv(transform)
-                        object_pose_world = np.dot(kinect_world_tf, object_pose_kinect)  # Matrix
-                        object_pose_world_msg = pose_from_matrix(object_pose_world)
-                        print object_pose_world_msg
+                pq = pqfrompose(object_pose)  # Position, quaternion
+                object_pose_kinect = self.Transformer.fromTranslationRotation(*pq)
+                kinect_world_tf = np.linalg.inv(transform)
+                object_pose_world = np.dot(kinect_world_tf, object_pose_kinect)  # Matrix
+                object_pose_world_msg = pose_from_matrix(object_pose_world)
+                print object_pose_world_msg
 
-                        object_state = ObjectState(
-                            object_id=object_name,
-                            object_key='',
-                            object_pose=object_pose_world_msg,
-                            found=True,
-                        )
-                        object_states.append(object_state)
+                object_state = ObjectState(
+                    object_id=object_name,
+                    object_key='',
+                    object_pose=object_pose_world_msg,
+                    found=True,
+                )
+                object_states.append(object_state)
+                break  # Hack. Only run this once
 
             bin_state.object_list = object_states
             bin_states.append(bin_state)
@@ -332,6 +346,18 @@ class Vision_Server(object):
         return RunVisionResponse(
             bin_contents=bin_states
         )
+
+    def save_bag(self, srv, transform):
+        store_path = os.path.join(path_to_root(), 'apc_pcl')
+        path = os.path.join(store_path, 'data_bag_2.bag')
+        print 'Recording session to {}'.format(path)
+        bag = rosbag.Bag(path, 'w')
+        bag.write('/kinect2_bottom/depth_highres/points/', self.cloud)
+        bag.write('/kinect2_bottom/depth/cloud_image', make_image_msg(self.image))
+        bag.write('/kinect2_bottom/rgb_rect/camera_info', self.camera_info)
+        bag.write('/transform', pose_from_matrix(transform))
+        bag.write('service', srv)
+        bag.close()
 
 
 if __name__ == '__main__':

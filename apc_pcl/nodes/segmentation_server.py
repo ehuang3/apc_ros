@@ -13,6 +13,7 @@ from datetime import datetime
 lock = threading.Lock()
 
 def thread_lock(func):
+    '''The matlab server is NOT thread-safe, this makes it safe to run the segmentation server'''
     def locked_function(*args, **kwargs):
         lock.acquire()
         result = func(*args, **kwargs)
@@ -22,6 +23,12 @@ def thread_lock(func):
 
 
 class Matlabber(object):
+    '''Simple wrapper for pymatlab's matlab session object
+    Easily enables:
+        - Force semicolon addition
+        - Some super simple syntax checking to avoid stupid crashes
+        - Logging of the actual /text/ command being sent to Matlab (Based on a settable verbosity)
+    '''
     def __init__(self, logging=False):
         self.logging = logging
         self.matlab = pymatlab.session_factory()
@@ -38,6 +45,10 @@ class Matlabber(object):
         return logged_func
 
     def __getattr__(self, name):
+        '''This allows us to use Matlabber as a drop-in replacement for pymatlab's tool
+            If the function is a run call, log the text sent. It is not practical 
+            to print the response, as it is generally a very large image.
+        '''
         func = getattr(self.matlab, name)
         if name == 'run':
             return self.log(func)
@@ -96,6 +107,7 @@ class Object_Segment(object):
 
         # Check if we are in training mode
         self.training = rospy.get_param('train_segmentation')
+        self.visualize = rospy.get_param('visualize', False)
         self.matlab = Matlabber(logging=True)
         # self.matlab = pymatlab.session_factory()  # This is blocking until we have initialized the session
         from apc_tools import path_to_root
@@ -116,6 +128,9 @@ class Object_Segment(object):
         rospy.Service('/segment_image', SegmentImage, self.segment_service)
 
     def list_to_cellarray(self, _list):
+        '''Convert a python list to a Matlab-style cell-array in string form
+        This enables us to get around 
+        '''
         return str(_list).replace('[', '{').replace(']', '}')
 
     def train_on_image(self, image, object_name, object_list):
@@ -128,14 +143,35 @@ class Object_Segment(object):
         print "Done with training segmentation run on {}".format(object_name)
 
     def segment_image(self, image, object_name, object_list):
+        ''' Apply the histo-seg algorithm to the image using the matlab server
+
+        Notes:
+            Histo-seg will return a failure notification if it cannot confidently segment the object
+            Objectively, this means that the highest quality match found was below our manually set threshhold
+
+        '''
+
         rgb_image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         self.matlab.putvalue("image", rgb_image)
         self.matlab.putvalue("object_name", object_name)
         self.matlab.run("object_list = {};".format(self.list_to_cellarray(object_list)))
         self.matlab.run("use_sets = apc_pre_train(sets, [object_list, 'background']);")  # Train with background
 
+        if self.visualize:
+            visualize = '1'
+        else:
+            visualize = '0';
+
         try:
-            self.matlab.run("eval('[bounding_boxes, success] = apc_bounding_box(image, object_name, object_list, use_sets, 1)');")
+            # I acknowledge that this is a horrifying bastardization of PEP8
+            self.matlab.run(
+                "eval('" + 
+                    "[bounding_boxes, success] = apc_bounding_box(image, object_name, object_list, use_sets, {});" + 
+                "');".format(
+                visualize
+                )
+            )
+
         except RuntimeError as e:
             print e
             return None
@@ -143,7 +179,7 @@ class Object_Segment(object):
         success = self.matlab.getvalue("success")
 
         if (not success):
-            rospy.logerr("Histo-Seg reported acceptability threshhold failure for object  {}".format(object_name))
+            rospy.logerr("Histo-Seg reported acceptability threshhold failure for {}".format(object_name))
             return None
 
         bounding_boxes = self.matlab.getvalue("bounding_boxes")
@@ -153,10 +189,11 @@ class Object_Segment(object):
         self.matlab.run("clear image bounding_boxes object_name object_list use_sets success")
         # x, y, w, h = bounding_box  # Split it all out
 
-        return bounding_boxes  # x, y, w, h
+        return bounding_boxes  # [(x, y, w, h)...]
 
     @thread_lock
     def segment_service(self, srv):
+        # Check if we have more than 15 windows open, if so, close them all
         self.matlab.run("if length(findall(0, 'type', 'figure')) > 15\nclose all\n end")
         from apc_tools import get_image_msg  # I know this is weird. I promise it was necessary.
         image = get_image_msg(srv.image)

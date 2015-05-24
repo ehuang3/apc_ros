@@ -40,12 +40,10 @@ namespace pcl_tools {
 
 
     /* Advanced Registration */
-    icp_result alp_align(PointCloudT::Ptr object, PointCloudT::Ptr scene, PointCloudT::Ptr object_aligned,
-        int max_iterations, int num_samples, float similarity_thresh, float max_corresp_dist, float inlier_frac);
-
+    pcl_tools::icp_result alp_align(PointCloudT::Ptr object, PointCloudT::Ptr scene, PointCloudT::Ptr object_aligned,
+        int max_iterations, int num_samples, float similarity_thresh, float max_corresp_dist, float inlier_frac, float leaf);
     // icp_result sac_icp(PointCloudT::Ptr object, PointCloudT::Ptr scene);
     icp_result sac_icp(PointCloudT::Ptr object, PointCloudT::Ptr scene, Eigen::Affine3d seed_pose);
-
 
 
     /* Visualization */

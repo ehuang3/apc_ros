@@ -4,6 +4,7 @@
     <arg name="train" default="false" />
     <arg name="icp" default="false" />
     <arg name="visualize" default="false" />
+    <arg name="record" default="false" />
 
 
     <param name="stlpath" value="$(find apc_description)/objects" />
@@ -12,6 +13,7 @@
     <param name="train_segmentation" value="$(arg train)" type="bool" />
     <param name="run_icp" value="$(arg icp)" type="bool" />
     <param name="visualize" value="$(arg visualize)" type="bool" />
+    <param name="record" value="$(arg record)" type="bool" />
 
 
     <node name="vision_server" pkg="apc_pcl" type="vision_server.py" 
@@ -21,21 +23,24 @@
         <node name="simulated_segmentation" pkg="apc_pcl" type="simulated_dpm.py"
             output="screen" />
     </group>
-    <group unless="$(arg simulate)" >
-        <node name="segmentation_server" pkg="apc_pcl" type="segmentation_server.py"
+
+    <group unless="$(arg record)" >
+        <group unless="$(arg simulate)" >
+            <node name="segmentation_server" pkg="apc_pcl" type="segmentation_server.py"
+                output="screen" />
+        </group>
+
+        <node name="cloud_culler" pkg="apc_pcl" type="frustum_server"
+            output="screen" />
+
+        <group if="$(arg icp)" >
+            <node name="icp" pkg="apc_pcl" type="icp_server"
+                output="screen" />
+        </group>
+
+        <node name="get_mesh" pkg="apc_pcl" type="mesh_server"
             output="screen" />
     </group>
-
-    <node name="cloud_culler" pkg="apc_pcl" type="frustum_server"
-        output="screen" />
-
-    <group if="$(arg icp)" >
-        <node name="icp" pkg="apc_pcl" type="icp_server"
-            output="screen" />
-    </group>
-
-    <node name="get_mesh" pkg="apc_pcl" type="mesh_server"
-        output="screen" />
 
     <!-- <node name="pcl2image" pkg="pcl_ros" type="convert_pointcloud_to_image"> -->
         <!-- <rosparam> -->

@@ -29,28 +29,51 @@ void keyboardEventOccurred (const pcl::visualization::KeyboardEvent& event,void*
     next_iteration = true;
 }
 
+float feature_radius = 0.02;
+float normal_radius = 0.05;
+
 void compute_features(PointCloudT::Ptr cloud, FeatureCloudT::Ptr feature_cloud) {
-  // Estimate normals for scene
-  pcl::console::print_highlight ("Estimating scene normals...\n");
-  pcl::NormalEstimationOMP<PointNT,PointNT> nest;
-  nest.setRadiusSearch (0.001);
-  nest.setInputCloud (cloud);
-  nest.compute (*cloud);
-  
   // Estimate features
   pcl::console::print_highlight ("Estimating features...\n");
   FeatureEstimationT fest;
-  fest.setRadiusSearch (0.025);
+  fest.setRadiusSearch (feature_radius);
   fest.setInputCloud (cloud);
   fest.setInputNormals (cloud);
   fest.compute (*feature_cloud);
 }
 
-icp_result alp_align(PointCloudT::Ptr object, PointCloudT::Ptr scene, PointCloudT::Ptr object_aligned,
-    int max_iterations, int num_samples, float similarity_thresh, float max_corresp_dist, float inlier_frac) {
+void compute_normals(PointCloudT::Ptr cloud) {
+  // Estimate normals for scene
+  pcl::console::print_highlight ("Estimating scene normals...\n");
+  pcl::NormalEstimationOMP<PointNT,PointNT> nest;
+  nest.setRadiusSearch (normal_radius);
+  nest.setInputCloud (cloud);
+  nest.compute (*cloud);
 
+  // pcl::visualization::PCLVisualizer visu("Alignment");
+  // visu.addPointCloudNormals<PointNT>(cloud, 1);
+  // visu.spin();
+}
+
+pcl_tools::icp_result alp_align(PointCloudT::Ptr object, PointCloudT::Ptr scene, PointCloudT::Ptr object_aligned,
+    int max_iterations, int num_samples, float similarity_thresh, float max_corresp_dist, float inlier_frac, float leaf) {
   FeatureCloudT::Ptr object_features (new FeatureCloudT);
   FeatureCloudT::Ptr scene_features (new FeatureCloudT);
+
+  // Downsample
+  pcl::console::print_highlight ("Downsampling...\n");
+  pcl::VoxelGrid<PointNT> grid;
+  // const float leaf = 0.005f;
+  // const float leaf = in_leaf;
+
+  grid.setLeafSize (leaf, leaf, leaf);
+  grid.setInputCloud (object);
+  grid.filter (*object);
+  grid.setInputCloud (scene);
+  grid.filter (*scene);
+
+  compute_normals(object);
+  compute_normals(scene);
 
   compute_features(object, object_features);
   compute_features(scene, scene_features);
@@ -64,7 +87,7 @@ icp_result alp_align(PointCloudT::Ptr object, PointCloudT::Ptr scene, PointCloud
   align.setTargetFeatures (scene_features);
   align.setMaximumIterations (max_iterations); // Number of RANSAC iterations
   align.setNumberOfSamples (num_samples); // Number of points to sample for generating/prerejecting a pose
-  align.setCorrespondenceRandomness (5); // Number of nearest features to use
+  align.setCorrespondenceRandomness (12); // Number of nearest features to use
   align.setSimilarityThreshold (similarity_thresh); // Polygonal edge length similarity threshold
   align.setMaxCorrespondenceDistance (max_corresp_dist); // Inlier threshold
   align.setInlierFraction (inlier_frac); // Required inlier fraction for accepting a pose hypothesis
@@ -78,21 +101,20 @@ icp_result alp_align(PointCloudT::Ptr object, PointCloudT::Ptr scene, PointCloud
   result.inliers = align.getInliers ().size ();
   return result;
 }
+// icp_result normals_icp(pcl::PointCloud<pcl::PointXYZ>::Ptr input_cloud, pcl::PointCloud<pcl::PointXYZ>::Ptr target_cloud, int iterations, float max_corr) {
+//     pcl::IterativeClosestPoint<pcl::PointXYZ, pcl::PointXYZ> icp;
+//     icp.setMaximumIterations (iterations);
+//     icp.setMaxCorrespondenceDistance(max_corr);
+//     icp.setTransformationEpsilon (0.2);
+//     icp.setInputSource (input_cloud);
+//     icp.setInputTarget (target_cloud);
+//     icp.align (*input_cloud);
 
-icp_result normals_icp(pcl::PointCloud<pcl::PointXYZ>::Ptr input_cloud, pcl::PointCloud<pcl::PointXYZ>::Ptr target_cloud, int iterations, float max_corr) {
-    pcl::IterativeClosestPoint<pcl::PointXYZ, pcl::PointXYZ> icp;
-    icp.setMaximumIterations (iterations);
-    icp.setMaxCorrespondenceDistance(max_corr);
-    icp.setTransformationEpsilon (0.2);
-    icp.setInputSource (input_cloud);
-    icp.setInputTarget (target_cloud);
-    icp.align (*input_cloud);
-
-    icp_result result;
-    result.converged = icp.hasConverged();
-    result.fitness = icp.getFitnessScore();
-    result.affine = Eigen::Affine3d(icp.getFinalTransformation().cast<double>());
-}
+//     icp_result result;
+//     result.converged = icp.hasConverged();
+//     result.fitness = icp.getFitnessScore();
+//     result.affine = Eigen::Affine3d(icp.getFinalTransformation().cast<double>());
+// }
 
 struct orientation {
   Eigen::Vector3d axis;

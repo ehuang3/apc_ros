@@ -38,9 +38,7 @@ class Bin_Segmenter(object):
         world-space direction toward that pixel in the focal plane
         '''
         h_image_pt = np.hstack([image_pt[:2], 1.0])
-        print h_image_pt
         spatial_vec = np.dot(self.cam_matrix_inv, h_image_pt)
-        print spatial_vec
         unit_vec = spatial_vec / np.linalg.norm(spatial_vec)
         return unit_vec
 
