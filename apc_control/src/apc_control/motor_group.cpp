@@ -323,7 +323,7 @@ namespace apc_control
         READ_PARAM(_k_p,       k_p);
         READ_PARAM(_feedback,  name_feedback_state);
         READ_PARAM(_max_gain,  max_gain);
-        READ_PARAM(_vector,    name_vector);
+        READ_PARAM(_ft,        name_ft);
 
 #undef READ_PARAM
 
@@ -401,7 +401,8 @@ namespace apc_control
         success &= openChannel(_params.name_ref,   &_params.chan_ref);
         success &= openChannel(_params.name_track, &_params.chan_track);
         success &= openChannel(_params.name_feedback_state, &_params.chan_feedback_state);
-        success &= openChannel(_params.name_vector, &_params.chan_vector);
+        if (!_params.name_ft.empty())
+            success &= openChannel(_params.name_ft, &_params.chan_ft);
         return success;
     }
 
@@ -604,7 +605,7 @@ namespace apc_control
     {
         if (!(_params.allow_execution && _params.enabled))
             return false;
-	if (readState(0))
+    if (readState(0))
             return false;
         for (int i = 0; i < _state.state->header.n; i++)
             if (std::abs(_state.state->X[i].vel) > 0.000001)
@@ -918,21 +919,21 @@ namespace apc_control
         return MotorGroupError();
     }
 
-    MotorGroupError MotorGroup::readVector(int64_t ms)
+    MotorGroupError MotorGroup::readFt(int64_t ms)
     {
         if (ms == 0)
-            return readVector(_state.vector, NULL);
+            return readFt(_state.ft, NULL);
 
         struct timespec timeout;
 
         timeout.tv_sec = ms / 1000;
         timeout.tv_nsec = (ms % 1000) * 1e6;
 
-        return readVector(_state.vector, &timeout);
+        return readFt(_state.ft, &timeout);
     }
 
-    MotorGroupError MotorGroup::readVector(struct sns_msg_vector* msg,
-                                           struct timespec* time_out)
+    MotorGroupError MotorGroup::readFt(struct sns_msg_vector* msg,
+                                       struct timespec* time_out)
     {
         MotorGroupError ret;
 
@@ -951,7 +952,7 @@ namespace apc_control
         //int opt = ACH_O_LAST | (time_out ? ACH_O_WAIT : 0);
 
         // Get the motor state message.
-        ach_status_t s = sns_msg_local_get( &_params.chan_vector, &buf, &frame_size, time_out, opt );
+        ach_status_t s = sns_msg_local_get( &_params.chan_ft, &buf, &frame_size, time_out, opt );
 
         // Handle the return status. ach ok and missed frame are both
         // acceptable as we only want the latest motor state.
@@ -972,7 +973,7 @@ namespace apc_control
             memcpy(msg, buf, frame_size);
 
             // Mark state as not dirty.
-            _state.dirty_vector = false;
+            _state.dirty_ft = false;
 
             break;
         }

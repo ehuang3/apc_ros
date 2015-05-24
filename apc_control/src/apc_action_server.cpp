@@ -61,6 +61,12 @@ Result error_to_result(const MotorGroupError& error)
     case MotorGroupError::PREEMPTED:
         r.error_code = Result::PREEMPTED;
         break;
+    case MotorGroupError::TRAJECTORY_DURATION_TOO_LONG:
+        r.error_code = Result::TRAJECTORY_DURATION_TOO_LONG;
+        break;
+    case MotorGroupError::FORCE_TORQUE_DETECTED_CONTACT:
+        r.error_code = Result::FORCE_TORQUE_DETECTED_CONTACT;
+        break;
     default:
         r.error_code = Result::SUCCESSFUL;
         break;

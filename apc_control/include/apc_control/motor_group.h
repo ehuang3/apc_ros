@@ -189,7 +189,7 @@ namespace apc_control
             std::string name_group;              // Name of this group.
             std::string name_state;              // Name of read motor states channel.
             std::string name_ref;                // Name of send reference commands channel.
-            std::string name_vector;
+            std::string name_ft;                 // Name of the force-torque channel.
             ach_channel_t chan_state;            // Channel to read motor states from.
             ach_channel_t chan_ref;              // Channel to send reference commands to.
             enum sns_motor_mode mode;            // Operating mode of motor reference commands.
@@ -209,7 +209,7 @@ namespace apc_control
             ach_channel_t chan_track;            // Channel to send full commands to for debugging.
             std::string name_feedback_state;     // Name of the debug feedback state channel.
             ach_channel_t chan_feedback_state;   // Channel to send feedback states for debugging.
-            ach_channel_t chan_vector;
+            ach_channel_t chan_ft;               // Channel to read force-torques from.
         };
 
         // Motor group state.
@@ -219,11 +219,11 @@ namespace apc_control
             JointMap map;                        // Mapping from joint names to trajectory indices.
             struct sns_msg_motor_state* state;   // Latest motor state.
             struct sns_msg_motor_ref* ref;       // Last motor reference command.
-            struct sns_msg_vector* vector;       // Motor force torque vector
+            struct sns_msg_vector* ft;           // Motor force torque vector
             bool dirty_state;                    // True if motor state has not been read since last command.
             bool fresh_ref;                      // True if a new motor command is ready to be sent.
             int64_t num_sent;                    // Number of messages sent.
-            bool dirty_vector;
+            bool dirty_ft;
             struct sns_msg_motor_state* track;   // Latest command position and velocity to track.
         };
 
@@ -317,9 +317,9 @@ namespace apc_control
         // Apply general pre-conditions at the end of a trajectory.
         MotorGroupError applyGeneralPostConditions();
 
-        MotorGroupError readVector(int64_t ms);
+        MotorGroupError readFt(int64_t ms);
 
-        MotorGroupError readVector(struct sns_msg_vector* msg,
+        MotorGroupError readFt(struct sns_msg_vector* msg,
                                   struct timespec* time_out);
 
         MotorGroupError checkFT();
