@@ -13,4 +13,5 @@ geometry_msgs/Pose pose_bin_shelf
 geometry_msgs/Vector3 bin_size  # Assume symmeteric, in meters, x, y, z extent
 
 string bin_name
+string target_item
 apc_msgs/Object[] object_list
