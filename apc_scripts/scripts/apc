@@ -161,6 +161,10 @@ apc_connect() {
         achd pull $1 sdhstate-left
     $SNS run -d -r sdhstate-right -- \
         achd pull $1 sdhstate-right
+    $SNS run -d -r ft-left -- \
+        achd pull $1 ft-left
+    $SNS run -d -r ft-right -- \
+        achd pull $1 ft-right
 }
 
 apc_disconnect() {
@@ -169,6 +173,8 @@ apc_disconnect() {
     $SNS kill state-right
     $SNS kill sdhstate-left
     $SNS kill sdhstate-right
+    $SNS kill ft-left
+    $SNS kill ft-right
 }
 
 apc_zero() {
