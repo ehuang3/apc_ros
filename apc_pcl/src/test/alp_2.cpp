@@ -65,10 +65,6 @@ pcl_tools::icp_result alp_align(PointCloudT::Ptr object, PointCloudT::Ptr scene,
     int max_iterations, int num_samples, float similarity_thresh, float max_corresp_dist, float inlier_frac, float leaf) {
   FeatureCloudT::Ptr object_features (new FeatureCloudT);
   FeatureCloudT::Ptr scene_features (new FeatureCloudT);
-
-  compute_normals(object);
-  compute_normals(scene);
-
   // Downsample
   pcl::console::print_highlight ("Downsampling...\n");
   pcl::VoxelGrid<PointNT> grid;
@@ -80,6 +76,9 @@ pcl_tools::icp_result alp_align(PointCloudT::Ptr object, PointCloudT::Ptr scene,
   grid.filter (*object);
   grid.setInputCloud (scene);
   grid.filter (*scene);
+
+  compute_normals(object);
+  compute_normals(scene);
 
   compute_features(object, object_features);
   compute_features(scene, scene_features);
@@ -221,5 +220,13 @@ int main (int argc, char **argv)
 
 Ridiculous downsampling
 --leaf 0.05 --inlier_frac 0.25 --max_cdist 0.01 --normal_radius 0.01 --feature_radius 0.02 --max_iterations 500000 --icp 1 --max_corr_icp 0.02 --max_eps_icp 0.000001
+
+
+
+Final conclusion:
+--leaf 0.03 --inlier_frac 0.25 --max_cdist 0.01 --normal_radius 0.05 --feature_radius 0.02 --max_iterations 500000 --icp 1 --max_corr_icp 0.02 --max_eps_icp 0.000001
+
+
+Should try playing with s_thresh
 
 */
