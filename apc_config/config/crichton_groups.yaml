@@ -90,8 +90,8 @@ right_arm_ft: "ft-right"
 left_hand_state: "sdhstate-left"
 left_hand_ref:   "sdhref-left"
 left_hand_mode:  "SNS_MOTOR_MODE_POS"
-left_hand_max_vel:   0.4
-left_hand_max_accel: 0.1
+left_hand_max_vel:   0.8
+left_hand_max_accel: 0.4
 left_hand_dt: 0.01              # s
 left_hand_timeout: 100          # ms
 left_hand_enabled: true
@@ -116,8 +116,8 @@ left_hand_ft: ""
 right_hand_state: "sdhstate-right"
 right_hand_ref:   "sdhref-right"
 right_hand_mode:   "SNS_MOTOR_MODE_POS"
-right_hand_max_vel:   0.4
-right_hand_max_accel: 0.1
+right_hand_max_vel:   0.8
+right_hand_max_accel: 0.4
 right_hand_dt: 0.01             # s
 right_hand_timeout: 100         # ms
 right_hand_enabled: true
