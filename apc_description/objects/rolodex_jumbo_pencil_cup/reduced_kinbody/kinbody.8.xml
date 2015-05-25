@@ -1,0 +1,8 @@
+<?xml version="1.0" ?><KinBody name="rolodex_jumbo_pencil_cup_8">
+  <Body name="rolodex_jumbo_pencil_cup" type="static">
+    <Geom type="trimesh">
+      <Render>../reduced_meshes/rolodex_jumbo_pencil_cup.stl</Render>
+      <Data>../reduced_meshes/rolodex_jumbo_pencil_cup.stl</Data>
+    </Geom>
+  </Body>
+</KinBody>
