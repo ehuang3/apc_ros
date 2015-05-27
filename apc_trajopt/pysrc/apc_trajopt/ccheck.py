@@ -85,6 +85,13 @@ class Collision(object):
         # Set default collision properties.
         set_openrave_collision_properties(action, bins, env, reset)
 
+        # Disable collisions with everything.
+        enable = False or reset
+        for kinbody in env.GetBodies():
+            if kinbody.GetName() == 'crichton':
+                continue
+            kinbody.Enable(enable)
+
         # Enable collisions with the bin.
         enable = True and not reset
         env.GetKinBody("kiva_pod").Enable(enable)
