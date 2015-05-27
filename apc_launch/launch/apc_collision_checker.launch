@@ -5,42 +5,42 @@
     <arg unless="$(arg debug)" name="launch_prefix" value="" />
     <arg     if="$(arg debug)" name="launch_prefix" value="gdb -i=mi --args" />
 
-    <node name="apc_collision_0" pkg="apc_trajopt" type="apc_collision.py" respawn="false"
+    <node name="apc_collision_0" pkg="apc_trajopt" type="apc_collision.py" respawn="true"
 	      output="screen" launch-prefix="$(arg launch_prefix)">
         <param name="roslaunch"    value="true" />
         <param name="topic"    value="$(arg service_topic)_0" />
     </node>
-    <node name="apc_collision_1" pkg="apc_trajopt" type="apc_collision.py" respawn="false"
+    <node name="apc_collision_1" pkg="apc_trajopt" type="apc_collision.py" respawn="true"
 	      output="screen" launch-prefix="$(arg launch_prefix)">
         <param name="roslaunch"    value="true" />
         <param name="topic"    value="$(arg service_topic)_1" />
     </node>
-    <node name="apc_collision_2" pkg="apc_trajopt" type="apc_collision.py" respawn="false"
+    <node name="apc_collision_2" pkg="apc_trajopt" type="apc_collision.py" respawn="true"
 	      output="screen" launch-prefix="$(arg launch_prefix)">
         <param name="roslaunch"    value="true" />
         <param name="topic"    value="$(arg service_topic)_2" />
     </node>
-    <node name="apc_collision_3" pkg="apc_trajopt" type="apc_collision.py" respawn="false"
+    <node name="apc_collision_3" pkg="apc_trajopt" type="apc_collision.py" respawn="true"
 	      output="screen" launch-prefix="$(arg launch_prefix)">
         <param name="roslaunch"    value="true" />
         <param name="topic"    value="$(arg service_topic)_3" />
     </node>
-    <node name="apc_collision_4" pkg="apc_trajopt" type="apc_collision.py" respawn="false"
+    <node name="apc_collision_4" pkg="apc_trajopt" type="apc_collision.py" respawn="true"
 	      output="screen" launch-prefix="$(arg launch_prefix)">
         <param name="roslaunch"    value="true" />
         <param name="topic"    value="$(arg service_topic)_4" />
     </node>
-    <node name="apc_collision_5" pkg="apc_trajopt" type="apc_collision.py" respawn="false"
+    <node name="apc_collision_5" pkg="apc_trajopt" type="apc_collision.py" respawn="true"
 	      output="screen" launch-prefix="$(arg launch_prefix)">
         <param name="roslaunch"    value="true" />
         <param name="topic"    value="$(arg service_topic)_5" />
     </node>
-    <node name="apc_collision_6" pkg="apc_trajopt" type="apc_collision.py" respawn="false"
+    <node name="apc_collision_6" pkg="apc_trajopt" type="apc_collision.py" respawn="true"
 	      output="screen" launch-prefix="$(arg launch_prefix)">
         <param name="roslaunch"    value="true" />
         <param name="topic"    value="$(arg service_topic)_6" />
     </node>
-    <node name="apc_collision_7" pkg="apc_trajopt" type="apc_collision.py" respawn="false"
+    <node name="apc_collision_7" pkg="apc_trajopt" type="apc_collision.py" respawn="true"
 	      output="screen" launch-prefix="$(arg launch_prefix)">
         <param name="roslaunch"    value="true" />
         <param name="topic"    value="$(arg service_topic)_7" />
